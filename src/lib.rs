@@ -1,9 +1,9 @@
 extern crate regex;
 
-mod utils;
 mod edn;
+mod utils;
 
-use edn::{EdnNode};
+use edn::EdnNode;
 
 pub fn parse_edn(edn: String) -> EdnNode {
     let mut end_tokens = utils::tokenize_edn(edn);
@@ -26,7 +26,7 @@ mod tests {
         let expected = EdnNode {
             value: String::from("nil"),
             edntype: EdnType::Nil,
-            internal: None
+            internal: None,
         };
 
         assert_eq!(parse_edn(vec), expected);
@@ -38,7 +38,7 @@ mod tests {
         let expected = EdnNode {
             value: String::from("1"),
             edntype: EdnType::Int,
-            internal: None
+            internal: None,
         };
 
         assert_eq!(parse_edn(vec), expected);
@@ -50,7 +50,7 @@ mod tests {
         let expected = EdnNode {
             value: String::from(":key"),
             edntype: EdnType::Key,
-            internal: None
+            internal: None,
         };
 
         assert_eq!(parse_edn(vec), expected);
@@ -66,23 +66,24 @@ mod tests {
                 EdnNode {
                     value: String::from("1"),
                     edntype: EdnType::Int,
-                    internal: None
+                    internal: None,
                 },
                 EdnNode {
                     value: String::from("2"),
                     edntype: EdnType::Int,
-                    internal: None
+                    internal: None,
                 },
                 EdnNode {
                     value: String::from("3"),
                     edntype: EdnType::Int,
-                    internal: None
+                    internal: None,
                 },
                 EdnNode {
                     value: String::from("]"),
                     edntype: EdnType::VectorClose,
-                    internal: None
-                }])
+                    internal: None,
+                },
+            ]),
         };
         assert_eq!(parse_edn(vec), expected);
     }
@@ -97,28 +98,29 @@ mod tests {
                 EdnNode {
                     value: String::from(":a"),
                     edntype: EdnType::Key,
-                    internal: None
+                    internal: None,
                 },
                 EdnNode {
                     value: String::from("1"),
                     edntype: EdnType::Int,
-                    internal: None
+                    internal: None,
                 },
                 EdnNode {
                     value: String::from(":b"),
                     edntype: EdnType::Key,
-                    internal: None
+                    internal: None,
                 },
                 EdnNode {
                     value: String::from("2"),
                     edntype: EdnType::Int,
-                    internal: None
+                    internal: None,
                 },
                 EdnNode {
                     value: String::from("}"),
                     edntype: EdnType::MapSetClose,
-                    internal: None
-                }])
+                    internal: None,
+                },
+            ]),
         };
         assert_eq!(parse_edn(vec), expected);
     }
@@ -129,7 +131,7 @@ mod tests {
         let expected = EdnNode {
             value: String::from("Unbalanced Map"),
             edntype: EdnType::Err,
-            internal: None
+            internal: None,
         };
         assert_eq!(parse_edn(vec), expected);
     }
@@ -144,33 +146,34 @@ mod tests {
                 EdnNode {
                     value: String::from("1"),
                     edntype: EdnType::Int,
-                    internal: None
+                    internal: None,
                 },
                 EdnNode {
                     value: String::from("2"),
                     edntype: EdnType::Int,
-                    internal: None
+                    internal: None,
                 },
                 EdnNode {
                     value: String::from(":a"),
                     edntype: EdnType::Key,
-                    internal: None
+                    internal: None,
                 },
                 EdnNode {
                     value: String::from(":b"),
                     edntype: EdnType::Key,
-                    internal: None
+                    internal: None,
                 },
                 EdnNode {
                     value: String::from("g"),
                     edntype: EdnType::Symbol,
-                    internal: None
+                    internal: None,
                 },
                 EdnNode {
                     value: String::from("}"),
                     edntype: EdnType::MapSetClose,
-                    internal: None
-                }])
+                    internal: None,
+                },
+            ]),
         };
         assert_eq!(parse_edn(vec), expected);
     }
@@ -185,28 +188,29 @@ mod tests {
                 EdnNode {
                     value: String::from("1"),
                     edntype: EdnType::Int,
-                    internal: None
+                    internal: None,
                 },
                 EdnNode {
                     value: String::from(":a"),
                     edntype: EdnType::Key,
-                    internal: None
+                    internal: None,
                 },
                 EdnNode {
                     value: String::from("\"b\""),
                     edntype: EdnType::Str,
-                    internal: None
+                    internal: None,
                 },
                 EdnNode {
                     value: String::from("c"),
                     edntype: EdnType::Symbol,
-                    internal: None
+                    internal: None,
                 },
                 EdnNode {
                     value: String::from(")"),
                     edntype: EdnType::ListClose,
-                    internal: None
-                }])
+                    internal: None,
+                },
+            ]),
         };
         assert_eq!(parse_edn(vec), expected);
     }
