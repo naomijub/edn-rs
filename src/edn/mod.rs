@@ -2,9 +2,12 @@
 pub enum EdnType {
     Vector,
     VectorClose,
+    Map,
+    MapClose,
     Int,
     Key,
-    Nil
+    Nil,
+    Err
 }
 
 #[derive(Debug, PartialEq)]

@@ -3,7 +3,7 @@ extern crate regex;
 mod utils;
 mod edn;
 
-use edn::{EdnNode, EdnType};
+use edn::{EdnNode};
 
 pub fn parse_edn(edn: String) -> EdnNode {
     let mut end_tokens = utils::tokenize_edn(edn);
@@ -18,6 +18,7 @@ pub fn parse_edn(edn: String) -> EdnNode {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use edn::{EdnNode, EdnType};
 
     #[test]
     fn empty_returns_nil() {
@@ -82,6 +83,53 @@ mod tests {
                     edntype: EdnType::VectorClose,
                     internal: None
                 }])
+        };
+        assert_eq!(parse_edn(vec), expected);
+    }
+
+    #[test]
+    fn parse_map_of_key_ints() {
+        let vec = String::from("{:a 1 :b 2}");
+        let expected = EdnNode {
+            value: String::from("{"),
+            edntype: EdnType::Map,
+            internal: Some(vec![
+                EdnNode {
+                    value: String::from(":a"),
+                    edntype: EdnType::Key,
+                    internal: None
+                },
+                EdnNode {
+                    value: String::from("1"),
+                    edntype: EdnType::Int,
+                    internal: None
+                },
+                EdnNode {
+                    value: String::from(":b"),
+                    edntype: EdnType::Key,
+                    internal: None
+                },
+                EdnNode {
+                    value: String::from("2"),
+                    edntype: EdnType::Int,
+                    internal: None
+                },
+                EdnNode {
+                    value: String::from("}"),
+                    edntype: EdnType::MapClose,
+                    internal: None
+                }])
+        };
+        assert_eq!(parse_edn(vec), expected);
+    }
+
+    #[test]
+    fn parse_unbalanced_map() {
+        let vec = String::from("{:a 1 :b}");
+        let expected = EdnNode {
+            value: String::from("Unbalanced Map"),
+            edntype: EdnType::Err,
+            internal: None
         };
         assert_eq!(parse_edn(vec), expected);
     }

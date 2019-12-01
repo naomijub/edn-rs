@@ -22,18 +22,32 @@ pub fn tokenize_edn(edn: String) -> Vec<String> {
 
 pub fn ednify(first: String, tokens: &mut Vec<String>) -> EdnNode {
     let tuple = process_token(first);
-    if tuple.1 == EdnType::Vector  {
-        return EdnNode {
-            value: s("["),
-            edntype: EdnType::Vector,
-            internal: Some(handle_collection(tokens))
-        };
-    }
-
-    EdnNode {
-        value: tuple.0,
-        edntype: tuple.1,
-        internal: None
+    match tuple.1 {
+        EdnType::Vector => 
+            EdnNode {
+                value: s("["),
+                edntype: EdnType::Vector,
+                internal: Some(handle_collection(tokens))
+            },
+        EdnType::Map =>  {
+            if tokens.len() % 2 == 1 {
+                return EdnNode {
+                    value: s("{"),
+                    edntype: EdnType::Map,
+                    internal: Some(handle_collection(tokens))
+                };
+            }
+            EdnNode {
+                value: s("Unbalanced Map"),
+                edntype: EdnType::Err,
+                internal: None
+            }
+        },
+        _ => EdnNode {
+            value: tuple.0,
+            edntype: tuple.1,
+            internal: None
+        }                    
     }
 }
 
@@ -43,6 +57,8 @@ fn process_token(first: String) -> EdnTuple {
     match &first[..] {
         "[" => EdnTuple(s("["), EdnType::Vector),
         "]" => EdnTuple(s("]"), EdnType::VectorClose),
+        "{" => EdnTuple(s("{"), EdnType::Map),
+        "}" => EdnTuple(s("}"), EdnType::MapClose),
         _first if _first.is_empty() => EdnTuple(s("nil"), EdnType::Nil),
         _first if keyword_regex.is_match(_first) => EdnTuple(s(_first), EdnType::Key),
         _ => EdnTuple(first, EdnType::Int)
