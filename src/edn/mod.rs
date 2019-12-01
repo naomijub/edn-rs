@@ -2,10 +2,15 @@
 pub enum EdnType {
     Vector,
     VectorClose,
+    Set,
     Map,
-    MapClose,
+    MapSetClose,
+    List,
+    ListClose,
     Int,
     Key,
+    Symbol,
+    Str,
     Nil,
     Err
 }

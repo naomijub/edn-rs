@@ -9,11 +9,12 @@ pub fn tokenize_edn(edn: String) -> Vec<String> {
     let edn2 = edn1.replace(")", " ) ");
     let edn3 = edn2.replace("]", " ] ");
     let edn4 = edn3.replace("[", " [ ");
-    let edn5 = edn4.replace("{", " { ");
+    let edn5 = edn4.replace("#{", " #{ ");
     let edn6 = edn5.replace("}", " } ");
-    let edn7 = edn6.trim();
+    let edn7 = edn6.replace("{", "{ ");
+    let edn8 = edn7.trim();
 
-    edn7.split(' ').collect::<Vec<&str>>()
+    edn8.split(' ').collect::<Vec<&str>>()
         .iter()
         .filter(|s| !s.is_empty())
         .map(|s| String::from(*s))
@@ -25,14 +26,26 @@ pub fn ednify(first: String, tokens: &mut Vec<String>) -> EdnNode {
     match tuple.1 {
         EdnType::Vector => 
             EdnNode {
-                value: s("["),
+                value: tuple.0,
                 edntype: EdnType::Vector,
                 internal: Some(handle_collection(tokens))
+            },
+        EdnType::List => 
+            EdnNode {
+                value: tuple.0,
+                edntype: EdnType::List,
+                internal: Some(handle_collection(tokens))
+            },
+        EdnType::Set => 
+            EdnNode {
+                value: tuple.0,
+                edntype: EdnType::Set,
+                internal: Some(handle_set(tokens))
             },
         EdnType::Map =>  {
             if tokens.len() % 2 == 1 {
                 return EdnNode {
-                    value: s("{"),
+                    value: tuple.0,
                     edntype: EdnType::Map,
                     internal: Some(handle_collection(tokens))
                 };
@@ -53,16 +66,29 @@ pub fn ednify(first: String, tokens: &mut Vec<String>) -> EdnNode {
 
 fn process_token(first: String) -> EdnTuple {
     let keyword_regex = Regex::new(r":+[a-zA-Z0-9_]+[-[a-zA-Z0-9_]+]*").unwrap();
+    let str_regex = Regex::new(r#"".+""#).unwrap();
+
 
     match &first[..] {
         "[" => EdnTuple(s("["), EdnType::Vector),
         "]" => EdnTuple(s("]"), EdnType::VectorClose),
+        "(" => EdnTuple(s("("), EdnType::List),
+        ")" => EdnTuple(s(")"), EdnType::ListClose),
+        "#{" => EdnTuple(s("#{"), EdnType::Set),
         "{" => EdnTuple(s("{"), EdnType::Map),
-        "}" => EdnTuple(s("}"), EdnType::MapClose),
+        "}" => EdnTuple(s("}"), EdnType::MapSetClose),
         _first if _first.is_empty() => EdnTuple(s("nil"), EdnType::Nil),
+        _first if str_regex.is_match(_first) => EdnTuple(s(_first), EdnType::Str),
         _first if keyword_regex.is_match(_first) => EdnTuple(s(_first), EdnType::Key),
-        _ => EdnTuple(first, EdnType::Int)
+        _first if _first.parse::<i64>().is_ok() => EdnTuple(s(_first), EdnType::Int),
+        _ => EdnTuple(first, EdnType::Symbol)
     }
+}
+
+fn handle_set(tokens: &mut Vec<String>) -> Vec<EdnNode>  {
+    tokens.sort();
+    tokens.dedup();
+    handle_collection(tokens)
 }
 
 fn handle_collection(tokens: &mut Vec<String>) -> Vec<EdnNode> {
