@@ -62,9 +62,16 @@ pub fn ednify(first: String, tokens: &mut Vec<String>) -> EdnNode {
     }
 }
 
+fn comma_to_dot(s: String) -> String {
+    s.replace(",", ".")
+}
+
 fn process_token(first: String) -> EdnTuple {
     let keyword_regex = Regex::new(r":+[a-zA-Z0-9_]+[-[a-zA-Z0-9_]+]*").unwrap();
     let str_regex = Regex::new(r#"".+""#).unwrap();
+    let float_regex = Regex::new(r#"\d+,\d+"#).unwrap();
+    let rational_regex = Regex::new(r#"\d+/\d+"#).unwrap();
+
 
     match &first[..] {
         "[" => EdnTuple(s("["), EdnType::Vector),
@@ -78,6 +85,10 @@ fn process_token(first: String) -> EdnTuple {
         _first if str_regex.is_match(_first) => EdnTuple(s(_first), EdnType::Str),
         _first if keyword_regex.is_match(_first) => EdnTuple(s(_first), EdnType::Key),
         _first if _first.parse::<i64>().is_ok() => EdnTuple(s(_first), EdnType::Int),
+        _first if _first.parse::<u64>().is_ok() => EdnTuple(s(_first), EdnType::Int),
+        _first if _first.parse::<f64>().is_ok() => EdnTuple(s(_first), EdnType::Double),
+        _first if float_regex.is_match(_first) => EdnTuple(comma_to_dot(s(_first)), EdnType::Double),
+        _first if rational_regex.is_match(_first) => EdnTuple(comma_to_dot(s(_first)), EdnType::Rational),
         _ => EdnTuple(first, EdnType::Symbol),
     }
 }
@@ -140,7 +151,8 @@ mod tests {
 
     #[test]
     fn handle_multiple_tokens() {
-        let mut collection = vec![s("1"), s("gasd"), s(":key")];
+        let mut collection = vec![s("1"), s("gasd"), s(":key"), s("2.3"), s("1,3"),
+            s("18446744073709551615"), s("3/4")];
         let expected = vec![
             EdnNode {
                 value: s("1"),
@@ -157,6 +169,26 @@ mod tests {
                 edntype: EdnType::Key,
                 internal: None,
             },
+            EdnNode {
+                value: s("2.3"),
+                edntype: EdnType::Double,
+                internal: None
+            },
+            EdnNode {
+                value: s("1.3"),
+                edntype: EdnType::Double,
+                internal: None
+            },
+            EdnNode {
+                value: s("18446744073709551615"),
+                edntype: EdnType::Int,
+                internal: None
+            },
+            EdnNode {
+                value: s("3/4"),
+                edntype: EdnType::Rational,
+                internal: None
+            }
         ];
         assert_eq!(handle_collection(&mut collection), expected);
     }
