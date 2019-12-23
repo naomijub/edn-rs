@@ -1,8 +1,15 @@
 use regex::Regex;
 
-use super::edn::{EdnNode, EdnType};
+use crate::edn::{EdnNode, EdnType};
 
 struct EdnTuple(String, EdnType);
+
+#[derive(Debug, PartialEq)]
+struct Range {
+    range_type: EdnType,
+    init: usize,
+    end: usize,
+}
 
 pub fn tokenize_edn(edn: String) -> Vec<String> {
     let edn1 = edn.replace("(", " ( ");
@@ -104,16 +111,83 @@ fn handle_collection(tokens: &mut Vec<String>) -> Vec<EdnNode> {
         .into_iter()
         .map(|t| t.to_string())
         .map(|t| process_token(t))
-        .map(|edn| EdnNode {
-            value: edn.0,
-            edntype: edn.1,
-            internal: None,
-        })
+        .map(|edn|  
+            EdnNode {
+                value: edn.0,
+                edntype: edn.1,
+                internal: None,
+            })
         .collect::<Vec<EdnNode>>()
 }
 
 fn s(s: &str) -> String {
     String::from(s)
+}
+
+fn get_ranges(tokens: Vec<String>) -> Vec<Range> {
+    use itertools::Itertools;
+
+    let mut no_last_tokens = tokens.clone();
+    no_last_tokens.pop();
+
+    let enumerable = no_last_tokens.iter()
+        .enumerate()
+        .filter(|e| e.1 == "[" || e.1 == "]" || e.1 == "#{" || e.1 == "}")
+        .map(|e| (e.0, e.1.to_owned()))
+        .collect::<Vec<(usize, String)>>();
+    
+    let group = enumerable.clone()
+        .into_iter()
+        .group_by(|e| e.1.clone())
+        .into_iter()
+        .map(|(key, assoc_group)| (key, assoc_group.collect()))
+        .collect::<Vec<(String, Vec<(usize, String)>)>>();
+
+    match group.first() {
+        Some((key, vec)) if &key[..] == "[" => {
+            let mut group_vec = Vec::new();
+            let mut closing = group.iter().find(|g| g.0 == "]").unwrap().1.clone();
+            closing.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+            let closing_len = closing.len();
+            let mut counter = closing_len - 1;
+
+            for (i, _) in vec {
+                let end = closing.get(counter).unwrap().0;
+                group_vec.push((i, end));
+                counter = counter.checked_sub(1).unwrap_or(0);
+            }
+
+            group_vec.into_iter()
+                .map(|i| Range{
+                    range_type: EdnType::Vector,
+                    init: i.0.to_owned(),
+                    end: i.1.to_owned(),
+                })
+                .collect::<Vec<Range>>()
+        },
+        Some((key, vec)) if &key[..] == "#{" => {
+            let mut group_vec = Vec::new();
+            let mut closing = group.iter().find(|g| g.0 == "}").unwrap().1.clone();
+            closing.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+            let closing_len = closing.len();
+            let mut counter = closing_len - 1;
+
+            for (i, _) in vec {
+                let end = closing.get(counter).unwrap().0;
+                group_vec.push((i, end));
+                counter = counter.checked_sub(1).unwrap_or(0);
+            }
+
+            group_vec.into_iter()
+                .map(|i| Range{
+                    range_type: EdnType::Set,
+                    init: i.0.to_owned(),
+                    end: i.1.to_owned(),
+                })
+                .collect::<Vec<Range>>()
+        },
+        _ => vec![Range{range_type: EdnType::Err, init: 0usize, end: 0usize}]
+    }
 }
 
 #[cfg(test)]
@@ -228,4 +302,42 @@ mod tests {
         ];
         assert_eq!(handle_set(&mut collection), expected);
     }
+}
+
+#[cfg(test)]
+mod ranges_tests {
+    use super::{get_ranges, Range, s};
+    use crate::edn::{EdnType};
+
+    #[test]
+    fn one_vector_range() {
+        let vec = vec![s("["), s("1"), s("3"), s("]"), s("]")];
+        let actual = get_ranges(vec);
+        let expected = vec![Range {range_type: EdnType::Vector, init: 0usize, end: 3usize }];
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn vector_in_vector_range() {
+        let vec = vec![s("["), s("1"), s("3"), s("["), s("4"), s("5"), s("]"), s("]"), s("]")];
+        let actual = get_ranges(vec);
+        let expected = vec![Range {range_type: EdnType::Vector, init: 0usize, end: 7usize }, Range { range_type: EdnType::Vector, init: 3, end: 6 }];
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn set_in_set_range() {
+        let vec = vec![s("#{"), s("1"), s("3"), s("#{"), s("4"), s("5"), s("}"), s("}"), s("]")];
+        let actual = get_ranges(vec);
+        let expected = vec![Range {range_type: EdnType::Set, init: 0usize, end: 7usize }, Range { range_type: EdnType::Set, init: 3, end: 6 }];
+        assert_eq!(expected, actual);
+    }
+
+    // #[test]
+    // fn set_in_vector_range() {
+    //     let vec = vec![s("["), s("1"), s("3"), s("#{"), s("4"), s("5"), s("}"), s("]"), s("]")];
+    //     let actual = get_ranges(vec);
+    //     let expected = vec![Range {range_type: EdnType::Vector, init: 0usize, end: 7usize }, Range { range_type: EdnType::Set, init: 3, end: 6 }];
+    //     assert_eq!(expected, actual);
+    // }
 }
