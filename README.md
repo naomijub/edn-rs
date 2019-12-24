@@ -1,6 +1,28 @@
 # edn-rs
 [Experimental] Crate to parse and emit EDN
 
+## Usage
+
+`Cargo.toml`
+```toml
+[dependencies]
+edn-rs = "0.2.0"
+```
+
+Parse and EDN into a `EdnNode`:
+```rust
+extern crate edn_rs;
+
+use edn_rs::parse_edn;
+
+fn main() {
+    ...
+    let edn = String::from("[1 2 [:3 \"4\"]]");
+    let value = parse_edn(edn);
+    ...
+}
+```
+
 ## Current Features
 - [x] Define `struct` to map EDN info `EdnNode`
 - [x] Define EDN types, `EdnType`
