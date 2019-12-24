@@ -6,7 +6,7 @@
 `Cargo.toml`
 ```toml
 [dependencies]
-edn-rs = "0.2.0"
+edn-rs = "0.2.1"
 ```
 
 Parse and EDN into a `EdnNode`:

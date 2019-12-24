@@ -4,6 +4,21 @@ use crate::edn::{EdnNode, EdnType};
 
 struct EdnTuple(String, EdnType);
 
+/// `Range` is a value defining one item of the vec in `internal` `EdnNode`.
+/// It contains the `EdnType` and the range for all the internal values in reverse order of starting.
+/// Exemple
+/// ```
+/// #[test]
+/// fn vector_in_vector_range() {
+///     let vec = vec![s("["), s("1"), s("3"), s("["), s("4"), s("5"), s("]"), s("]"), s("]")];
+///     let actual = get_ranges(vec);
+///     let expected = vec![Range { range_type: EdnType::Vector, init: 4, end: 6 }, Range {range_type: EdnType::Vector, init: 1usize, end: 7usize }];
+///     assert_eq!(expected, actual);
+/// }
+/// ``` 
+/// 
+/// We have the first `s("[")` and its values are `s("1"), s("3"), s("["),`, which will start a new range containing `s("4"), s("5"), s("]")`. 
+/// This is why there is an extra `s("]")`
 #[derive(Debug, PartialEq)]
 struct Range {
     range_type: EdnType,
