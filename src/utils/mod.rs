@@ -116,6 +116,7 @@ fn process_token(first: String) -> EdnTuple {
 }
 
 fn handle_set(tokens: &mut Vec<String>) -> Vec<EdnNode> {
+    // TODO: This lines should be removed, it is messing up set system
     tokens.sort();
     tokens.dedup();
     handle_collection(tokens)
