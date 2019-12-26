@@ -60,7 +60,7 @@ pub fn ednify(first: String, tokens: &mut Vec<String>) -> EdnNode {
         EdnType::Set => EdnNode {
             value: tuple.0,
             edntype: EdnType::Set,
-            internal: Some(handle_set(tokens)),
+            internal: Some(handle_collection(tokens)),
         },
         EdnType::Map => {
             if tokens.len() % 2 == 1 {
@@ -115,13 +115,6 @@ fn process_token(first: String) -> EdnTuple {
     }
 }
 
-fn handle_set(tokens: &mut Vec<String>) -> Vec<EdnNode> {
-    // TODO: This lines should be removed, it is messing up set system
-    tokens.sort();
-    tokens.dedup();
-    handle_collection(tokens)
-}
-
 fn handle_collection(tokens: &mut Vec<String>) -> Vec<EdnNode> {
     let ranges = get_ranges(tokens.clone().to_owned());
     let  mut u: Vec<String> = if ranges.len() != 0 {
@@ -135,19 +128,13 @@ fn handle_collection(tokens: &mut Vec<String>) -> Vec<EdnNode> {
         .map(|t| t.to_string())
         .map(|t| process_token(t))
         .map(|edn| 
-            if edn.1 == EdnType::Vector {
+            if edn.1 == EdnType::Vector || edn.1 == EdnType::Set {
                 EdnNode {
                     value: edn.0,
                     edntype: edn.1,
                     internal: Some(handle_collection(&mut u)),
                 }
-            } else if edn.1 == EdnType::Set {
-                EdnNode {
-                    value: edn.0,
-                    edntype: edn.1,
-                    internal: Some(handle_set(&mut u)),
-                }
-            }else {
+            } else {
                 EdnNode {
                     value: edn.0,
                     edntype: edn.1,
@@ -338,42 +325,6 @@ mod tests {
             }
         ];
         assert_eq!(handle_collection(&mut collection), expected);
-    }
-
-    #[test]
-    fn handle_set_of_tokens() {
-        let mut collection = vec![
-            s("1"),
-            s("gasd"),
-            s(":key"),
-            s("1"),
-            s("1"),
-            s(":key"),
-            s("\"str\""),
-        ];
-        let expected = vec![
-            EdnNode {
-                value: s("\"str\""),
-                edntype: EdnType::Str,
-                internal: None,
-            },
-            EdnNode {
-                value: s("1"),
-                edntype: EdnType::Int,
-                internal: None,
-            },
-            EdnNode {
-                value: s(":key"),
-                edntype: EdnType::Key,
-                internal: None,
-            },
-            EdnNode {
-                value: s("gasd"),
-                edntype: EdnType::Symbol,
-                internal: None,
-            },
-        ];
-        assert_eq!(handle_set(&mut collection), expected);
     }
 }
 

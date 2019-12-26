@@ -123,7 +123,7 @@ mod tests {
 
     #[test]
     fn parse_set_of_values() {
-        let vec = String::from("#{ :a 1 2 2 :b  g 1 2 }");
+        let vec = String::from("#{ 1 2 :a :b  g}");
         let expected = EdnNode {
             value: String::from("#{"),
             edntype: EdnType::Set,

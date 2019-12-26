@@ -53,8 +53,8 @@ fn main() {
     - [x] Set in Vec `"[1 2 #{:3 \"4\"}]"`
     - [ ] List in List
     - [ ] Set in List
-    - [ ] Set in Set (Needs to sort set withoug the inner values)
-    - [ ] List in Set (Needs to sort set withoug the inner values)
+    - [x] Set in Set (Sets will not be sorted and don't need a `dedup` due to the fact that they need to be compliant with EDN spec)
+    - [ ] List in Set 
     - [ ] Maps in general
 - [ ] Multiple simple data structures in one another (Map and Set in a vector)
 - [ ] Multi deepen data structures (Map in a Set in a List in a  Vec in a Vec)

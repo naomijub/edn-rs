@@ -1,6 +1,6 @@
 [package]
 name = "edn-rs"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["Julia Naomi <jnboeira@outlook.com>"]
 description = "Crate to parse and emit EDN"
 repository = "https://github.com/naomijub/edn-rs"
