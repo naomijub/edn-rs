@@ -66,3 +66,19 @@ pub fn parse_edn(edn: String) -> EdnNode {
 
     utils::ednify(end_tokens.remove(0), &mut end_tokens)
 }
+
+pub fn emit_edn(json: String) -> String {
+    use regex::Regex;
+    use regex::Captures;
+    let re = Regex::new(r#""\w*(\s\w*)*":"#).unwrap();
+
+    let edn = re.replace_all(&json[..], |caps: &Captures| {
+        let mut rcap = caps[0]
+                .replace("\"","")
+                .replace(":","")
+                .replace(" ","-");
+            rcap.insert(0,':');
+            format!("{}", rcap)
+        });
+        edn.to_string()
+}
