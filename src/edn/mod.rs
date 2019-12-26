@@ -1,3 +1,5 @@
+pub mod utils;
+
 /// `EdnType` is an Enum with possible values for an EDN type
 #[derive(Debug, PartialEq, Clone)]
 pub enum EdnType {
