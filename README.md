@@ -47,5 +47,6 @@ fn main() {
 - [ ] Multiple simple data structures in one another (Map and Set in a vector)
 - [ ] Multi deepen data structures (Map in a Set in a List in a  Vec in a Vec)
 - [ ] Json to Edn
+    - [x] Json String to EDN String
     - [ ] macro to process Structs and Enums to EDN
 - [ ] Edn to Json
