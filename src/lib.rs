@@ -71,8 +71,9 @@ pub fn emit_edn(json: String) -> String {
     use regex::Regex;
     use regex::Captures;
     let re = Regex::new(r#""\w*(\s\w*)*":"#).unwrap();
+    let c_re = Regex::new(r#"'.'"#).unwrap();
 
-    let edn = re.replace_all(&json[..], |caps: &Captures| {
+    let edn_aux = re.replace_all(&json[..], |caps: &Captures| {
         let mut rcap = caps[0]
                 .replace("\"","")
                 .replace(":","")
@@ -80,5 +81,11 @@ pub fn emit_edn(json: String) -> String {
             rcap.insert(0,':');
             format!("{}", rcap)
         });
-        edn.to_string()
+    let edn = c_re.replace_all(&edn_aux[..], |caps: &Captures| {
+        let mut rcap = caps[0]
+                .replace("\'",""); 
+            rcap.insert(0,'\\');
+            format!("{}", rcap)
+        });
+    edn.replace("null","nil")
 }
