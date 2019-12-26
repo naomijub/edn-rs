@@ -43,4 +43,34 @@ mod tests {
 
         assert_eq!(edn, emit_edn(json));
     }
+
+    #[test]
+    fn multiline_json_to_edn() {
+        let json = String::from("{
+            \"hello\": [
+                {
+                    \"country name\": \"brazil\",
+                    \"word\": \"mundo\"
+                },
+                {
+                    \"country name\": \"usa\",
+                    \"word\": \"world\"
+                }
+            ]
+        }");
+        let edn = String::from("{
+            :hello [
+                {
+                    :country-name \"brazil\",
+                    :word \"mundo\"
+                },
+                {
+                    :country-name \"usa\",
+                    :word \"world\"
+                }
+            ]
+        }");
+
+        assert_eq!(edn, emit_edn(json));
+    }
 }
