@@ -35,4 +35,12 @@ mod tests {
 
         assert_eq!(edn, emit_edn(json));
     }
+
+    #[test]
+    fn emits_number_edn() {
+        let json = String::from("{\"multi_string with underscore\": 545643}");
+        let edn = String::from("{:multi-string-with-underscore 545643}");
+
+        assert_eq!(edn, emit_edn(json));
+    }
 }
