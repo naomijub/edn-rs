@@ -16,6 +16,7 @@ pub enum EdnType {
     Str,
     Double,
     Rational,
+    Char,
     Nil,
     Err,
 }

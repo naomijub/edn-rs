@@ -94,7 +94,7 @@ fn process_token(first: String) -> EdnTuple {
     let str_regex = Regex::new(r#"".+""#).unwrap();
     let float_regex = Regex::new(r#"\d+,\d+"#).unwrap();
     let rational_regex = Regex::new(r#"\d+/\d+"#).unwrap();
-
+    let char_regex = Regex::new(r#"\\."#).unwrap();
 
     match &first[..] {
         "[" => EdnTuple(s("["), EdnType::Vector),
@@ -107,6 +107,7 @@ fn process_token(first: String) -> EdnTuple {
         _first if _first.is_empty() => EdnTuple(s("nil"), EdnType::Nil),
         _first if str_regex.is_match(_first) => EdnTuple(s(_first), EdnType::Str),
         _first if keyword_regex.is_match(_first) => EdnTuple(s(_first), EdnType::Key),
+        _first if char_regex.is_match(_first) => EdnTuple(s(_first), EdnType::Char),
         _first if _first.parse::<i64>().is_ok() => EdnTuple(s(_first), EdnType::Int),
         _first if _first.parse::<u64>().is_ok() => EdnTuple(s(_first), EdnType::Int),
         _first if _first.parse::<f64>().is_ok() => EdnTuple(s(_first), EdnType::Double),
@@ -310,7 +311,7 @@ mod tests {
     #[test]
     fn handle_multiple_tokens() {
         let mut collection = vec![s("1"), s("gasd"), s(":key"), s("2.3"), s("1,3"),
-            s("18446744073709551615"), s("3/4")];
+            s("18446744073709551615"), s("3/4"), s("\\c")];
         let expected = vec![
             EdnNode {
                 value: s("1"),
@@ -345,6 +346,11 @@ mod tests {
             EdnNode {
                 value: s("3/4"),
                 edntype: EdnType::Rational,
+                internal: None
+            },
+            EdnNode {
+                value: s("\\c"),
+                edntype: EdnType::Char,
                 internal: None
             }
         ];
