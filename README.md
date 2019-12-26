@@ -9,7 +9,7 @@
 edn-rs = "0.2.1"
 ```
 
-Parse and EDN into a `EdnNode`:
+**Parse an EDN** into a `EdnNode`:
 ```rust
 extern crate edn_rs;
 
@@ -22,6 +22,18 @@ fn main() {
     ...
 }
 ```
+
+**Emits EDN** format from a Json file
+ ```rust
+ use edn_rs::emit_edn;
+
+ fn main() {
+     let json = String::from("{\"hello\": \"world\"}");
+     let edn = String::from("{:hello \"world\"}");
+
+     assert_eq!(edn, emit_edn(json));
+ }
+ ```
 
 ## Current Features
 - [x] Define `struct` to map EDN info `EdnNode`
