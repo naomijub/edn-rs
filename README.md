@@ -51,10 +51,9 @@ fn main() {
 - [x] Simple data structures in one another:
     - [x] Vec in Vec `"[1 2 [:3 \"4\"]]"`
     - [x] Set in Vec `"[1 2 #{:3 \"4\"}]"`
-    - [ ] List in List
-    - [ ] Set in List
+    - [x] List in List
+    - [x] Set in List
     - [x] Set in Set (Sets will not be sorted and don't need a `dedup` due to the fact that they need to be compliant with EDN spec)
-    - [ ] List in Set 
     - [ ] Maps in general
 - [ ] Multiple simple data structures in one another (Map and Set in a vector)
 - [ ] Multi deepen data structures (Map in a Set in a List in a  Vec in a Vec)

@@ -27,7 +27,8 @@ struct Range {
 }
 
 pub fn tokenize_edn(edn: String) -> Vec<String> {
-    let edn1 = edn.replace("(", " ( ");
+    let edn0 = edn.replace("'(", "(");
+    let edn1 = edn0.replace("(", " ( ");
     let edn2 = edn1.replace(")", " ) ");
     let edn3 = edn2.replace("]", " ] ");
     let edn4 = edn3.replace("[", " [ ");
@@ -128,7 +129,7 @@ fn handle_collection(tokens: &mut Vec<String>) -> Vec<EdnNode> {
         .map(|t| t.to_string())
         .map(|t| process_token(t))
         .map(|edn| 
-            if edn.1 == EdnType::Vector || edn.1 == EdnType::Set {
+            if edn.1 == EdnType::Vector || edn.1 == EdnType::Set || edn.1 == EdnType::List {
                 EdnNode {
                     value: edn.0,
                     edntype: edn.1,
@@ -156,8 +157,8 @@ fn get_ranges(tokens: Vec<String>) -> Vec<Range> {
     let enumerable = enumerable_tokens(no_last_tokens);
     
     let group = group_enumerables(enumerable);
-    let open_group = group.clone().iter().filter(|i| i.0 == "[" || i.0 == "#{").map(|i| i.to_owned()).collect::<Vec<(String, Vec<(usize, String)>)>>();
-    let close_group = group.clone().iter().filter(|i| i.0 == "]" || i.0 == "}").map(|i| i.to_owned()).collect::<Vec<(String, Vec<(usize, String)>)>>();
+    let open_group = group.clone().iter().filter(|i| i.0 == "[" || i.0 == "#{" || i.0 == "(").map(|i| i.to_owned()).collect::<Vec<(String, Vec<(usize, String)>)>>();
+    let close_group = group.clone().iter().filter(|i| i.0 == "]" || i.0 == "}" || i.0 == ")").map(|i| i.to_owned()).collect::<Vec<(String, Vec<(usize, String)>)>>();
 
     open_group.iter()
         .map(|i| 
@@ -167,6 +168,9 @@ fn get_ranges(tokens: Vec<String>) -> Vec<Range> {
                 },
                 "#{" => {
                     create_ranges(EdnType::Set, i.1.clone(), close_group.clone())
+                },
+                "(" => {
+                    create_ranges(EdnType::List, i.1.clone(), close_group.clone())
                 },
                 _ => vec![Range{range_type: EdnType::Err, init: 0usize, end: 0usize}]
             }
@@ -207,6 +211,19 @@ fn create_ranges(edn: EdnType, i: Vec<(usize, String)>, close_group: Vec<(String
                     }
                 ).collect::<Vec<Range>>()
         },
+        EdnType::List => {
+            let matching_close = matching_close(edn, close_group);
+            open.iter().zip(matching_close.iter())
+                .collect::<Vec<(&usize, &usize)>>()
+                .iter()
+                .map(|idx| 
+                    Range {
+                        range_type: EdnType::List,
+                        init: idx.0.to_owned() + 1,
+                        end: idx.1.to_owned(),
+                    }
+                ).collect::<Vec<Range>>()
+        },
         _ => vec![Range{range_type: EdnType::Err, init: 0usize, end: 0usize}],
     }
 }
@@ -227,6 +244,13 @@ fn matching_close(edn: EdnType, close: Vec<(String, Vec<(usize, String)>)>) -> V
                 .collect::<Vec<usize>>())
             .flatten()
             .collect::<Vec<usize>>(),
+        EdnType::List => close.iter()
+            .filter(|i| i.0 == ")")
+            .map(|i| i.1.iter()
+                .map(|idx| idx.0)
+                .collect::<Vec<usize>>())
+            .flatten()
+            .collect::<Vec<usize>>(),
         _ => Vec::new()
     }
 }
@@ -234,7 +258,7 @@ fn matching_close(edn: EdnType, close: Vec<(String, Vec<(usize, String)>)>) -> V
 fn enumerable_tokens(tokens: Vec<String>) -> Vec<(usize, String)> {
     tokens.iter()
         .enumerate()
-        .filter(|e| e.1 == "[" || e.1 == "]" || e.1 == "#{" || e.1 == "}")
+        .filter(|e| e.1 == "[" || e.1 == "]" || e.1 == "#{" || e.1 == "}" || e.1 == "(" || e.1 == ")")
         .map(|e| (e.0, e.1.to_owned()))
         .collect::<Vec<(usize, String)>>()
 }
