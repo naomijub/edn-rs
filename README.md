@@ -47,14 +47,13 @@ fn main() {
     - [x] List `"(1 :2 \"d\")"`
     - [x] Set `"#{1 2 3}"`
     - [x] Map `"{:a 1 :b 2 }"`
-    - [x] Unbalanced Map returns `EdnType::Err`, `"{:a 1 :b}"`
 - [x] Simple data structures in one another:
     - [x] Vec in Vec `"[1 2 [:3 \"4\"]]"`
     - [x] Set in Vec `"[1 2 #{:3 \"4\"}]"`
     - [x] List in List
     - [x] Set in List
     - [x] Set in Set (Sets will not be sorted and don't need a `dedup` due to the fact that they need to be compliant with EDN spec)
-    - [ ] Maps in general
+    - [x] Maps in general
 - [ ] Multiple simple data structures in one another (Map and Set in a vector)
 - [ ] Multi deepen data structures (Map in a Set in a List in a  Vec in a Vec)
 - [ ] Json to Edn

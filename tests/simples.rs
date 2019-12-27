@@ -111,17 +111,6 @@ mod tests {
     }
 
     #[test]
-    fn parse_unbalanced_map() {
-        let vec = String::from("{:a 1 :b}");
-        let expected = EdnNode {
-            value: String::from("Unbalanced Map"),
-            edntype: EdnType::Err,
-            internal: None,
-        };
-        assert_eq!(parse_edn(vec), expected);
-    }
-
-    #[test]
     fn parse_set_of_values() {
         let vec = String::from("#{ 1 2 :a :b  g}");
         let expected = EdnNode {

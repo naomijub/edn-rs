@@ -47,34 +47,29 @@ pub fn tokenize_edn(edn: String) -> Vec<String> {
 
 pub fn ednify(first: String, tokens: &mut Vec<String>) -> EdnNode {
     let tuple = process_token(first);
+    let mut ranges = get_ranges(tokens.clone().to_owned());
+
     match tuple.1 {
         EdnType::Vector => EdnNode {
             value: tuple.0,
             edntype: EdnType::Vector,
-            internal: Some(handle_collection(tokens)),
+            internal: Some(handle_collection(tokens, &mut ranges)),
         },
         EdnType::List => EdnNode {
             value: tuple.0,
             edntype: EdnType::List,
-            internal: Some(handle_collection(tokens)),
+            internal: Some(handle_collection(tokens, &mut ranges)),
         },
         EdnType::Set => EdnNode {
             value: tuple.0,
             edntype: EdnType::Set,
-            internal: Some(handle_collection(tokens)),
+            internal: Some(handle_collection(tokens, &mut ranges)),
         },
         EdnType::Map => {
-            if tokens.len() % 2 == 1 {
-                return EdnNode {
-                    value: tuple.0,
-                    edntype: EdnType::Map,
-                    internal: Some(handle_collection(tokens)),
-                };
-            }
             EdnNode {
-                value: s("Unbalanced Map"),
-                edntype: EdnType::Err,
-                internal: None,
+                value: tuple.0,
+                edntype: EdnType::Map,
+                internal: Some(handle_collection(tokens, &mut ranges)),
             }
         }
         _ => EdnNode {
@@ -117,24 +112,28 @@ fn process_token(first: String) -> EdnTuple {
     }
 }
 
-fn handle_collection(tokens: &mut Vec<String>) -> Vec<EdnNode> {
-    let ranges = get_ranges(tokens.clone().to_owned());
+
+fn handle_collection(tokens: &mut Vec<String>, ranges: &mut Vec<Range>) -> Vec<EdnNode> {
     let  mut u: Vec<String> = if ranges.len() != 0 {
         tokens.drain(ranges[0].init..=ranges[0].end).collect()
     } else {
         Vec::new()
     };
+    
+    if !u.is_empty() {
+        ranges.remove(0);
+    }
 
     tokens
         .into_iter()
         .map(|t| t.to_string())
         .map(|t| process_token(t))
         .map(|edn| 
-            if edn.1 == EdnType::Vector || edn.1 == EdnType::Set || edn.1 == EdnType::List {
+            if edn.1 == EdnType::Vector || edn.1 == EdnType::Set || edn.1 == EdnType::List || edn.1 == EdnType::Map {
                 EdnNode {
                     value: edn.0,
                     edntype: edn.1,
-                    internal: Some(handle_collection(&mut u)),
+                    internal: Some(handle_collection(&mut u, ranges)),
                 }
             } else {
                 EdnNode {
@@ -158,7 +157,7 @@ fn get_ranges(tokens: Vec<String>) -> Vec<Range> {
     let enumerable = enumerable_tokens(no_last_tokens);
     
     let group = group_enumerables(enumerable);
-    let open_group = group.clone().iter().filter(|i| i.0 == "[" || i.0 == "#{" || i.0 == "(").map(|i| i.to_owned()).collect::<Vec<(String, Vec<(usize, String)>)>>();
+    let open_group = group.clone().iter().filter(|i| i.0 == "[" || i.0 == "{" || i.0 == "#{" || i.0 == "(").map(|i| i.to_owned()).collect::<Vec<(String, Vec<(usize, String)>)>>();
     let close_group = group.clone().iter().filter(|i| i.0 == "]" || i.0 == "}" || i.0 == ")").map(|i| i.to_owned()).collect::<Vec<(String, Vec<(usize, String)>)>>();
 
     open_group.iter()
@@ -169,6 +168,9 @@ fn get_ranges(tokens: Vec<String>) -> Vec<Range> {
                 },
                 "#{" => {
                     create_ranges(EdnType::Set, i.1.clone(), close_group.clone())
+                },
+                "{" => {
+                    create_ranges(EdnType::Map, i.1.clone(), close_group.clone())
                 },
                 "(" => {
                     create_ranges(EdnType::List, i.1.clone(), close_group.clone())
@@ -212,6 +214,19 @@ fn create_ranges(edn: EdnType, i: Vec<(usize, String)>, close_group: Vec<(String
                     }
                 ).collect::<Vec<Range>>()
         },
+        EdnType::Map => {
+            let matching_close = matching_close(edn, close_group);
+            open.iter().zip(matching_close.iter())
+                .collect::<Vec<(&usize, &usize)>>()
+                .iter()
+                .map(|idx| 
+                    Range {
+                        range_type: EdnType::Map,
+                        init: idx.0.to_owned() + 1,
+                        end: idx.1.to_owned(),
+                    }
+                ).collect::<Vec<Range>>()
+        },
         EdnType::List => {
             let matching_close = matching_close(edn, close_group);
             open.iter().zip(matching_close.iter())
@@ -245,6 +260,13 @@ fn matching_close(edn: EdnType, close: Vec<(String, Vec<(usize, String)>)>) -> V
                 .collect::<Vec<usize>>())
             .flatten()
             .collect::<Vec<usize>>(),
+        EdnType::Map => close.iter()
+            .filter(|i| i.0 == "}")
+            .map(|i| i.1.iter()
+                .map(|idx| idx.0)
+                .collect::<Vec<usize>>())
+            .flatten()
+            .collect::<Vec<usize>>(),
         EdnType::List => close.iter()
             .filter(|i| i.0 == ")")
             .map(|i| i.1.iter()
@@ -259,7 +281,7 @@ fn matching_close(edn: EdnType, close: Vec<(String, Vec<(usize, String)>)>) -> V
 fn enumerable_tokens(tokens: Vec<String>) -> Vec<(usize, String)> {
     tokens.iter()
         .enumerate()
-        .filter(|e| e.1 == "[" || e.1 == "]" || e.1 == "#{" || e.1 == "}" || e.1 == "(" || e.1 == ")")
+        .filter(|e| e.1 == "[" || e.1 == "]" || e.1 == "{" || e.1 == "#{" || e.1 == "}" || e.1 == "(" || e.1 == ")")
         .map(|e| (e.0, e.1.to_owned()))
         .collect::<Vec<(usize, String)>>()
 }
@@ -354,7 +376,8 @@ mod tests {
                 internal: None
             }
         ];
-        assert_eq!(handle_collection(&mut collection), expected);
+        let mut ranges: Vec<Range> = Vec::new();
+        assert_eq!(handle_collection(&mut collection, &mut ranges), expected);
     }
 }
 
