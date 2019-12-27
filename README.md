@@ -43,7 +43,7 @@ fn main() {
     - [x] nil `""`
     - [x] String `"\"string\""`
     - [x] Numbers `"324352"`, `"3442.234"`, `"3/4"`
-    - [x] Keywords
+    - [x] Keywords `:a`
     - [x] Vector `"[1 :2 \"d\"]"`
     - [x] List `"(1 :2 \"d\")"`
     - [x] Set `"#{1 2 3}"`
@@ -51,10 +51,10 @@ fn main() {
 - [x] Simple data structures in one another:
     - [x] Vec in Vec `"[1 2 [:3 \"4\"]]"`
     - [x] Set in Vec `"[1 2 #{:3 \"4\"}]"`
-    - [x] List in List
-    - [x] Set in List
+    - [x] List in List `"(1 2 (:3 \"4\"))"`
+    - [x] Set in List `"'(1 2 #{:3 \"4\"})"`
     - [x] Set in Set (Sets will not be sorted and don't need a `dedup` due to the fact that they need to be compliant with EDN spec)
-    - [x] Maps in general
+    - [x] Maps in general `"{:a 2 :b {:3 \"4\"}}"`, `"{:a 2 :b [:3 \"4\"]}"`
 - [ ] Multiple simple data structures in one another (Map and Set in a vector)
 - [ ] Multi deepen data structures (Map in a Set in a List in a  Vec in a Vec)
 - [ ] Json to Edn
