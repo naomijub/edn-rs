@@ -55,7 +55,7 @@ fn main() {
     - [x] Set in List `"'(1 2 #{:3 \"4\"})"`
     - [x] Set in Set (Sets will not be sorted and don't need a `dedup` due to the fact that they need to be compliant with EDN spec)
     - [x] Maps in general `"{:a 2 :b {:3 \"4\"}}"`, `"{:a 2 :b [:3 \"4\"]}"`
-- [ ] Multiple simple data structures in one another (Map and Set in a vector)
+- [x] Multiple simple data structures in one another (Map and Set in a vector)
 - [ ] Multi deepen data structures (Map in a Set in a List in a  Vec in a Vec)
 - [ ] Json to Edn
     - [x] Json String to EDN String

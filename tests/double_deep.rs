@@ -5,12 +5,48 @@ mod tests {
     use crate::edn_rs::parse_edn;
     use crate::edn_rs::edn::{EdnNode, EdnType};
 
-    // #[test]
-    // fn parse_vector_of_vector() {
-    //     let vec = String::from("[1 2 [:3 \"4\"] [:5 :6]]");
-    //     let expected = EdnNode::nil();
-    //     assert_eq!(parse_edn(vec), expected);
-    // }
+    #[test]
+    fn parse_vector_of_vector() {
+        let vec = String::from("[1 2 [:3 \"4\"] [:5 :6]]");
+        let expected = EdnNode { value: "[".to_string(), edntype: EdnType::Vector, internal: Some(vec![
+            EdnNode { value: "1".to_string(), edntype: EdnType::Int, internal: None }, 
+            EdnNode { value: "2".to_string(), edntype: EdnType::Int, internal: None }, 
+            EdnNode { value: "[".to_string(), edntype: EdnType::Vector, internal: Some(vec![
+                EdnNode { value: ":3".to_string(), edntype: EdnType::Key, internal: None }, 
+                EdnNode { value: "\"4\"".to_string(), edntype: EdnType::Str, internal: None }, 
+                EdnNode { value: "]".to_string(), edntype: EdnType::VectorClose, internal: None }])}, 
+            EdnNode { value: "[".to_string(), edntype: EdnType::Vector, internal: Some(vec![
+                EdnNode { value: ":5".to_string(), edntype: EdnType::Key, internal: None }, 
+                EdnNode { value: ":6".to_string(), edntype: EdnType::Key, internal: None }, 
+                EdnNode { value: "]".to_string(), edntype: EdnType::VectorClose, internal: None }]) }, 
+            EdnNode { value: "]".to_string(), edntype: EdnType::VectorClose, internal: None }]) };
+        assert_eq!(parse_edn(vec), expected);
+    }
+
+    #[test]
+    fn parse_vector_of_vector_and_map() {
+        let vec = String::from("[1 2 [:3 \"4\"] {:5 :6} [7 8]]");
+        let expected = EdnNode { value: "[".to_string(), edntype: EdnType::Vector, internal: Some(vec![
+            EdnNode { value: "1".to_string(), edntype: EdnType::Int, internal: None }, 
+            EdnNode { value: "2".to_string(), edntype: EdnType::Int, internal: None }, 
+            EdnNode { value: "[".to_string(), edntype: EdnType::Vector, internal: Some(vec![
+                EdnNode { value: ":3".to_string(), edntype: EdnType::Key, internal: None }, 
+                EdnNode { value: "\"4\"".to_string(), edntype: EdnType::Str, internal: None }, 
+                EdnNode { value: "]".to_string(), edntype: EdnType::VectorClose, internal: None 
+            }])}, 
+            EdnNode { value: "{".to_string(), edntype: EdnType::Map, internal: Some(vec![
+                EdnNode { value: ":5".to_string(), edntype: EdnType::Key, internal: None }, 
+                EdnNode { value: ":6".to_string(), edntype: EdnType::Key, internal: None }, 
+                EdnNode { value: "}".to_string(), edntype: EdnType::MapSetClose, internal: None 
+            }]) },
+            EdnNode {value: "[".to_string(), edntype: EdnType::Vector, internal: Some(vec![
+                EdnNode { value: "7".to_string(), edntype: EdnType::Int, internal: None }, 
+                EdnNode { value: "8".to_string(), edntype: EdnType::Int, internal: None }, 
+                EdnNode { value: "]".to_string(), edntype: EdnType::VectorClose, internal: None }
+            ])}, 
+            EdnNode { value: "]".to_string(), edntype: EdnType::VectorClose, internal: None }]) };
+        assert_eq!(parse_edn(vec), expected);
+    }
 
    #[test]
     fn parse_vector_in_vector() {
