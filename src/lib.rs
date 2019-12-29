@@ -1,4 +1,3 @@
-// #![recursion_limit="4194304"]
 extern crate regex;
 
 pub mod edn;
@@ -8,7 +7,7 @@ use edn::{*,
 
 
 pub fn parse_edn(edn: String) -> Edn {
-    parse_edn!(edn)
+    from_edn(edn)
 }
 
 /// `emit_edn` receives a json string and parses its common key-values to a regular EDN format. 
