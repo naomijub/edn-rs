@@ -26,6 +26,10 @@ impl Vector {
     pub fn new(v: Vec<Edn>) -> Vector {
         Vector(v)
     }
+
+    pub fn empty() -> Vector {
+        Vector(Vec::new())
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -33,6 +37,10 @@ pub struct List(Vec<Edn>);
 impl List {
     pub fn new(v: Vec<Edn>) -> List {
         List(v)
+    }
+
+    pub fn empty() -> List {
+        List(Vec::new())
     }
 }
 
@@ -42,6 +50,10 @@ impl Set {
     pub fn new(v: Vec<Edn>) -> Set {
         Set(v)
     }
+
+    pub fn empty() -> Set {
+        Set(Vec::new())
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -49,6 +61,10 @@ pub struct Map(HashMap<String,Edn>);
 impl Map {
     pub fn new(m: HashMap<String, Edn>) -> Map {
         Map(m)
+    }
+
+    pub fn empty() -> Map {
+        Map(HashMap::new())
     }
 }
 
@@ -92,60 +108,58 @@ impl Edn {
             Edn::Set(set) => format!("{}",set),
             Edn::Map(m) => format!("{}",m),
             Edn::List(l) => format!("{}",l),
-            _ => String::from("nil"),
         }
     }
 }
 
-pub fn from_edn(edn: String) -> Edn {
-    to_edn(edn)
-}
+// pub fn from_edn(edn: String) -> Edn {
+//     to_edn(edn)
+// }
 
 fn comma_to_dot(s: String) -> String {
     s.replace(",", ".")
 }
 
-fn to_edn(s: String) -> Edn {
+pub fn to_edn(s: String) -> Edn {
     use regex::Regex;
     let keyword_regex = Regex::new(r":+[a-zA-Z0-9_]+[-[a-zA-Z0-9_]+]*").unwrap();
     let str_regex = Regex::new(r#"".+""#).unwrap();
-    let float_regex = Regex::new(r#"\d+,\d+"#).unwrap();
+    // let float_regex = Regex::new(r#"\d+,\d+"#).unwrap();
     let rational_regex = Regex::new(r#"\d+/\d+"#).unwrap();
-    let char_regex = Regex::new(r#"\\."#).unwrap();
-    let list_regex = Regex::new(r"\(.+\)").unwrap();
-    let vec_regex = Regex::new(r"\[.+\]").unwrap();
-    let set_regex = Regex::new(r"\#\{.+\}").unwrap();
-    let map_regex = Regex::new(r"\{.+\}").unwrap();
+    // let char_regex = Regex::new(r#"\\."#).unwrap();
+    // let list_regex = Regex::new(r"\(.+\)").unwrap();
+    // let vec_regex = Regex::new(r"\[.+\]").unwrap();
+    // let set_regex = Regex::new(r"\#\{.+\}").unwrap();
+    // let map_regex = Regex::new(r"\{.+\}").unwrap();
 
     match &s {
         element if element.is_empty() => Edn::Nil,
-        element if list_regex.is_match(element) => {
-            let mut aux = s;
-            Edn::List(List(to_seq(&mut aux)))
-        },
-        element if vec_regex.is_match(element) => {
-            let mut aux = s;
-            Edn::Vector(Vector(to_seq(&mut aux)))
-        },
-        element if set_regex.is_match(element) => {
-            let mut aux = s;
-            Edn::Set(Set(to_seq(&mut aux)))
-        },
-        element if map_regex.is_match(element) => {
-            let mut aux = s;
-            Edn::Map(Map(to_map(&mut aux)))
-        },
+        // element if list_regex.is_match(element) => {
+        //     let mut aux = s;
+        //     Edn::List(List(to_seq(&mut aux)))
+        // },
+        // element if vec_regex.is_match(element) => {
+        //     let mut aux = s;
+        //     Edn::Vector(Vector(to_seq(&mut aux)))
+        // },
+        // element if set_regex.is_match(element) => {
+        //     let mut aux = s;
+        //     Edn::Set(Set(to_seq(&mut aux)))
+        // },
+        // element if map_regex.is_match(element) => {
+        //     let mut aux = s;
+        //     Edn::Map(Map(to_map(&mut aux)))
+        // },
         element if element == "nil" || element == "null" => Edn::Nil,
-        element if element.parse::<bool>().is_ok() => Edn::Bool(element.parse::<bool>().unwrap()),
+        // element if element.parse::<bool>().is_ok() => Edn::Bool(element.parse::<bool>().unwrap()),
         element if element.parse::<i64>().is_ok() => Edn::Int(element.parse::<i64>().unwrap()),
         element if element.parse::<f64>().is_ok() => Edn::Double(element.parse::<f64>().unwrap()),
-        element if element == "[]" => Edn::Vector(Vector(Vec::new())),
-        element if element == "()" => Edn::List(List(Vec::new())),
-        element if element == "#{}" => Edn::Set(Set(Vec::new())),
-        element if element == "{}" => Edn::Map(Map(HashMap::new())),
+        // element if element == "[]" => Edn::Vector(Vector(Vec::new())),
+        // element if element == "()" => Edn::List(List(Vec::new())),
+        // element if element == "#{}" => Edn::Set(Set(Vec::new())),
+        // element if element == "{}" => Edn::Map(Map(HashMap::new())),
         element if keyword_regex.is_match(element) => Edn::Key(element.to_string()),
-        element if char_regex.is_match(element) => Edn::Char(element.chars().last().unwrap()),
-        element if float_regex.is_match(element) => Edn::Double(comma_to_dot(element.to_string()).parse::<f64>().unwrap()),
+        // element if char_regex.is_match(element) => Edn::Char(element.chars().last().unwrap()),
         element if rational_regex.is_match(element) => Edn::Rational(element.to_string()),
         element if str_regex.is_match(element) => Edn::Str(element.to_string()),
         _ => Edn::Symbol(s)
