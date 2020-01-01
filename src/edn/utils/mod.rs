@@ -26,3 +26,68 @@ pub fn replace_char(json: String) -> String {
         });
     edn.to_string()
 }
+
+pub trait Attribute {
+    fn process(&self) -> String;
+}
+
+impl Attribute for f64 {
+    fn process(&self) -> String { 
+        format!("{:?}",self.to_owned())
+    }
+}
+
+impl Attribute for f32 {
+    fn process(&self) -> String { 
+        format!("{:?}",self.to_owned())
+    }
+}
+
+impl Attribute for i128 {
+    fn process(&self) -> String {
+        format!("{:?}",self.to_owned())
+    }
+}
+
+impl Attribute for i32 {
+    fn process(&self) -> String {
+        format!("{:?}",self.to_owned())
+    }
+}
+
+impl Attribute for i64 {
+    fn process(&self) -> String {
+        format!("{:?}",self.to_owned())
+    }
+}
+
+
+impl Attribute for u128 {
+    fn process(&self) -> String {
+        format!("{:?}",self.to_owned())
+    }
+}
+
+impl Attribute for u64 {
+    fn process(&self) -> String {
+        format!("{:?}",self.to_owned())
+    }
+}
+
+impl Attribute for u32 {
+    fn process(&self) -> String {
+        format!("{:?}",self.to_owned())
+    }
+}
+
+impl Attribute for &str {
+    fn process(&self) -> String {
+        format!("{}",self.to_owned())
+    }
+}
+
+impl Attribute for bool {
+    fn process(&self) -> String {
+        format!("{}",self.to_owned())
+    }
+}

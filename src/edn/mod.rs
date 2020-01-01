@@ -9,13 +9,14 @@ pub enum Edn {
     Set(Set),
     Map(Map),
     List(List),
-    Int(i64),
     Key(String),
-    Symbol(String),
+    // Symbol(String),
     Str(String),
+    Int(i128),
+    UInt(u128),
     Double(f64),
     Rational(String),
-    Char(char),
+    // Char(char),
     Bool(bool),
     Nil,
 }
@@ -92,130 +93,41 @@ impl core::fmt::Display for Map {
     }
 }
 
-impl Edn {
-    fn to_string(self) -> String {
-        match self {
+impl core::fmt::Display for Edn {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let text = match self {
+            Edn::Vector(v) => format!("{}", v),
+            Edn::Set(s) => format!("{}", s),
+            Edn::Map(m) => format!("{}", m),
+            Edn::List(l) => format!("{}", l),
+            Edn::Key(k) => k.to_string(),
+            Edn::Str(s) => s.to_string(),
+            Edn::Int(i) => format!("{}", i),
+            Edn::UInt(u) => format!("{}", u),
+            Edn::Double(d) => format!("{}", d),
+            Edn::Rational(r) => r.to_string(),
+            Edn::Bool(b) => format!("{}", b),
             Edn::Nil => String::from("nil"),
-            Edn::Bool(b) => format!("{}",b),
-            Edn::Char(c) => format!("{}",c),
-            Edn::Rational(r) => r, 
-            Edn::Double(d) => format!("{}",d),
-            Edn::Str(s) => s,
-            Edn::Symbol(sy) => sy,
-            Edn::Key(k) => k,
-            Edn::Int(i) => format!("{}",i),
-            Edn::Vector(v) => format!("{}",v),
-            Edn::Set(set) => format!("{}",set),
-            Edn::Map(m) => format!("{}",m),
-            Edn::List(l) => format!("{}",l),
-        }
+        };
+        write!(f, "{}", text)
     }
 }
 
-// pub fn from_edn(edn: String) -> Edn {
-//     to_edn(edn)
+// pub fn tokenize_edn(edn: String) -> Vec<String> {
+//     let edn0 = edn.replace("'(", "(");
+//     let edn1 = edn0.replace("(", " ( ");
+//     let edn2 = edn1.replace(")", " ) ");
+//     let edn3 = edn2.replace("]", " ] ");
+//     let edn4 = edn3.replace("[", " [ ");
+//     let edn5 = edn4.replace("#{", " #{ ");
+//     let edn6 = edn5.replace("}", " } ");
+//     let edn7 = edn6.replace("{", "{ ");
+//     let edn8 = edn7.trim();
+
+//     edn8.split(' ')
+//         .collect::<Vec<&str>>()
+//         .iter()
+//         .filter(|s| !s.is_empty())
+//         .map(|s| String::from(*s))
+//         .collect::<Vec<String>>()
 // }
-
-fn comma_to_dot(s: String) -> String {
-    s.replace(",", ".")
-}
-
-pub fn to_edn(s: String) -> Edn {
-    use regex::Regex;
-    let keyword_regex = Regex::new(r":+[a-zA-Z0-9_]+[-[a-zA-Z0-9_]+]*").unwrap();
-    let str_regex = Regex::new(r#"".+""#).unwrap();
-    // let float_regex = Regex::new(r#"\d+,\d+"#).unwrap();
-    let rational_regex = Regex::new(r#"\d+/\d+"#).unwrap();
-    // let char_regex = Regex::new(r#"\\."#).unwrap();
-    // let list_regex = Regex::new(r"\(.+\)").unwrap();
-    // let vec_regex = Regex::new(r"\[.+\]").unwrap();
-    // let set_regex = Regex::new(r"\#\{.+\}").unwrap();
-    // let map_regex = Regex::new(r"\{.+\}").unwrap();
-
-    match &s {
-        element if element.is_empty() => Edn::Nil,
-        // element if list_regex.is_match(element) => {
-        //     let mut aux = s;
-        //     Edn::List(List(to_seq(&mut aux)))
-        // },
-        // element if vec_regex.is_match(element) => {
-        //     let mut aux = s;
-        //     Edn::Vector(Vector(to_seq(&mut aux)))
-        // },
-        // element if set_regex.is_match(element) => {
-        //     let mut aux = s;
-        //     Edn::Set(Set(to_seq(&mut aux)))
-        // },
-        // element if map_regex.is_match(element) => {
-        //     let mut aux = s;
-        //     Edn::Map(Map(to_map(&mut aux)))
-        // },
-        element if element == "nil" || element == "null" => Edn::Nil,
-        // element if element.parse::<bool>().is_ok() => Edn::Bool(element.parse::<bool>().unwrap()),
-        element if element.parse::<i64>().is_ok() => Edn::Int(element.parse::<i64>().unwrap()),
-        element if element.parse::<f64>().is_ok() => Edn::Double(element.parse::<f64>().unwrap()),
-        // element if element == "[]" => Edn::Vector(Vector(Vec::new())),
-        // element if element == "()" => Edn::List(List(Vec::new())),
-        // element if element == "#{}" => Edn::Set(Set(Vec::new())),
-        // element if element == "{}" => Edn::Map(Map(HashMap::new())),
-        element if keyword_regex.is_match(element) => Edn::Key(element.to_string()),
-        // element if char_regex.is_match(element) => Edn::Char(element.chars().last().unwrap()),
-        element if rational_regex.is_match(element) => Edn::Rational(element.to_string()),
-        element if str_regex.is_match(element) => Edn::Str(element.to_string()),
-        _ => Edn::Symbol(s)
-    }
-}
-
-fn to_seq(list: &mut String) -> Vec<Edn> {
-    if list.contains("#{") {
-        list.remove(0);
-    }
-    list.remove(0);
-    list.remove(list.len() - 1);
-
-    let tokens = tokenize_edn(list.to_owned());
-
-    tokens.into_iter()
-        .fold(Vec::new(),|mut acc, t|{
-            acc.push(to_edn(t.to_string()));
-            acc
-        })
-}
-
-fn to_map(map: &mut String) -> HashMap<String, Edn> {
-    map.remove(0);
-    map.remove(map.len() - 1);
-
-    let tokens = tokenize_edn(map.to_owned());
-
-    let map_token = tokens.into_iter()
-        .fold(Vec::new(),|mut acc, t|{
-            acc.push(to_edn(t.to_string()));
-            acc
-        });
-    let map_inputs = map_token.chunks_exact(2).collect::<Vec<&[Edn]>>();
-    let mut hm = HashMap::new();
-    for pair in map_inputs.iter() {
-        hm.insert(pair[0].clone().to_string(), pair[1].clone());
-    }
-    hm
-}
-
-pub fn tokenize_edn(edn: String) -> Vec<String> {
-    let edn0 = edn.replace("'(", "(");
-    let edn1 = edn0.replace("(", " ( ");
-    let edn2 = edn1.replace(")", " ) ");
-    let edn3 = edn2.replace("]", " ] ");
-    let edn4 = edn3.replace("[", " [ ");
-    let edn5 = edn4.replace("#{", " #{ ");
-    let edn6 = edn5.replace("}", " } ");
-    let edn7 = edn6.replace("{", "{ ");
-    let edn8 = edn7.trim();
-
-    edn8.split(' ')
-        .collect::<Vec<&str>>()
-        .iter()
-        .filter(|s| !s.is_empty())
-        .map(|s| String::from(*s))
-        .collect::<Vec<String>>()
-}

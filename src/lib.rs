@@ -1,15 +1,12 @@
-#![recursion_limit="512"]
-extern crate regex;
 
-pub mod edn;
+#![recursion_limit="512"]
+#[macro_use]
 pub mod macros;
 
+extern crate regex;
+pub mod edn;
+
 use edn::{utils::{replace_keywords, replace_char}};
-
-
-// pub fn parse_edn(edn: String) -> Edn {
-//     from_edn(edn)
-// }
 
 /// `emit_edn` receives a json string and parses its common key-values to a regular EDN format. 
 /// tested examples are: 
