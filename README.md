@@ -1,26 +1,37 @@
 # edn-rs
 [Experimental] Crate to parse and emit EDN
-* **This lib does not make effort to conform the EDN received to EDN Spec.**
+* **This lib does not make effort to conform the EDN received to EDN Spec.** The lib that generated this EDN should be responsible for this.
 
 ## Usage
 
 `Cargo.toml`
 ```toml
 [dependencies]
-edn-rs = "0.2.1"
+edn-rs = "0.4.0"
 ```
 
 **Parse an EDN** into a `EdnNode`:
 ```rust
+#[macro_use]
 extern crate edn_rs;
 
-use edn_rs::parse_edn;
-
 fn main() {
-    ...
-    let edn = String::from("[1 2 [:3 \"4\"]]");
-    let value = parse_edn(edn);
-    ...
+    let edn = edn!((1 1.2 3 false :f nil 3/4));
+    let expected = Edn::List(
+            List::new(
+                vec![
+                    Edn::Int(1),
+                    Edn::Double(1.2),
+                    Edn::Int(3),
+                    Edn::Bool(false),
+                    Edn::Key("f".to_string()),
+                    Edn::Nil,
+                    Edn::Rational("3/4".to_string())
+                ]
+            )
+        );
+
+        assert_eq!(edn, expected);
 }
 ```
 
@@ -46,17 +57,16 @@ fn main() {
     - [x] Keywords `:a`
     - [x] Vector `"[1 :2 \"d\"]"`
     - [x] List `"(1 :2 \"d\")"`
-    - [x] Set `"#{1 2 3}"`
+    - [x] Set `"#{1 2 3}"` For now the usage of Set is defined as a `Vec<Edn>`, this is due to the fact that the lib should not be necessarily responsible for assuring the Set's unicity. A solution could be changing the implementation to `HashSet`.
     - [x] Map `"{:a 1 :b 2 }"`
-- [x] Simple data structures in one another:
+- [ ] Simple data structures in one another:
     - [x] Vec in Vec `"[1 2 [:3 \"4\"]]"`
-    - [x] Set in Vec `"[1 2 #{:3 \"4\"}]"`
+    - [ ] Set in _Vec_ `"[1 2 #{:3 \"4\"}]"`
     - [x] List in List `"(1 2 (:3 \"4\"))"`
-    - [x] Set in List `"'(1 2 #{:3 \"4\"})"`
-    - [x] Set in Set (Sets will not be sorted and don't need a `dedup` due to the fact that they need to be compliant with EDN spec)
+    - [x] List in Set `"'#{1 2 (:3 \"4\")}"`
     - [x] Maps in general `"{:a 2 :b {:3 \"4\"}}"`, `"{:a 2 :b [:3 \"4\"]}"`
 - [x] Multiple simple data structures in one another (Map and Set in a vector)
-- [ ] Multi deepen data structures (Map in a Set in a List in a  Vec in a Vec)
+- [x] Multi deepen data structures (Map in a Set in a List in a  Vec in a Vec)
 - [ ] Json to Edn
     - [x] Json String to EDN String
     - [ ] macro to process Structs and Enums to EDN

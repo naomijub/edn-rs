@@ -1,78 +1,12 @@
+
+#![recursion_limit="512"]
+#[macro_use]
+pub mod macros;
+
 extern crate regex;
-
 pub mod edn;
-mod utils;
 
-use edn::{EdnNode, 
-        utils::{replace_keywords, replace_char}};
-
-/// `parse_edn` receives a String with the EDN context and transforms it in a EdnNode`
-/// 
-/// ```rust
-/// use edn_rs::parse_edn;
-/// 
-/// let edn = String::from("[1 2 [:3 \"4\"]]");
-/// let value = parse_edn(edn);
-/// ```
-/// 
-/// A response for value is: 
-/// 
-/// ```
-/// use edn_rs::edn::{EdnNode, EdnType};
-/// 
-/// EdnNode {
-///    value: String::from("["),
-///    edntype: EdnType::Vector,
-///    internal: Some(vec![
-///        EdnNode {
-///            value: String::from("1"),
-///            edntype: EdnType::Int,
-///            internal: None,
-///        },
-///        EdnNode {
-///            value: String::from("2"),
-///            edntype: EdnType::Int,
-///            internal: None,
-///        },
-///        EdnNode {
-///            value: String::from("["),
-///            edntype: EdnType::Vector,
-///            internal: Some(vec![
-///                EdnNode {
-///                    value: String::from(":3"),
-///                    edntype: EdnType::Key,
-///                    internal: None,
-///                },
-///                EdnNode {
-///                    value: String::from("\"4\""),
-///                    edntype: EdnType::Str,
-///                    internal: None,
-///                },
-///                EdnNode {
-///                    value: String::from("]"),
-///                    edntype: EdnType::VectorClose,
-///                    internal: None,
-///                },
-///            ]),
-///        },
-///        EdnNode {
-///            value: String::from("]"),
-///            edntype: EdnType::VectorClose,
-///            internal: None,
-///        },
-///    ]),
-///  };
-/// ```
-pub fn parse_edn(edn: String) -> EdnNode {
-    let mut end_tokens = utils::tokenize_edn(edn);
-
-    if end_tokens.is_empty() {
-        return EdnNode::nil();
-    }
-
-    utils::ednify(end_tokens.remove(0), &mut end_tokens)
-}
-
+use edn::{utils::{replace_keywords, replace_char}};
 
 /// `emit_edn` receives a json string and parses its common key-values to a regular EDN format. 
 /// tested examples are: 
