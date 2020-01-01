@@ -58,6 +58,39 @@
 /// }
 /// ```
 /// 
+/// A more complete exemple: 
+/// ```rust
+/// #[macro_use]
+/// extern crate edn_rs;
+/// 
+/// use edn_rs::edn::{Edn, List, Vector, Map};
+/// fn main() {
+///     let expected = Edn::List(
+///     List::new(
+///         vec![
+///             Edn::Int(1),
+///             Edn::Double(1.2),
+///             Edn::Int(3),
+///             Edn::Map(
+///                 Map::new( map![
+///                     String::from("false") => Edn::Map(
+///                         Map::new( map![ 
+///                             String::from("f") => Edn::Key(String::from("b"))
+///                         ])),
+///                     String::from("nil") => Edn::Vector(
+///                         Vector::new( vec![
+///                             Edn::Rational("3/4".to_string()),
+///                             Edn::Int(1isize)
+///                         ]))
+///             ]))
+///         ]
+///     )
+///     );
+///
+///     assert_eq!(edn!(( 1 1.2 3 {false {:f :b} nil [3/4 1]})), expected);
+/// }
+/// ```
+/// 
 /// Internal implementation is hidden, please look at source.
 macro_rules! edn {
     // Hide distracting implementation details from the generated rustdoc.
@@ -113,15 +146,29 @@ macro_rules! edn_internal {
         edn_internal!(@seq @$kind [ $($elems,)* edn!($num/$den) , ] $($rest)*)
     };
 
-    // vec
-    (@seq @$kind:ident [$($elems:expr,)*] [$($set_val:tt)*] $($rest:tt)*) => {
-        edn_internal!(@seq @$kind [ $($elems,)* edn!(#{$($set_val)*}) , ] $($rest)*)
-    };
-
     // anything else
     (@seq @$kind:ident [$($elems:expr,)*] $head:tt $($rest:tt)*) => {
         edn_internal!(@seq @$kind [ $($elems,)* edn!($head) , ] $($rest)*)
     };
+
+    // inner
+    (@seq @$kind:ident [$($elems:expr,)* $open:ident $($inner_val:tt)* $close:ident] $($rest:tt)*) => {{
+        match (&format!("{:?}",$open), &format!("{:?}",$close)) {
+            ("#{","}") => edn_internal!(@seq @$kind [ $($elems,)* edn_internal!(@seq @set [$($inner_val)*]) , ] $($rest)*),
+            ("(",")") => edn_internal!(@seq @$kind [ $($elems,)* edn_internal!(@seq @list [$($inner_val)*]) , ] $($rest)*),
+            ("[","]") => edn_internal!(@seq @$kind [ $($elems,)* edn_internal!(@seq @vec [$($inner_val)*]) , ] $($rest)*),
+        }
+    }};
+
+    // // vec
+    // (@seq @$kind:ident [$($elems:expr,)* [$($set_val:tt)*]] $($rest:tt)*) => {
+    //     edn_internal!(@seq @$kind [ $($elems,)* edn!(#{$($set_val)*}) , ] $($rest)*)
+    // };
+
+    // // set
+    // (@seq @$kind:ident [$($elems:expr,)* #{$($set_val:tt)*}] $($rest:tt)*) => {
+    //     edn_internal!(@seq @$kind [ $($elems,)* edn!(#{$($set_val)*}) , ] $($rest)*)
+    // };
 
     //////////////////////////////////////////////////////////////////////////
     // The main implementation.

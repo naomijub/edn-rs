@@ -7,7 +7,7 @@
 `Cargo.toml`
 ```toml
 [dependencies]
-edn-rs = "0.2.1"
+edn-rs = "0.4.0"
 ```
 
 **Parse an EDN** into a `EdnNode`:
@@ -60,14 +60,13 @@ fn main() {
     - [x] Set `"#{1 2 3}"` For now the usage of Set is defined as a `Vec<Edn>`, this is due to the fact that the lib should not be necessarily responsible for assuring the Set's unicity. A solution could be changing the implementation to `HashSet`.
     - [x] Map `"{:a 1 :b 2 }"`
 - [ ] Simple data structures in one another:
-    - [ ] Vec in Vec `"[1 2 [:3 \"4\"]]"`
-    - [ ] Set in Vec `"[1 2 #{:3 \"4\"}]"`
-    - [ ] List in List `"(1 2 (:3 \"4\"))"`
-    - [ ] Set in List `"'(1 2 #{:3 \"4\"})"`
-    - [ ] Set in Set `"'#{1 2 #{:3 \"4\"}}"`
-    - [ ] Maps in general `"{:a 2 :b {:3 \"4\"}}"`, `"{:a 2 :b [:3 \"4\"]}"`
-- [ ] Multiple simple data structures in one another (Map and Set in a vector)
-- [ ] Multi deepen data structures (Map in a Set in a List in a  Vec in a Vec)
+    - [x] Vec in Vec `"[1 2 [:3 \"4\"]]"`
+    - [ ] Set in _Vec_ `"[1 2 #{:3 \"4\"}]"`
+    - [x] List in List `"(1 2 (:3 \"4\"))"`
+    - [x] List in Set `"'#{1 2 (:3 \"4\")}"`
+    - [x] Maps in general `"{:a 2 :b {:3 \"4\"}}"`, `"{:a 2 :b [:3 \"4\"]}"`
+- [x] Multiple simple data structures in one another (Map and Set in a vector)
+- [x] Multi deepen data structures (Map in a Set in a List in a  Vec in a Vec)
 - [ ] Json to Edn
     - [x] Json String to EDN String
     - [ ] macro to process Structs and Enums to EDN
