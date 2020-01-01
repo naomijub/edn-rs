@@ -2,18 +2,12 @@
 
 #[macro_use] extern crate edn_rs;
 
-// TODO: 
-// 1. Sequences with rational
-// 2. chars
-// 3. keywords
-// 4. symbols
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
 
     use crate::edn_rs::{
         edn::{Edn, Set, Vector, List, Map},
-        macros::*,
     };
 
     #[test]
@@ -44,11 +38,52 @@ mod tests {
                     Edn::Int(1),
                     Edn::Double(1.2),
                     Edn::Int(3),
-                    Edn::Bool(false)
+                    Edn::Bool(false),
+                    Edn::Key("f".to_string()),
+                    Edn::Nil,
+                    Edn::Rational("3/4".to_string())
                 ]
             )
         );
 
-        assert_eq!(edn!([ 1 1.2 3 false ]), expected);
+        assert_eq!(edn!([ 1 1.2 3 false :f nil 3/4]), expected);
+    }
+
+    #[test]
+    fn parse_simple_list() {
+        let expected = Edn::List(
+            List::new(
+                vec![
+                    Edn::Int(1),
+                    Edn::Double(1.2),
+                    Edn::Int(3),
+                    Edn::Bool(false),
+                    Edn::Key("f".to_string()),
+                    Edn::Nil,
+                    Edn::Rational("3/4".to_string())
+                ]
+            )
+        );
+
+        assert_eq!(edn!((1 1.2 3 false :f nil 3/4)), expected);
+    }
+
+    #[test]
+    fn parse_simple_set() {
+        let expected = Edn::Set(
+            Set::new(
+                vec![
+                    Edn::Int(1),
+                    Edn::Double(1.2),
+                    Edn::Int(3),
+                    Edn::Bool(false),
+                    Edn::Key("f".to_string()),
+                    Edn::Nil,
+                    Edn::Rational("3/4".to_string())
+                ]
+            )
+        );
+
+        assert_eq!(edn!(#{1 1.2 3 false :f nil 3/4}), expected);
     }
 }

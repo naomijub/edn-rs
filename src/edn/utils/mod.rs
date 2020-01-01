@@ -43,7 +43,7 @@ impl Attribute for f32 {
     }
 }
 
-impl Attribute for i128 {
+impl Attribute for isize {
     fn process(&self) -> String {
         format!("{:?}",self.to_owned())
     }
@@ -62,7 +62,7 @@ impl Attribute for i64 {
 }
 
 
-impl Attribute for u128 {
+impl Attribute for usize {
     fn process(&self) -> String {
         format!("{:?}",self.to_owned())
     }
