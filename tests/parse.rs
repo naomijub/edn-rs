@@ -221,4 +221,14 @@ mod tests {
 
         assert_eq!(edn!(( 1 1.2 3 {false {:f :b} nil [3/4 1]})), expected);
     }
+
+    #[test]
+    fn navigate_data_structure() {
+        let edn = edn!([ 1 1.2 3 {false :f nil 3/4}]);
+
+        assert_eq!(edn[1], edn!(1.2));
+        assert_eq!(edn[1], Edn::Double(1.2f64));
+        assert_eq!(edn[3]["false"], edn!(:f));
+        assert_eq!(edn[3]["false"], Edn::Key("f".to_string()));
+    }
 }

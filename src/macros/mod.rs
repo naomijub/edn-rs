@@ -91,6 +91,23 @@
 /// }
 /// ```
 /// 
+///  To navigate through `Edn` data you can just use `get` and `get_mut`:
+///
+/// ```rust
+/// #[macro_use]
+/// extern crate edn_rs;
+/// use edn_rs::edn::{Edn, Map, Vector};
+/// 
+/// fn main() {
+///     let edn = edn!([ 1 1.2 3 {false :f nil 3/4}]);
+///
+///     assert_eq!(edn[1], edn!(1.2));
+///     assert_eq!(edn[1], Edn::Double(1.2f64));
+///     assert_eq!(edn[3]["false"], edn!(:f));
+///     assert_eq!(edn[3]["false"], Edn::Key("f".to_string()));
+/// }
+/// ```
+/// 
 /// Internal implementation is hidden, please look at source.
 macro_rules! edn {
     // Hide distracting implementation details from the generated rustdoc.

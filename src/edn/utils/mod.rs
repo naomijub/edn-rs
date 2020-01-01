@@ -1,5 +1,7 @@
 use regex::{Regex, Captures};
 
+pub mod index;
+
 pub fn replace_keywords(json: String) -> String {
     let re = Regex::new(r#""\w*(\s\w*)*":"#).unwrap();
 

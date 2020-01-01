@@ -7,10 +7,10 @@
 `Cargo.toml`
 ```toml
 [dependencies]
-edn-rs = "0.4.3"
+edn-rs = "0.4.4"
 ```
 
-**Parse an EDN** into a `EdnNode`:
+**Parse an EDN** into a `Edn` with `edn!` macro:
 ```rust
 #[macro_use]
 extern crate edn_rs;
@@ -33,6 +33,17 @@ fn main() {
 
         assert_eq!(edn, expected);
 }
+```
+
+To navigate through `Edn` data you can just use `get` and `get_mut`:
+
+```rust
+let edn = edn!([ 1 1.2 3 {false :f nil 3/4}]);
+
+assert_eq!(edn[1], edn!(1.2));
+assert_eq!(edn[1], Edn::Double(1.2f64));
+assert_eq!(edn[3]["false"], edn!(:f));
+assert_eq!(edn[3]["false"], Edn::Key("f".to_string()));
 ```
 
 **Emits EDN** format from a Json file
@@ -68,6 +79,7 @@ fn main() {
     - [x] Maps in general `"{:a 2 :b {:3 \"4\"}}"`, `"{:a 2 :b [:3 \"4\"]}"`
 - [x] Multiple simple data structures in one another (Map and Set in a vector)
 - [x] Multi deepen data structures (Map in a Set in a List in a  Vec in a Vec)
+- [x] Navigate through Edn Data 
 - [ ] Json to Edn
     - [x] Json String to EDN String
     - [ ] macro to process Structs and Enums to EDN

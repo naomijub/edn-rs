@@ -1,5 +1,5 @@
 use std::collections::{HashMap};
-
+use utils::index::Index;
 pub mod utils;
 
 /// `EdnType` is an Enum with possible values for an EDN type
@@ -178,6 +178,10 @@ impl Edn {
             Edn::Bool(_) => None,
             Edn::Nil => None,
         }
+    }
+
+    pub fn get<I: Index>(&self, index: I) -> Option<&Edn> {
+        index.index_into(self)
     }
 }
 
