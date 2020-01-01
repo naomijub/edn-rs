@@ -231,9 +231,11 @@ macro_rules! edn_internal {
         Edn::Map(Map::new(edn_internal!(@seq @map [] $($value)*)))
     };
 
-    ($sy:ident) => {
-        Edn::Symbol(std::stringify!($sy).into())
-    };
+    ($($sy:ident)-+) => {{
+        let s: String = std::stringify!($($sy)+).into();
+        let symbol = s.replace(" ","-");
+        Edn::Symbol(symbol)
+    }};
 
     ($e:expr) => {
         match $crate::edn::utils::Attribute::process(&$e) {

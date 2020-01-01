@@ -20,7 +20,8 @@ mod tests {
         assert_eq!(edn!(true), Edn::Bool(true));
         assert_eq!(edn!(false), Edn::Bool(false));
         assert_eq!(edn!(nil), Edn::Nil);
-        assert_eq!(edn!(shsadc), Edn::Symbol(String::from("shsadc")));
+        assert_eq!(edn!(shsadc-has), Edn::Symbol(String::from("shsadc-has")));
+        assert_eq!(edn!(sym), Edn::Symbol(String::from("sym")));
     }
 
     #[test]
@@ -36,7 +37,7 @@ mod tests {
         let expected = Edn::Vector(
             Vector::new(
                 vec![
-                    Edn::Int(1),
+                    Edn::Symbol("sym".to_string()),
                     Edn::Double(1.2),
                     Edn::Int(3),
                     Edn::Bool(false),
@@ -47,7 +48,7 @@ mod tests {
             )
         );
 
-        assert_eq!(edn!([ 1 1.2 3 false :f nil 3/4]), expected);
+        assert_eq!(edn!([ sym 1.2 3 false :f nil 3/4]), expected);
     }
 
     #[test]

@@ -7,7 +7,7 @@
 `Cargo.toml`
 ```toml
 [dependencies]
-edn-rs = "0.4.1"
+edn-rs = "0.4.3"
 ```
 
 **Parse an EDN** into a `EdnNode`:
@@ -16,11 +16,11 @@ edn-rs = "0.4.1"
 extern crate edn_rs;
 
 fn main() {
-    let edn = edn!((1 1.2 3 false :f nil 3/4));
+    let edn = edn!((sym 1.2 3 false :f nil 3/4));
     let expected = Edn::List(
             List::new(
                 vec![
-                    Edn::Int(1),
+                    Edn::Symbol("sym".to_string()),
                     Edn::Double(1.2),
                     Edn::Int(3),
                     Edn::Bool(false),
@@ -55,6 +55,7 @@ fn main() {
     - [x] String `"\"string\""`
     - [x] Numbers `"324352"`, `"3442.234"`, `"3/4"`
     - [x] Keywords `:a`
+    - [x] Symbol `sym-bol-s`
     - [x] Vector `"[1 :2 \"d\"]"`
     - [x] List `"(1 :2 \"d\")"`
     - [x] Set `"#{1 2 3}"` For now the usage of Set is defined as a `Vec<Edn>`, this is due to the fact that the lib should not be necessarily responsible for assuring the Set's unicity. A solution could be changing the implementation to `HashSet`.
