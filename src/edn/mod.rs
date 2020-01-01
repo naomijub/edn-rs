@@ -94,6 +94,8 @@ impl core::fmt::Display for Map {
     }
 }
 
+impl Eq for Map {}
+
 impl core::fmt::Display for Edn {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let text = match self {

@@ -7,7 +7,7 @@
 /// #[macro_use]
 /// extern crate edn_rs;
 /// 
-/// use edn_rs::edn::{Edn, List, Set};
+/// use edn_rs::edn::{Edn, List, Set, Map};
 ///
 /// fn main() {
 ///     let list = edn!((1 1.2 3 false :f nil 3/4));
@@ -43,6 +43,18 @@
 ///     );
 ///
 ///     assert_eq!(set, expected);
+///     let map = edn!({1.2 false, :b 3/4});
+///     let expected = Edn::Map(
+///         Map::new(
+///             map!{
+///                 String::from("1.2") => Edn::Bool(false),
+///                 // Note `:b` becomes `b`
+///                 String::from("b") => Edn::Rational(String::from("3/4"))
+///             }
+///         )
+///     );
+///
+///     assert_eq!(map, expected);
 /// }
 /// ```
 /// 
@@ -83,7 +95,7 @@ macro_rules! edn_internal {
 
     // this matches an even number of things between square brackets
     (@seq @map [$($key:expr, $val:expr,)*]) => {
-        std::collections::map!{$($key => $val,)*}
+        map!{$(std::format!("{}", $key) => $val),*}
     };
 
     // eat commas with no effect
@@ -168,9 +180,9 @@ macro_rules! edn_internal {
         Edn::Set(Set::new(edn_internal!(@seq @set [] $($value)*)))
     };
 
-    // ( { $($value:tt)* } ) => {
-    //     Edn::Map(Map::new(edn_internal!(@seq @map [] $($value)*)))
-    // };
+    ( { $($value:tt)* } ) => {
+        Edn::Map(Map::new(edn_internal!(@seq @map [] $($value)*)))
+    };
 
     ($e:expr) => {
         match $crate::edn::utils::Attribute::process(&$e) {
@@ -185,18 +197,6 @@ macro_rules! edn_internal {
             el if el.parse::<bool>().is_ok() => Edn::Bool(el.parse::<bool>().unwrap()),
             el => Edn::Str(el)
         }
-    };
-}
-
-
-// The edn_internal macro above cannot invoke vec directly because it uses
-// local_inner_macros. A vec invocation there would resolve to $crate::vec.
-// Instead invoke vec here outside of local_inner_macros.
-#[macro_export]
-#[doc(hidden)]
-macro_rules! edn_internal_vec {
-    ($($content:tt)*) => {
-        vec![$($content)*]
     };
 }
 

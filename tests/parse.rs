@@ -86,4 +86,18 @@ mod tests {
 
         assert_eq!(edn!(#{1 1.2 3 false :f nil 3/4}), expected);
     }
+
+    #[test]
+    fn parse_simple_map() {
+        let expected = Edn::Map(
+            Map::new(
+                map!{
+                    String::from("1.2") => Edn::Bool(false),
+                    String::from("b") => Edn::Rational(String::from("3/4"))
+                }
+            )
+        );
+
+        assert_eq!(edn!({1.2 false, :b 3/4}), expected);
+    }
 }
