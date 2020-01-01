@@ -269,7 +269,7 @@ macro_rules! map(
 );
 
 /// Creates a `HashSet` from a seq of `$x, `
-/// `set!{1, 2, 3, 4}
+/// `set!{1, 2, 3, 4}`
 #[macro_export]
 macro_rules! set {
     ( $( $x:expr ),* ) => { 
