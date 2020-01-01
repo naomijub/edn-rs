@@ -180,8 +180,58 @@ impl Edn {
         }
     }
 
+    /// Index into a EDN vector, list, set or map. A string index can be used to access a
+    /// value in a map, and a usize index can be used to access an element of a
+    /// seqs.
+    ///
+    /// Returns `None` if the type of `self` does not match the type of the
+    /// index, for example if the index is a string and `self` is a seq or a
+    /// number. Also returns `None` if the given key does not exist in the map
+    /// or the given index is not within the bounds of the seq.
+    /// 
+    /// ```rust
+    /// #[macro_use]
+    /// extern crate edn_rs;
+    /// use edn_rs::edn::{Edn, Map, Vector};
+    /// 
+    /// fn main() {
+    ///     let edn = edn!([ 1 1.2 3 {false :f nil 3/4}]);
+    ///
+    ///     assert_eq!(edn[1], edn!(1.2));
+    ///     assert_eq!(edn.get(1).unwrap(), &edn!(1.2));
+    ///     assert_eq!(edn[3]["false"], edn!(:f));
+    ///     assert_eq!(edn[3].get("false").unwrap(), &Edn::Key("f".to_string()));
+    /// }
+    /// ```
     pub fn get<I: Index>(&self, index: I) -> Option<&Edn> {
         index.index_into(self)
+    }
+
+    /// Mutably index into a EDN vector, set, list or map. A string index can be used to
+    /// access a value in a map, and a usize index can be used to access an
+    /// element of a seq.
+    ///
+    /// Returns `None` if the type of `self` does not match the type of the
+    /// index, for example if the index is a string and `self` is a seq or a
+    /// number. Also returns `None` if the given key does not exist in the map
+    /// or the given index is not within the bounds of the seq.
+    /// 
+    /// ```rust
+    /// #[macro_use]
+    /// extern crate edn_rs;
+    /// use edn_rs::edn::{Edn, Map, Vector};
+    /// 
+    /// fn main() {
+    ///     let mut edn = edn!([ 1 1.2 3 {false :f nil 3/4}]);
+    ///
+    ///     assert_eq!(edn[1], edn!(1.2));
+    ///     assert_eq!(edn.get_mut(1).unwrap(), &edn!(1.2));
+    ///     assert_eq!(edn[3]["false"], edn!(:f));
+    ///     assert_eq!(edn[3].get_mut("false").unwrap(), &Edn::Key("f".to_string()));
+    /// }
+    /// ```
+    pub fn get_mut<I: Index>(&mut self, index: I) -> Option<&mut Edn> {
+        index.index_into_mut(self)
     }
 }
 
