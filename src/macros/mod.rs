@@ -99,11 +99,6 @@ macro_rules! edn {
     };
 }
 
-// Rocket relies on this because they export their own `edn!` with a different
-// doc comment than ours, and various Rust bugs prevent them from calling our
-// `edn!` from their `edn!` so they call `edn_internal!` directly. Check with
-// @SergioBenitez before making breaking changes to this macro.
-//
 // Changes are fine as long as `edn_internal!` does not call any new helper
 // macros and can still be invoked as `edn_internal!($($edn)+)`.
 #[macro_export(local_inner_macros)]
@@ -159,11 +154,6 @@ macro_rules! edn_internal {
             ("[","]") => edn_internal!(@seq @$kind [ $($elems,)* edn_internal!(@seq @vec [$($inner_val)*]) , ] $($rest)*),
         }
     }};
-
-    // // vec
-    // (@seq @$kind:ident [$($elems:expr,)* [$($set_val:tt)*]] $($rest:tt)*) => {
-    //     edn_internal!(@seq @$kind [ $($elems,)* edn!(#{$($set_val)*}) , ] $($rest)*)
-    // };
 
     // // set
     // (@seq @$kind:ident [$($elems:expr,)* #{$($set_val:tt)*}] $($rest:tt)*) => {

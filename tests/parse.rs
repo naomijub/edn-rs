@@ -221,11 +221,4 @@ mod tests {
 
         assert_eq!(edn!(( 1 1.2 3 {false {:f :b} nil [3/4 1]})), expected);
     }
-
-    // #[test]
-    // fn edn_navigation() {
-    //     let edn = edn!([ 1 1.2 3 {false :f nil 3/4}]);
-
-    //     assert_eq!(edn[1], 1.2f64)
-    // }
 }
