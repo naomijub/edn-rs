@@ -20,6 +20,7 @@ mod tests {
         assert_eq!(edn!(true), Edn::Bool(true));
         assert_eq!(edn!(false), Edn::Bool(false));
         assert_eq!(edn!(nil), Edn::Nil);
+        assert_eq!(edn!(shsadc), Edn::Symbol(String::from("shsadc")));
     }
 
     #[test]
@@ -219,4 +220,11 @@ mod tests {
 
         assert_eq!(edn!(( 1 1.2 3 {false {:f :b} nil [3/4 1]})), expected);
     }
+
+    // #[test]
+    // fn edn_navigation() {
+    //     let edn = edn!([ 1 1.2 3 {false :f nil 3/4}]);
+
+    //     assert_eq!(edn[1], 1.2f64)
+    // }
 }

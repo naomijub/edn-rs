@@ -231,6 +231,10 @@ macro_rules! edn_internal {
         Edn::Map(Map::new(edn_internal!(@seq @map [] $($value)*)))
     };
 
+    ($sy:ident) => {
+        Edn::Symbol(std::stringify!($sy).into())
+    };
+
     ($e:expr) => {
         match $crate::edn::utils::Attribute::process(&$e) {
             el if el.parse::<i32>().is_ok() => Edn::Int(el.parse::<isize>().unwrap()),
