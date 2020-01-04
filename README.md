@@ -1,5 +1,5 @@
 # edn-rs
-[Maybe-Stable] Crate to parse and emit EDN
+[MAYBE_STABLE] Crate to parse and emit EDN
 * **This lib does not make effort to conform the EDN received to EDN Spec.** The lib that generated this EDN should be responsible for this.
 
 ## Usage
@@ -7,11 +7,12 @@
 `Cargo.toml`
 ```toml
 [dependencies]
-edn-rs = "0.5.0"
+edn-rs = "0.5.1"
 ```
 
 **Parse an EDN** into a `Edn` with `edn!` macro:
 ```rust
+#![recursion_limit="512"]
 #[macro_use]
 extern crate edn_rs;
 
@@ -48,6 +49,7 @@ assert_eq!(edn[3]["false"], Edn::Key("f".to_string()));
 
 **Serializes Rust Types into EDN**
  ```rust
+ #![recursion_limit="512"]
  #[macro_use] extern crate edn_rs;
  
  use std::collections::{HashMap, HashSet};

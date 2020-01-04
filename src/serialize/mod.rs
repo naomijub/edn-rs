@@ -14,30 +14,30 @@
 /// ```
 /// 
 /// Implemented types: 
-/// `
-/// ser_primitives![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool];
-/// ser_vec![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];
-/// ser_vec![Vec<i8>, Vec<i16>, Vec<i32>, Vec<i64>, Vec<isize>, Vec<u8>, Vec<u16>, Vec<u32>, Vec<u64>, Vec<usize>, Vec<f32>, Vec<f64>, Vec<bool>, Vec<String>, Vec<&str>];
-/// ser_hashset![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];
-/// ser_set![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];
-/// ser_list![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];
-/// ser_hashmap![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];
-/// ser_hashmap_str![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];
-/// ser_hashmap![Vec<i8>, Vec<i16>, Vec<i32>, Vec<i64>, Vec<isize>, Vec<u8>, Vec<u16>, Vec<u32>, Vec<u64>, Vec<usize>, Vec<f32>, Vec<f64>, Vec<bool>, Vec<String>, Vec<&str>];
-/// ser_hashmap_str![Vec<i8>, Vec<i16>, Vec<i32>, Vec<i64>, Vec<isize>, Vec<u8>, Vec<u16>, Vec<u32>, Vec<u64>, Vec<usize>, Vec<f32>, Vec<f64>, Vec<bool>, Vec<String>, Vec<&str>];
-/// ser_vec![HashMap<String, i8>, HashMap<String, i16>, HashMap<String, i32>, HashMap<String, i64>, HashMap<String, isize>, HashMap<String, u8>, HashMap<String, u16>, HashMap<String, u32>, HashMap<String, u64>, HashMap<String, usize>, HashMap<String, f32>, HashMap<String, f64>, HashMap<String, bool>, HashMap<String, String>, HashMap<String, &str>];
-/// ser_vec![HashMap<&str, i8>, HashMap<&str, i16>, HashMap<&str, i32>, HashMap<&str, i64>, HashMap<&str, isize>, HashMap<&str, u8>, HashMap<&str, u16>, HashMap<&str, u32>, HashMap<&str, u64>, HashMap<&str, usize>, HashMap<&str, f32>, HashMap<&str, f64>, HashMap<&str, bool>, HashMap<&str, String>, HashMap<&str, &str>];
-/// ser_vec![HashMap<String, Vec<i8>>, HashMap<String, Vec<i16>>, HashMap<String, Vec<i32>>, HashMap<String, Vec<i64>>, HashMap<String, Vec<isize>>, HashMap<String, Vec<u8>>, HashMap<String, Vec<u16>>, HashMap<String, Vec<u32>>, HashMap<String, Vec<u64>>, HashMap<String, Vec<usize>>, HashMap<String, Vec<f32>>, HashMap<String, Vec<f64>>, HashMap<String, Vec<bool>>, HashMap<String, Vec<String>>, HashMap<String, Vec<&str>>];
-/// ser_vec![HashMap<&str, Vec<i8>>, HashMap<&str, Vec<i16>>, HashMap<&str, Vec<i32>>, HashMap<&str, Vec<i64>>, HashMap<&str, Vec<isize>>, HashMap<&str, Vec<u8>>, HashMap<&str, Vec<u16>>, HashMap<&str, Vec<u32>>, HashMap<&str, Vec<u64>>, HashMap<&str, Vec<usize>>, HashMap<&str, Vec<f32>>, HashMap<&str, Vec<f64>>, HashMap<&str, Vec<bool>>, HashMap<&str, Vec<String>>, HashMap<&str, Vec<&str>>];
-/// ser_hashmap![Vec<HashMap<String, i8>>, Vec<HashMap<String, i16>>, Vec<HashMap<String, i32>>, Vec<HashMap<String, i64>>, Vec<HashMap<String, isize>>, Vec<HashMap<String, u8>>, Vec<HashMap<String, u16>>, Vec<HashMap<String, u32>>, Vec<HashMap<String, u64>>, Vec<HashMap<String, usize>>, Vec<HashMap<String, f32>>, Vec<HashMap<String, f64>>, Vec<HashMap<String, bool>>, Vec<HashMap<String, String>>, Vec<HashMap<String, &str>>];
-/// ser_hashmap_str![Vec<HashMap<&str, i8>>, Vec<HashMap<&str, i16>>, Vec<HashMap<&str, i32>>, Vec<HashMap<&str, i64>>, Vec<HashMap<&str, isize>>, Vec<HashMap<&str, u8>>, Vec<HashMap<&str, u16>>, Vec<HashMap<&str, u32>>, Vec<HashMap<&str, u64>>, Vec<HashMap<&str, usize>>, Vec<HashMap<&str, f32>>, Vec<HashMap<&str, f64>>, Vec<HashMap<&str, bool>>, Vec<HashMap<&str, String>>, Vec<HashMap<&str, &str>>];
-/// ser_hashmap![HashMap<String, Vec<i8>>, HashMap<String, Vec<i16>>, HashMap<String, Vec<i32>>, HashMap<String, Vec<i64>>, HashMap<String, Vec<isize>>, HashMap<String, Vec<u8>>, HashMap<String, Vec<u16>>, HashMap<String, Vec<u32>>, HashMap<String, Vec<u64>>, HashMap<String, Vec<usize>>, HashMap<String, Vec<f32>>, HashMap<String, Vec<f64>>, HashMap<String, Vec<bool>>, HashMap<String, Vec<String>>, HashMap<String, Vec<&str>>];
-/// ser_hashmap_str![HashMap<String, Vec<i8>>, HashMap<String, Vec<i16>>, HashMap<String, Vec<i32>>, HashMap<String, Vec<i64>>, HashMap<String, Vec<isize>>, HashMap<String, Vec<u8>>, HashMap<String, Vec<u16>>, HashMap<String, Vec<u32>>, HashMap<String, Vec<u64>>, HashMap<String, Vec<usize>>, HashMap<String, Vec<f32>>, HashMap<String, Vec<f64>>, HashMap<String, Vec<bool>>, HashMap<String, Vec<String>>, HashMap<String, Vec<&str>>];
-/// ser_hashmap![HashSet<i8>, HashSet<i16>, HashSet<i32>, HashSet<i64>, HashSet<isize>, HashSet<u8>, HashSet<u16>, HashSet<u32>, HashSet<u64>, HashSet<usize>, HashSet<f32>, HashSet<f64>, HashSet<bool>, HashSet<String>, HashSet<&str>];
-/// ser_hashmap_str![HashSet<i8>, HashSet<i16>, HashSet<i32>, HashSet<i64>, HashSet<isize>, HashSet<u8>, HashSet<u16>, HashSet<u32>, HashSet<u64>, HashSet<usize>, HashSet<f32>, HashSet<f64>, HashSet<bool>, HashSet<String>, HashSet<&str>];
-/// ser_hashmap![BTreeSet<i8>, BTreeSet<i16>, BTreeSet<i32>, BTreeSet<i64>, BTreeSet<isize>, BTreeSet<u8>, BTreeSet<u16>, BTreeSet<u32>, BTreeSet<u64>, BTreeSet<usize>, BTreeSet<f32>, BTreeSet<f64>, BTreeSet<bool>, BTreeSet<String>, BTreeSet<&str>];
-/// ser_hashmap_str![BTreeSet<i8>, BTreeSet<i16>, BTreeSet<i32>, BTreeSet<i64>, BTreeSet<isize>, BTreeSet<u8>, BTreeSet<u16>, BTreeSet<u32>, BTreeSet<u64>, BTreeSet<usize>, BTreeSet<f32>, BTreeSet<f64>, BTreeSet<bool>, BTreeSet<String>, BTreeSet<&str>];
-/// `
+///
+/// `ser_primitives![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool];`
+/// `ser_vec![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];`
+/// `ser_vec![Vec<i8>, Vec<i16>, Vec<i32>, Vec<i64>, Vec<isize>, Vec<u8>, Vec<u16>, Vec<u32>, Vec<u64>, Vec<usize>, Vec<f32>, Vec<f64>, Vec<bool>, Vec<String>, Vec<&str>];`
+/// `ser_hashset![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];`
+/// `ser_set![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];`
+/// `ser_list![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];`
+/// `ser_hashmap![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];`
+/// `ser_hashmap_str![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];`
+/// `ser_hashmap![Vec<i8>, Vec<i16>, Vec<i32>, Vec<i64>, Vec<isize>, Vec<u8>, Vec<u16>, Vec<u32>, Vec<u64>, Vec<usize>, Vec<f32>, Vec<f64>, Vec<bool>, Vec<String>, Vec<&str>];`
+/// `ser_hashmap_str![Vec<i8>, Vec<i16>, Vec<i32>, Vec<i64>, Vec<isize>, Vec<u8>, Vec<u16>, Vec<u32>, Vec<u64>, Vec<usize>, Vec<f32>, Vec<f64>, Vec<bool>, Vec<String>, Vec<&str>];`
+/// `ser_vec![HashMap<String, i8>, HashMap<String, i16>, HashMap<String, i32>, HashMap<String, i64>, HashMap<String, isize>, HashMap<String, u8>, HashMap<String, u16>, HashMap<String, u32>, HashMap<String, u64>, HashMap<String, usize>, HashMap<String, f32>, HashMap<String, f64>, HashMap<String, bool>, HashMap<String, String>, HashMap<String, &str>];`
+/// `ser_vec![HashMap<&str, i8>, HashMap<&str, i16>, HashMap<&str, i32>, HashMap<&str, i64>, HashMap<&str, isize>, HashMap<&str, u8>, HashMap<&str, u16>, HashMap<&str, u32>, HashMap<&str, u64>, HashMap<&str, usize>, HashMap<&str, f32>, HashMap<&str, f64>, HashMap<&str, bool>, HashMap<&str, String>, HashMap<&str, &str>];`
+/// `ser_vec![HashMap<String, Vec<i8>>, HashMap<String, Vec<i16>>, HashMap<String, Vec<i32>>, HashMap<String, Vec<i64>>, HashMap<String, Vec<isize>>, HashMap<String, Vec<u8>>, HashMap<String, Vec<u16>>, HashMap<String, Vec<u32>>, HashMap<String, Vec<u64>>, HashMap<String, Vec<usize>>, HashMap<String, Vec<f32>>, HashMap<String, Vec<f64>>, HashMap<String, Vec<bool>>, HashMap<String, Vec<String>>, HashMap<String, Vec<&str>>];`
+/// `ser_vec![HashMap<&str, Vec<i8>>, HashMap<&str, Vec<i16>>, HashMap<&str, Vec<i32>>, HashMap<&str, Vec<i64>>, HashMap<&str, Vec<isize>>, HashMap<&str, Vec<u8>>, HashMap<&str, Vec<u16>>, HashMap<&str, Vec<u32>>, HashMap<&str, Vec<u64>>, HashMap<&str, Vec<usize>>, HashMap<&str, Vec<f32>>, HashMap<&str, Vec<f64>>, HashMap<&str, Vec<bool>>, HashMap<&str, Vec<String>>, HashMap<&str, Vec<&str>>];`
+/// `ser_hashmap![Vec<HashMap<String, i8>>, Vec<HashMap<String, i16>>, Vec<HashMap<String, i32>>, Vec<HashMap<String, i64>>, Vec<HashMap<String, isize>>, Vec<HashMap<String, u8>>, Vec<HashMap<String, u16>>, Vec<HashMap<String, u32>>, Vec<HashMap<String, u64>>, Vec<HashMap<String, usize>>, Vec<HashMap<String, f32>>, Vec<HashMap<String, f64>>, Vec<HashMap<String, bool>>, Vec<HashMap<String, String>>, Vec<HashMap<String, &str>>];`
+/// `ser_hashmap_str![Vec<HashMap<&str, i8>>, Vec<HashMap<&str, i16>>, Vec<HashMap<&str, i32>>, Vec<HashMap<&str, i64>>, Vec<HashMap<&str, isize>>, Vec<HashMap<&str, u8>>, Vec<HashMap<&str, u16>>, Vec<HashMap<&str, u32>>, Vec<HashMap<&str, u64>>, Vec<HashMap<&str, usize>>, Vec<HashMap<&str, f32>>, Vec<HashMap<&str, f64>>, Vec<HashMap<&str, bool>>, Vec<HashMap<&str, String>>, Vec<HashMap<&str, &str>>];`
+/// `ser_hashmap![HashMap<String, Vec<i8>>, HashMap<String, Vec<i16>>, HashMap<String, Vec<i32>>, HashMap<String, Vec<i64>>, HashMap<String, Vec<isize>>, HashMap<String, Vec<u8>>, HashMap<String, Vec<u16>>, HashMap<String, Vec<u32>>, HashMap<String, Vec<u64>>, HashMap<String, Vec<usize>>, HashMap<String, Vec<f32>>, HashMap<String, Vec<f64>>, HashMap<String, Vec<bool>>, HashMap<String, Vec<String>>, HashMap<String, Vec<&str>>];`
+/// `ser_hashmap_str![HashMap<String, Vec<i8>>, HashMap<String, Vec<i16>>, HashMap<String, Vec<i32>>, HashMap<String, Vec<i64>>, HashMap<String, Vec<isize>>, HashMap<String, Vec<u8>>, HashMap<String, Vec<u16>>, HashMap<String, Vec<u32>>, HashMap<String, Vec<u64>>, HashMap<String, Vec<usize>>, HashMap<String, Vec<f32>>, HashMap<String, Vec<f64>>, HashMap<String, Vec<bool>>, HashMap<String, Vec<String>>, HashMap<String, Vec<&str>>];`
+/// `ser_hashmap![HashSet<i8>, HashSet<i16>, HashSet<i32>, HashSet<i64>, HashSet<isize>, HashSet<u8>, HashSet<u16>, HashSet<u32>, HashSet<u64>, HashSet<usize>, HashSet<f32>, HashSet<f64>, HashSet<bool>, HashSet<String>, HashSet<&str>];`
+/// `ser_hashmap_str![HashSet<i8>, HashSet<i16>, HashSet<i32>, HashSet<i64>, HashSet<isize>, HashSet<u8>, HashSet<u16>, HashSet<u32>, HashSet<u64>, HashSet<usize>, HashSet<f32>, HashSet<f64>, HashSet<bool>, HashSet<String>, HashSet<&str>];`
+/// `ser_hashmap![BTreeSet<i8>, BTreeSet<i16>, BTreeSet<i32>, BTreeSet<i64>, BTreeSet<isize>, BTreeSet<u8>, BTreeSet<u16>, BTreeSet<u32>, BTreeSet<u64>, BTreeSet<usize>, BTreeSet<f32>, BTreeSet<f64>, BTreeSet<bool>, BTreeSet<String>, BTreeSet<&str>];`
+/// `ser_hashmap_str![BTreeSet<i8>, BTreeSet<i16>, BTreeSet<i32>, BTreeSet<i64>, BTreeSet<isize>, BTreeSet<u8>, BTreeSet<u16>, BTreeSet<u32>, BTreeSet<u64>, BTreeSet<usize>, BTreeSet<f32>, BTreeSet<f64>, BTreeSet<bool>, BTreeSet<String>, BTreeSet<&str>];`
+/// 
 pub trait Serialize {
     fn serialize(self) -> String;
 }
