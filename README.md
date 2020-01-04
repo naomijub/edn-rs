@@ -7,7 +7,7 @@
 `Cargo.toml`
 ```toml
 [dependencies]
-edn-rs = "0.4.5"
+edn-rs = "0.5.0"
 ```
 
 **Parse an EDN** into a `Edn` with `edn!` macro:
@@ -46,6 +46,32 @@ assert_eq!(edn[3]["false"], edn!(:f));
 assert_eq!(edn[3]["false"], Edn::Key("f".to_string()));
 ```
 
+**Serializes Rust Types into EDN**
+ ```rust
+ #[macro_use] extern crate edn_rs;
+ 
+ use std::collections::{HashMap, HashSet};
+ use crate::edn_rs::serialize::Serialize;
+ 
+ fn main() {
+     ser_struct!{
+         #[derive(Debug)]
+         struct Edn {
+             map: HashMap<String, Vec<String>>,
+             set: HashSet<i64>,
+             tuples: (i32, bool, char),
+         }
+     };
+     let edn = Edn {
+         map: map!{"this is a key".to_string() => vec!["with".to_string(), "many".to_string(), "keys".to_string()]},
+         set: set!{3i64, 4i64, 5i64},
+         tuples: (3i32, true, 'd')
+     };
+     println!("{}",edn.serialize());
+     // { :map {:this-is-a-key ["with", "many", "keys"]}, :set #{3, 4, 5}, :tuples (3, true, \d), }
+ }
+```
+
 **Emits EDN** format from a Json file
  ```rust
  use edn_rs::emit_edn;
@@ -80,7 +106,7 @@ assert_eq!(edn[3]["false"], Edn::Key("f".to_string()));
 - [x] Multiple simple data structures in one another (Map and Set in a vector)
 - [x] Multi deepen data structures (Map in a Set in a List in a  Vec in a Vec)
 - [x] Navigate through Edn Data 
-- [ ] Json to Edn
+- [x] Json to Edn
     - [x] Json String to EDN String
-    - [ ] macro to process Structs and Enums to EDN
+    - [x] macro to process Structs and Enums to EDN
 - [ ] Edn to Json
