@@ -7,7 +7,7 @@
 `Cargo.toml`
 ```toml
 [dependencies]
-edn-rs = "0.5.1"
+edn-rs = "0.5.2"
 ```
 
 **Parse an EDN** into a `Edn` with `edn!` macro:

@@ -9,7 +9,7 @@ extern crate regex;
 pub mod edn;
 
 /// Serialization module for most possible types.
-/// Tuples are limited between (A, B) and (A, B, C, D, E, F), any other tuple needs to be implemented by the `trait Serialize`.
+/// Tuples are limited between `(A, B)` and `(A, B, C, D, E, F)`, any other tuple needs to be implemented by the `trait Serialize`.
 /// This module requires `#[macro_use]` for `structs`.
 ///
 /// Example: 
