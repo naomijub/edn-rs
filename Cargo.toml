@@ -13,3 +13,4 @@ edition = "2018"
 
 [dependencies]
 regex = "1"
+serde = "1.0.104"
