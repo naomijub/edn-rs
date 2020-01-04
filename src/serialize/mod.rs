@@ -42,6 +42,19 @@ pub trait Serialize {
     fn serialize(self) -> String;
 }
 
+pub fn field_names(id: Vec<String>) -> std::collections::HashMap<String, String> {
+    let mut hashmap = std::collections::HashMap::new();
+    for i in id.into_iter() {  
+        let mut value = format!("{}", i).replace("_","-");
+        value.insert(0, ':');
+        hashmap.insert(
+            format!("{}",i), 
+            value
+        );
+    }
+    hashmap
+}
+
 macro_rules! ser_primitives {
     ( $( $name:ty ),+ ) => {
         $(
@@ -290,35 +303,43 @@ ser_hashmap_str![BTreeSet<i8>, BTreeSet<i16>, BTreeSet<i32>, BTreeSet<i64>, BTre
 ///     }
 ///     let foo  = Foo { foo: 1, bar: String::from("blahb"), boz: 'c'};
 ///
-///     assert_eq!(foo.serialize(), "{ :foo 1, :bar \"blahb\", :boz \\c }");
+///     assert_eq!(foo.serialize(), "{ :foo 1, :bar \"blahb\", :boz \\c, }");
 /// }
 /// ```
+/// **PLEASE USE `#[derive(Debug)]` for now**
 #[macro_export]
 macro_rules! ser_struct {
     (@gen () -> {$(#[$attr:meta])* struct $name:ident $(($id:ident: $ty:ty))*}) => {
         $(#[$attr])* struct $name { $($id: $ty),* }
-        
+
         impl Serialize for $name {
             fn serialize(self) -> String {
-                let f_edn = format!("{:?}", self);
-                let edn = $crate::edn::utils::replace_char(
-                    $crate::edn::utils::replace_inner_keywords(
-                        f_edn.chars()
-                            .skip_while(|c| c != &'{')
-                            .collect::<String>()
-                ));
-                edn
+                let mut s = String::new();
+                let mut v = Vec::new();
+                $(
+                    v.push(format!("{}", stringify!($id)));
+                )*
+                let hm_field_names = $crate::serialize::field_names(v);
+                s.push_str("{ ");
+                $(
+                    s.push_str(&hm_field_names.get(&format!("{}", stringify!($id))).expect("fails to parse field name"));
+                    s.push_str(" ");
+                    s.push_str(&self.$id.serialize());
+                    s.push_str(", ");
+                )*
+                s.push_str("}");
+                s
             }
         }
     };
     
     // last field
-    (@gen ($id:ident: $ty:ty) -> {$($output:tt)*}) => {
+    (@gen ($id:tt: $ty:ty) -> {$($output:tt)*}) => {
         ser_struct!(@gen () -> {$($output)* ($id: $ty)});
     };
     
     // next field 
-    (@gen ($id:ident: $ty:ty, $($next:tt)*) -> {$($output:tt)*}) => {
+    (@gen ($id:tt: $ty:ty, $($next:tt)*) -> {$($output:tt)*}) => {
         ser_struct!(@gen ($($next)*) -> {$($output)* ($id: $ty)});
     };
     
@@ -357,7 +378,7 @@ fn basic_struct_ser() {
     }
     let actual  = Foo { foo: 1, bar: String::from("blahb"), boz: 'c'};
 
-    assert_eq!(actual.serialize(), "{ :foo 1, :bar \"blahb\", :boz \\c }");
+    assert_eq!(actual.serialize(), "{ :foo 1, :bar \"blahb\", :boz \\c, }");
 }
 
 #[test]

@@ -3,11 +3,39 @@
 #[macro_use]
 pub mod macros;
 
-#[macro_use] extern crate serde;
 #[cfg(feature = "preserve_order")]
 extern crate regex;
 
 pub mod edn;
+
+/// Serialization module for most possible types.
+/// Tuples are limited between (A, B) and (A, B, C, D, E, F), any other tuple needs to be implemented by the `trait Serialize`.
+/// This module requires `#[macro_use]` for `structs`.
+/// Example: 
+/// ```rust
+/// #[macro_use] extern crate edn_rs;
+/// 
+/// use std::collections::{HashMap, HashSet};
+/// use crate::edn_rs::serialize::Serialize;
+/// 
+/// fn main() {
+///     ser_struct!{
+///         #[derive(Debug)]
+///         struct Edn {
+///             map: HashMap<String, Vec<String>>,
+///             set: HashSet<i64>,
+///             tuples: (i32, bool, char),
+///         }
+///     };
+///     let edn = Edn {
+///         map: map!{"this is a key".to_string() => vec!["with".to_string(), "many".to_string(), "keys".to_string()]},
+///         set: set!{3i64, 4i64, 5i64},
+///         tuples: (3i32, true, 'd')
+///     };
+///     println!("{}",edn.serialize());
+///     // { :map {:this-is-a-key ["with", "many", "keys"]}, :set #{3, 4, 5}, :tuples (3, true, \d), }
+/// }
+///```
 pub mod serialize;
 
 use edn::{utils::{replace_keywords, replace_char}};
