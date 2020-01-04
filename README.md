@@ -1,5 +1,5 @@
 # edn-rs
-[Experimental] Crate to parse and emit EDN
+[Maybe-Stable] Crate to parse and emit EDN
 * **This lib does not make effort to conform the EDN received to EDN Spec.** The lib that generated this EDN should be responsible for this.
 
 ## Usage
