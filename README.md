@@ -1,5 +1,6 @@
 # edn-rs
-[MAYBE_STABLE] Crate to parse and emit EDN
+
+Crate to parse and emit EDN [![Build Status](https://travis-ci.org/naomijub/edn-rs.svg?branch=master)](https://travis-ci.org/naomijub/edn-rs)
 * **This lib does not make effort to conform the EDN received to EDN Spec.** The lib that generated this EDN should be responsible for this.
 
 ## Usage
