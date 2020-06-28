@@ -143,7 +143,7 @@ impl Edn {
             Edn::Int(i) => to_double(i).ok(),
             Edn::UInt(u) => to_double(u).ok(),
             Edn::Double(d) => Some(d.to_owned()),
-            Edn::Rational(r) => rational_to_double(r.to_owned()),
+            Edn::Rational(r) => rational_to_double(&r),
             Edn::Bool(_) => None,
             Edn::Nil => None,
         }
@@ -174,7 +174,7 @@ impl Edn {
             Edn::Int(i) => Some(i.to_owned()),
             Edn::UInt(_) => None,
             Edn::Double(d) => Some(d.to_owned().round() as isize),
-            Edn::Rational(r) => Some(rational_to_double(r.to_owned()).unwrap_or(0f64).round() as isize),
+            Edn::Rational(r) => Some(rational_to_double(&r).unwrap_or(0f64).round() as isize),
             Edn::Bool(_) => None,
             Edn::Nil => None,
         }
@@ -240,7 +240,7 @@ fn to_double<T>(i: T) -> Result<f64,std::num::ParseFloatError>
     format!("{:?}", i).parse::<f64>()
 }
 
-fn rational_to_double(r: String) -> Option<f64> {
+fn rational_to_double(r: &str) -> Option<f64> {
     if r.split('/').count() == 2 {
         let vals = r.split('/')
             .map(ToString::to_string)
@@ -254,10 +254,10 @@ fn rational_to_double(r: String) -> Option<f64> {
 
 #[test]
 fn parses_rationals() {
-    assert_eq!(rational_to_double(String::from("3/4")).unwrap(), 0.75f64);
-    assert_eq!(rational_to_double(String::from("25/5")).unwrap(), 5f64);
-    assert_eq!(rational_to_double(String::from("15/4")).unwrap(), 3.75f64);
-    assert_eq!(rational_to_double(String::from("3 4")), None);
-    assert_eq!(rational_to_double(String::from("3/4/5")), None);
-    assert_eq!(rational_to_double(String::from("text/moretext")), None);
+    assert_eq!(rational_to_double("3/4").unwrap(), 0.75f64);
+    assert_eq!(rational_to_double("25/5").unwrap(), 5f64);
+    assert_eq!(rational_to_double("15/4").unwrap(), 3.75f64);
+    assert_eq!(rational_to_double("3 4"), None);
+    assert_eq!(rational_to_double("3/4/5"), None);
+    assert_eq!(rational_to_double("text/moretext"), None);
 }
