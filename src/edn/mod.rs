@@ -241,13 +241,15 @@ fn to_double<T>(i: T) -> Result<f64,std::num::ParseFloatError>
 }
 
 fn rational_to_double(r: String) -> Option<f64> {
-    match r {
-        s if s.split("/").collect::<Vec<&str>>().len() == 2 => {
-            let vals = s.split("/").map(|i| i.to_string()).map(|v| v.parse::<f64>().unwrap()).collect::<Vec<f64>>();
-            Some(vals[0] / vals[1])
-        },
-        _ => None
+    if r.split('/').count() == 2 {
+        let vals = r.split('/')
+            .map(ToString::to_string)
+            .map(|v| v.parse::<f64>())
+            .map(Result::ok)
+            .collect::<Option<Vec<f64>>>()?;
+        return Some(vals[0] / vals[1]);
     }
+    None
 }
 
 #[test]
@@ -257,4 +259,5 @@ fn parses_rationals() {
     assert_eq!(rational_to_double(String::from("15/4")).unwrap(), 3.75f64);
     assert_eq!(rational_to_double(String::from("3 4")), None);
     assert_eq!(rational_to_double(String::from("3/4/5")), None);
+    assert_eq!(rational_to_double(String::from("text/moretext")), None);
 }
