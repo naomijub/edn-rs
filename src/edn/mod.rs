@@ -138,10 +138,10 @@ impl Edn {
             Edn::Map(_) => None,
             Edn::List(_) => None,
             Edn::Symbol(_) => None,
-            Edn::Key(k) => match_parse(k.parse::<f64>()),
-            Edn::Str(s) => match_parse(s.parse::<f64>()),
-            Edn::Int(i) => match_parse(to_double(i)),
-            Edn::UInt(u) => match_parse(to_double(u)),
+            Edn::Key(k) => k.parse::<f64>().ok(),
+            Edn::Str(s) => s.parse::<f64>().ok(),
+            Edn::Int(i) => to_double(i).ok(),
+            Edn::UInt(u) => to_double(u).ok(),
             Edn::Double(d) => Some(d.to_owned()),
             Edn::Rational(r) => rational_to_double(r.to_owned()),
             Edn::Bool(_) => None,
@@ -169,8 +169,8 @@ impl Edn {
             Edn::Map(_) => None,
             Edn::List(_) => None,
             Edn::Symbol(_) => None,
-            Edn::Key(k) => match_parse(k.parse::<isize>()),
-            Edn::Str(s) => match_parse(s.parse::<isize>()),
+            Edn::Key(k) => k.parse::<isize>().ok(),
+            Edn::Str(s) => s.parse::<isize>().ok(),
             Edn::Int(i) => Some(i.to_owned()),
             Edn::UInt(_) => None,
             Edn::Double(d) => Some(d.to_owned().round() as isize),
@@ -247,13 +247,6 @@ fn rational_to_double(r: String) -> Option<f64> {
             Some(vals[0] / vals[1])
         },
         _ => None
-    }
-}
-
-fn match_parse<T,E>(f: Result<T,E>) -> Option<T> {
-    match f {
-        Ok(val) => Some(val),
-        Err(_) => None
     }
 }
 
