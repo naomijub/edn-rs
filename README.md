@@ -8,7 +8,7 @@ Crate to parse and emit EDN [![Build Status](https://travis-ci.org/naomijub/edn-
 `Cargo.toml`
 ```toml
 [dependencies]
-edn-rs = "0.5.2"
+edn-rs = "0.5.3"
 ```
 
 **Parse an EDN** into a `Edn` with `edn!` macro:
