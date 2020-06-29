@@ -20,20 +20,20 @@ extern crate edn_rs;
 fn main() {
     let edn = edn!((sym 1.2 3 false :f nil 3/4));
     let expected = Edn::List(
-            List::new(
-                vec![
-                    Edn::Symbol("sym".to_string()),
-                    Edn::Double(1.2),
-                    Edn::Int(3),
-                    Edn::Bool(false),
-                    Edn::Key("f".to_string()),
-                    Edn::Nil,
-                    Edn::Rational("3/4".to_string())
-                ]
-            )
-        );
+        List::new(
+            vec![
+                Edn::Symbol("sym".to_string()),
+                Edn::Double(1.2),
+                Edn::Int(3),
+                Edn::Bool(false),
+                Edn::Key("f".to_string()),
+                Edn::Nil,
+                Edn::Rational("3/4".to_string())
+            ]
+        )
+    );
 
-        assert_eq!(edn, expected);
+    assert_eq!(edn, expected);
 }
 ```
 

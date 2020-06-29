@@ -138,12 +138,12 @@ impl Edn {
             Edn::Map(_) => None,
             Edn::List(_) => None,
             Edn::Symbol(_) => None,
-            Edn::Key(k) => match_parse(k.parse::<f64>()),
-            Edn::Str(s) => match_parse(s.parse::<f64>()),
-            Edn::Int(i) => match_parse(to_double(i)),
-            Edn::UInt(u) => match_parse(to_double(u)),
+            Edn::Key(k) => k.parse::<f64>().ok(),
+            Edn::Str(s) => s.parse::<f64>().ok(),
+            Edn::Int(i) => to_double(i).ok(),
+            Edn::UInt(u) => to_double(u).ok(),
             Edn::Double(d) => Some(d.to_owned()),
-            Edn::Rational(r) => rational_to_double(r.to_owned()),
+            Edn::Rational(r) => rational_to_double(&r),
             Edn::Bool(_) => None,
             Edn::Nil => None,
         }
@@ -169,12 +169,12 @@ impl Edn {
             Edn::Map(_) => None,
             Edn::List(_) => None,
             Edn::Symbol(_) => None,
-            Edn::Key(k) => match_parse(k.parse::<isize>()),
-            Edn::Str(s) => match_parse(s.parse::<isize>()),
+            Edn::Key(k) => k.parse::<isize>().ok(),
+            Edn::Str(s) => s.parse::<isize>().ok(),
             Edn::Int(i) => Some(i.to_owned()),
             Edn::UInt(_) => None,
             Edn::Double(d) => Some(d.to_owned().round() as isize),
-            Edn::Rational(r) => Some(rational_to_double(r.to_owned()).unwrap_or(0f64).round() as isize),
+            Edn::Rational(r) => Some(rational_to_double(&r).unwrap_or(0f64).round() as isize),
             Edn::Bool(_) => None,
             Edn::Nil => None,
         }
@@ -240,28 +240,24 @@ fn to_double<T>(i: T) -> Result<f64,std::num::ParseFloatError>
     format!("{:?}", i).parse::<f64>()
 }
 
-fn rational_to_double(r: String) -> Option<f64> {
-    match r {
-        s if s.split("/").collect::<Vec<&str>>().len() == 2 => {
-            let vals = s.split("/").map(|i| i.to_string()).map(|v| v.parse::<f64>().unwrap()).collect::<Vec<f64>>();
-            Some(vals[0] / vals[1])
-        },
-        _ => None
+fn rational_to_double(r: &str) -> Option<f64> {
+    if r.split('/').count() == 2 {
+        let vals = r.split('/')
+            .map(ToString::to_string)
+            .map(|v| v.parse::<f64>())
+            .map(Result::ok)
+            .collect::<Option<Vec<f64>>>()?;
+        return Some(vals[0] / vals[1]);
     }
-}
-
-fn match_parse<T,E>(f: Result<T,E>) -> Option<T> {
-    match f {
-        Ok(val) => Some(val),
-        Err(_) => None
-    }
+    None
 }
 
 #[test]
 fn parses_rationals() {
-    assert_eq!(rational_to_double(String::from("3/4")).unwrap(), 0.75f64);
-    assert_eq!(rational_to_double(String::from("25/5")).unwrap(), 5f64);
-    assert_eq!(rational_to_double(String::from("15/4")).unwrap(), 3.75f64);
-    assert_eq!(rational_to_double(String::from("3 4")), None);
-    assert_eq!(rational_to_double(String::from("3/4/5")), None);
+    assert_eq!(rational_to_double("3/4").unwrap(), 0.75f64);
+    assert_eq!(rational_to_double("25/5").unwrap(), 5f64);
+    assert_eq!(rational_to_double("15/4").unwrap(), 3.75f64);
+    assert_eq!(rational_to_double("3 4"), None);
+    assert_eq!(rational_to_double("3/4/5"), None);
+    assert_eq!(rational_to_double("text/moretext"), None);
 }
