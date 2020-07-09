@@ -124,6 +124,7 @@ impl<'a> fmt::Display for Type<'a> {
             Edn::Symbol(_) => formatter.write_str("symbol"),
             Edn::Double(_) => formatter.write_str("double"),
             Edn::Rational(_) => formatter.write_str("rational"),
+            Edn::Char(_) => formatter.write_str("char"),
         }
     }
 }

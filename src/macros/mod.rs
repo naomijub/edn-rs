@@ -244,6 +244,11 @@ macro_rules! edn_internal {
         Edn::Symbol(symbol)
     }};
 
+    // The EDN char format is `\c` for type char `'c'`, but Rust doesn't allow this pattern in macro_rules
+    // (\$c:tt) => {
+    //     Edn::Char($c)
+    // };
+
     ($e:expr) => {
         match $crate::edn::utils::Attribute::process(&$e) {
             el if el.parse::<i32>().is_ok() => Edn::Int(el.parse::<isize>().unwrap()),

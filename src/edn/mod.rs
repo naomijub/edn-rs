@@ -17,7 +17,7 @@ pub enum Edn {
     UInt(usize),
     Double(f64),
     Rational(String),
-    // Char(char),
+    Char(char),
     Bool(bool),
     Nil,
 }
@@ -112,6 +112,7 @@ impl core::fmt::Display for Edn {
             Edn::Rational(r) => r.to_string(),
             Edn::Bool(b) => format!("{}", b),
             Edn::Nil => String::from("nil"),
+            Edn::Char(c) => format!("\\{}", c),
         };
         write!(f, "{}", text)
     }
@@ -146,6 +147,7 @@ impl Edn {
             Edn::Rational(r) => rational_to_double(&r),
             Edn::Bool(_) => None,
             Edn::Nil => None,
+            Edn::Char(_) => None,
         }
     }
 
@@ -177,6 +179,7 @@ impl Edn {
             Edn::Rational(r) => Some(rational_to_double(&r).unwrap_or(0f64).round() as isize),
             Edn::Bool(_) => None,
             Edn::Nil => None,
+            Edn::Char(_) => None,
         }
     }
 

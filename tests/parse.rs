@@ -11,6 +11,11 @@ mod tests {
     };
 
     #[test]
+    fn parse_char() {
+        assert_eq!(edn!(\c), Edn::Char('c'))
+    }
+
+    #[test]
     fn parse_primitive_types() {
         assert_eq!(edn!(1), Edn::Int(1));
         assert_eq!(edn!(12.5), Edn::Double(12.5));

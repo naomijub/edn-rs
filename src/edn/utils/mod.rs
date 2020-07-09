@@ -107,3 +107,9 @@ impl Attribute for bool {
         format!("{}",self.to_owned())
     }
 }
+
+impl Attribute for char {
+    fn process(&self) -> String {
+        format!("\\{}",self.to_owned())
+    }
+}
