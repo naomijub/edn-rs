@@ -353,6 +353,7 @@ macro_rules! ser_struct {
 fn primitive_types() {
     let i = - 34i32;
     assert_eq!(i.serialize(), String::from("-34"));
+    assert_eq!('c'.serialize(), String::from("\\c"));
     assert_eq!(8i8.serialize(), String::from("8"));
     assert_eq!(8i16.serialize(), String::from("8"));
     assert_eq!(8i32.serialize(), String::from("8"));
