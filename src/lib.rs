@@ -38,6 +38,7 @@ pub mod edn;
 /// }
 ///```
 pub mod serialize;
+pub mod deserialize;
 
 use edn::{utils::{replace_keywords, replace_char}};
 
@@ -70,3 +71,7 @@ pub fn json_to_edn(json: String) -> String {
     let edn = replace_char(edn_aux);
     edn.replace("null","nil")
 }
+
+/// Exported modeules:
+/// regex = "1"
+pub (crate) use regex;
