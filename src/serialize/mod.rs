@@ -14,8 +14,8 @@
 /// ```
 /// 
 /// Implemented types: 
-///
-/// `ser_primitives![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool];`
+/// `String, &str, char` and `Options`
+/// `ser_primitives![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool];` and `Options`
 /// `ser_vec![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];`
 /// `ser_vec![Vec<i8>, Vec<i16>, Vec<i32>, Vec<i64>, Vec<isize>, Vec<u8>, Vec<u16>, Vec<u32>, Vec<u64>, Vec<usize>, Vec<f32>, Vec<f64>, Vec<bool>, Vec<String>, Vec<&str>];`
 /// `ser_hashset![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];`
@@ -62,6 +62,23 @@ macro_rules! ser_primitives {
             {
                 fn serialize(self) -> String {
                     format!("{:?}", self)
+                }
+            }
+        )+
+    };
+}
+
+macro_rules! ser_option_primitives {
+    ( $( $name:ty ),+ ) => {
+        $(
+            impl Serialize for $name
+            {
+                fn serialize(self) -> String {
+                    if let Some(v) = self {
+                        format!("{:?}", v)
+                    } else {
+                        String::from("nil")
+                    }
                 }
             }
         )+
@@ -190,6 +207,8 @@ macro_rules! ser_hashmap_str {
 
 // Primitive Types
 ser_primitives![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool];
+ser_option_primitives![Option<i8>, Option<i16>, Option<i32>, Option<i64>, Option<isize>, Option<u8>, Option<u16>, 
+    Option<u32>, Option<u64>, Option<usize>, Option<f32>, Option<f64>, Option<bool>];
 
 impl Serialize for String {
     fn serialize(self) -> String {
@@ -206,6 +225,36 @@ impl Serialize for &str {
 impl Serialize for char {
     fn serialize(self) -> String {
         format!("\\{}", self)
+    }
+}
+
+impl Serialize for Option<String> {
+    fn serialize(self) -> String {
+        if let Some(v) = self {
+            format!("{:?}", v)
+        } else {
+            String::from("nil")
+        }
+    }
+}
+
+impl Serialize for Option<&str> {
+    fn serialize(self) -> String {
+        if let Some(v) = self {
+            format!("{:?}", v)
+        } else {
+            String::from("nil")
+        }
+    }
+}
+
+impl Serialize for Option<char> {
+    fn serialize(self) -> String {
+        if let Some(v) = self {
+            format!("{:?}", v)
+        } else {
+            String::from("nil")
+        }
     }
 }
 
@@ -332,12 +381,36 @@ macro_rules! ser_struct {
             }
         }
     };
+
+    (@gen () -> {$(#[$attr:meta])* pub struct $name:ident $(($id:ident: $ty:ty))*}) => {
+        $(#[$attr])* pub struct $name { $($id: $ty),* }
+
+        impl Serialize for $name {
+            fn serialize(self) -> String {
+                let mut s = String::new();
+                let mut v = Vec::new();
+                $(
+                    v.push(format!("{}", stringify!($id)));
+                )*
+                let hm_field_names = $crate::serialize::field_names(v);
+                s.push_str("{ ");
+                $(
+                    s.push_str(&hm_field_names.get(&format!("{}", stringify!($id))).expect("fails to parse field name"));
+                    s.push_str(" ");
+                    s.push_str(&self.$id.serialize());
+                    s.push_str(", ");
+                )*
+                s.push_str("}");
+                s
+            }
+        }
+    };
     
     // last field
     (@gen ($id:tt: $ty:ty) -> {$($output:tt)*}) => {
         ser_struct!(@gen () -> {$($output)* ($id: $ty)});
     };
-    
+
     // next field 
     (@gen ($id:tt: $ty:ty, $($next:tt)*) -> {$($output:tt)*}) => {
         ser_struct!(@gen ($($next)*) -> {$($output)* ($id: $ty)});
@@ -346,7 +419,12 @@ macro_rules! ser_struct {
     // entry point 
     ($(#[$attr:meta])* struct $name:ident { $($input:tt)*} ) => {
         ser_struct!(@gen ($($input)*) -> {$(#[$attr])* struct $name});
-    }
+    };
+
+     // pub
+     ($(#[$attr:meta])* pub struct $name:ident { $($input:tt)*} ) => {
+        ser_struct!(@gen ($($input)*) -> {$(#[$attr])* pub struct $name});
+    };
 }
 
 #[test]
@@ -487,4 +565,19 @@ fn hashmap() {
     assert!(m_i64.contains(":hello-world 5") && m_i64.contains(":bye-bye 125") && m_i64.contains("{") && m_i64.contains("}"));
     assert!(m_bool.contains(":hello-world true") && m_bool.contains(":bye-bye false") && m_bool.contains("{") && m_bool.contains("}"));
     assert!(m_str.contains(":hello-world \"this is str 1\"") && m_str.contains(":bye-bye \"this is str 2\"") && m_str.contains("{") && m_str.contains("}"));
+}
+
+#[test]
+fn out_pub_struct_ser() {
+    ser_struct! {
+        #[derive(Debug)]
+        pub struct Foo {
+            foo: i32,
+            bar: String,
+            boz: char
+        }
+    }
+    let actual  = Foo { foo: 1, bar: String::from("blahb"), boz: 'c'};
+
+    assert_eq!(actual.serialize(), "{ :foo 1, :bar \"blahb\", :boz \\c, }");
 }

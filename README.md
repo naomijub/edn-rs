@@ -113,7 +113,8 @@ assert_eq!(edn[3]["false"], Edn::Key("f".to_string()));
     - [x] Json String to EDN String
     - [x] macro to process Structs and Enums to EDN
 - [ ] trait Deserialize EDN to Struct
-- [ ] trait Serialize struct to EDN
+- [x] trait Serialize struct to EDN
+
+## Could be done in another project `edn-derive`
 - [ ] `derive Serialize`
 - [ ] `derive Deserialize`
-- [ ] Edn to Json
