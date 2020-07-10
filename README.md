@@ -2,6 +2,7 @@
 
 Crate to parse and emit EDN [![Build Status](https://travis-ci.org/naomijub/edn-rs.svg?branch=master)](https://travis-ci.org/naomijub/edn-rs)
 * **This lib does not make effort to conform the EDN received to EDN Spec.** The lib that generated this EDN should be responsible for this.
+* Current example usage in crate https://crates.io/crates/transistor 
 
 ## Usage
 
@@ -116,4 +117,3 @@ assert_eq!(edn[3]["false"], Edn::Key("f".to_string()));
 - [ ] trait Serialize struct to EDN
 - [ ] `derive Serialize`
 - [ ] `derive Deserialize`
-- [ ] Edn to Json
