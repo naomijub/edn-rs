@@ -3,7 +3,7 @@
 
 #[cfg(test)]
 mod tests {
-    use std::collections::{HashMap, HashSet};
+    use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 
     use crate::edn_rs::serialize::Serialize;
 
@@ -12,19 +12,22 @@ mod tests {
         ser_struct!{
             #[derive(Debug, Clone)]
             struct Edn {
-                map: HashMap<String, Vec<String>>,
-                set: HashSet<i64>,
+                btreemap: BTreeMap<String, Vec<String>>,
+                btreeset: BTreeSet<i64>,
+                hashmap: HashMap<String, Vec<String>>,
+                hashset: HashSet<i64>,
                 tuples: (i32, bool, char),
             }
         };
         let edn = Edn {
-            map: map!{"this is a key".to_string() => vec!["with".to_string(), "many".to_string(), "keys".to_string()]},
-            set: set!{3i64, 4i64, 5i64},
+            btreemap: map!{"this is a key".to_string() => vec!["with".to_string(), "many".to_string(), "keys".to_string()]},
+            btreeset: set!{3i64, 4i64, 5i64},
+            hashmap: hmap!{"this is a key".to_string() => vec!["with".to_string(), "many".to_string(), "keys".to_string()]},
+            hashset: hset!{3i64},
             tuples: (3i32, true, 'd')
         };
 
-        assert!(edn.clone().serialize().contains(":map {:this-is-a-key [\"with\", \"many\", \"keys\"]}")
-            && edn.clone().serialize().contains(":tuples (3, true, \\d),"));
+        assert_eq!(edn.serialize(), "{ :btreemap {:this-is-a-key [\"with\", \"many\", \"keys\"]}, :btreeset #{3, 4, 5}, :hashmap {:this-is-a-key [\"with\", \"many\", \"keys\"]}, :hashset #{3}, :tuples (3, true, \\d), }");
     }
 }
 

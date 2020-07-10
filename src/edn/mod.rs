@@ -1,10 +1,12 @@
-use std::collections::{HashMap};
+use std::collections::{BTreeSet, BTreeMap};
 use utils::index::Index;
+use ordered_float::OrderedFloat;
+use std::cmp::{Ord, PartialOrd};
 pub mod utils;
 
 /// `EdnType` is an Enum with possible values for an EDN type
 /// Symbol and Char are not yet implemented
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub enum Edn {
     Vector(Vector),
     Set(Set),
@@ -15,14 +17,14 @@ pub enum Edn {
     Str(String),
     Int(isize),
     UInt(usize),
-    Double(f64),
+    Double(Double),
     Rational(String),
     // Char(char),
     Bool(bool),
     Nil,
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub struct Vector(Vec<Edn>);
 impl Vector {
     pub fn new(v: Vec<Edn>) -> Vector {
@@ -34,7 +36,7 @@ impl Vector {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub struct List(Vec<Edn>);
 impl List {
     pub fn new(v: Vec<Edn>) -> List {
@@ -46,29 +48,31 @@ impl List {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
-pub struct Set(Vec<Edn>);
+#[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone)]
+pub struct Set(BTreeSet<Edn>);
 impl Set {
-    pub fn new(v: Vec<Edn>) -> Set {
+    pub fn new(v: BTreeSet<Edn>) -> Set {
         Set(v)
     }
 
     pub fn empty() -> Set {
-        Set(Vec::new())
+        Set(BTreeSet::new())
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
-pub struct Map(HashMap<String,Edn>);
+#[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone)]
+pub struct Map(BTreeMap<String,Edn>);
 impl Map {
-    pub fn new(m: HashMap<String, Edn>) -> Map {
+    pub fn new(m: BTreeMap<String, Edn>) -> Map {
         Map(m)
     }
 
     pub fn empty() -> Map {
-        Map(HashMap::new())
+        Map(BTreeMap::new())
     }
 }
+
+pub type Double = OrderedFloat<f64>;
 
 impl core::fmt::Display for Vector {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
@@ -93,8 +97,6 @@ impl core::fmt::Display for Map {
         write!(f, "{{{}}}", self.0.iter().map(|(k,v)| format!("{}: {:?}, ", k, v)).fold(String::new(),|mut acc, i| {acc.push_str(&i); acc}))
     }
 }
-
-impl Eq for Map {}
 
 impl core::fmt::Display for Edn {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
@@ -142,7 +144,7 @@ impl Edn {
             Edn::Str(s) => s.parse::<f64>().ok(),
             Edn::Int(i) => to_double(i).ok(),
             Edn::UInt(u) => to_double(u).ok(),
-            Edn::Double(d) => Some(d.to_owned()),
+            Edn::Double(d) => Some(d.into_inner()),
             Edn::Rational(r) => rational_to_double(&r),
             Edn::Bool(_) => None,
             Edn::Nil => None,
@@ -155,7 +157,7 @@ impl Edn {
     /// 
     /// let key = Edn::Key(String::from("1234"));
     /// let q = Edn::Rational(String::from("3/4"));
-    /// let f = Edn::Double(12.3f64);
+    /// let f = Edn::Double(12.3f64.into());
     /// 
     /// assert_eq!(Edn::Vector(Vector::empty()).to_float(), None);
     /// assert_eq!(key.to_int().unwrap(),1234isize);

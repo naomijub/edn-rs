@@ -16,15 +16,15 @@ pub mod edn;
 /// ```rust
 /// #[macro_use] extern crate edn_rs;
 /// 
-/// use std::collections::{HashMap, HashSet};
+/// use std::collections::{BTreeMap, BTreeSet};
 /// use crate::edn_rs::serialize::Serialize;
 /// 
 /// fn main() {
 ///     ser_struct!{
 ///         #[derive(Debug)]
 ///         struct Edn {
-///             map: HashMap<String, Vec<String>>,
-///             set: HashSet<i64>,
+///             map: BTreeMap<String, Vec<String>>,
+///             set: BTreeSet<i64>,
 ///             tuples: (i32, bool, char),
 ///         }
 ///     };

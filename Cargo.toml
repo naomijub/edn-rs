@@ -13,3 +13,4 @@ edition = "2018"
 
 [dependencies]
 regex = "1"
+ordered-float = "1.1"

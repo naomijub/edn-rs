@@ -19,7 +19,6 @@ impl Index for usize {
         match *v {
             Edn::Vector(ref vec) => vec.0.get(*self),
             Edn::List(ref vec) => vec.0.get(*self),
-            Edn::Set(ref vec) => vec.0.get(*self),
             _ => None,
         }
     }
@@ -27,7 +26,6 @@ impl Index for usize {
         match *v {
             Edn::Vector(ref mut vec) => vec.0.get_mut(*self),
             Edn::List(ref mut vec) => vec.0.get_mut(*self),
-            Edn::Set(ref mut vec) => vec.0.get_mut(*self),
             _ => None,
         }
     }
@@ -62,7 +60,7 @@ impl Index for str {
     }
     fn index_or_insert<'v>(&self, v: &'v mut Edn) -> &'v mut Edn {
         if let Edn::Nil = *v {
-            *v = Edn::Map(Map::new(std::collections::HashMap::new()));
+            *v = Edn::Map(Map::new(std::collections::BTreeMap::new()));
         }
         match *v {
             Edn::Map(ref mut map) => map.0.entry(self.to_owned()).or_insert(Edn::Nil),

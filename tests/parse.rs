@@ -4,7 +4,7 @@
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
+    use std::collections::{BTreeMap, BTreeSet};
 
     use crate::edn_rs::{
         edn::{Edn, Set, Vector, List, Map},
@@ -13,7 +13,7 @@ mod tests {
     #[test]
     fn parse_primitive_types() {
         assert_eq!(edn!(1), Edn::Int(1));
-        assert_eq!(edn!(12.5), Edn::Double(12.5));
+        assert_eq!(edn!(12.5), Edn::Double(12.5.into()));
         assert_eq!(edn!(:key), Edn::Key("key".to_string()));
         assert_eq!(edn!("this is a string"), Edn::Str("this is a string".to_string()));
         assert_eq!(edn!(3/4), Edn::Rational("3/4".to_string()));
@@ -28,8 +28,8 @@ mod tests {
     fn parse_empty_structures() {
         assert_eq!(edn!([]), Edn::Vector(Vector::new(Vec::new())));
         assert_eq!(edn!(()), Edn::List(List::new(Vec::new())));
-        assert_eq!(edn!(#{}), Edn::Set(Set::new(Vec::new())));
-        assert_eq!(edn!({}), Edn::Map(Map::new(HashMap::new())));
+        assert_eq!(edn!(#{}), Edn::Set(Set::new(BTreeSet::new())));
+        assert_eq!(edn!({}), Edn::Map(Map::new(BTreeMap::new())));
     }
 
     #[test]
@@ -38,7 +38,7 @@ mod tests {
             Vector::new(
                 vec![
                     Edn::Symbol("sym".to_string()),
-                    Edn::Double(1.2),
+                    Edn::Double(1.2.into()),
                     Edn::Int(3),
                     Edn::Bool(false),
                     Edn::Key("f".to_string()),
@@ -57,7 +57,7 @@ mod tests {
             List::new(
                 vec![
                     Edn::Int(1),
-                    Edn::Double(1.2),
+                    Edn::Double(1.2.into()),
                     Edn::Int(3),
                     Edn::Bool(false),
                     Edn::Key("f".to_string()),
@@ -74,15 +74,15 @@ mod tests {
     fn parse_simple_set() {
         let expected = Edn::Set(
             Set::new(
-                vec![
+                set!{
                     Edn::Int(1),
-                    Edn::Double(1.2),
+                    Edn::Double(1.2.into()),
                     Edn::Int(3),
                     Edn::Bool(false),
                     Edn::Key("f".to_string()),
                     Edn::Nil,
                     Edn::Rational("3/4".to_string())
-                ]
+                }
             )
         );
 
@@ -109,7 +109,7 @@ mod tests {
             Vector::new(
                 vec![
                     Edn::Int(1),
-                    Edn::Double(1.2),
+                    Edn::Double(1.2.into()),
                     Edn::Int(3),
                     Edn::Vector(
                         Vector::new( vec![
@@ -131,7 +131,7 @@ mod tests {
             Vector::new(
                 vec![
                     Edn::Int(1),
-                    Edn::Double(1.2),
+                    Edn::Double(1.2.into()),
                     Edn::Int(3),
                     Edn::List(
                         List::new( vec![
@@ -153,7 +153,7 @@ mod tests {
             Vector::new(
                 vec![
                     Edn::Int(1),
-                    Edn::Double(1.2),
+                    Edn::Double(1.2.into()),
                     Edn::Int(3),
                     Edn::Map(
                         Map::new( map![
@@ -171,9 +171,9 @@ mod tests {
     fn parse_complex_set() {
         let expected = Edn::Set(
             Set::new(
-                vec![
+                set!{
                     Edn::Int(1),
-                    Edn::Double(1.2),
+                    Edn::Double(1.2.into()),
                     Edn::Int(3),
                     Edn::List(
                         List::new( vec![
@@ -188,7 +188,7 @@ mod tests {
                             Edn::Key("b".to_string()),
                             Edn::Rational("12/5".to_string())
                     ]))
-                ]
+                }
             )
         );
 
@@ -201,7 +201,7 @@ mod tests {
             List::new(
                 vec![
                     Edn::Int(1),
-                    Edn::Double(1.2),
+                    Edn::Double(1.2.into()),
                     Edn::Int(3),
                     Edn::Map(
                         Map::new( map![
@@ -227,7 +227,7 @@ mod tests {
         let edn = edn!([ 1 1.2 3 {false :f nil 3/4}]);
 
         assert_eq!(edn[1], edn!(1.2));
-        assert_eq!(edn[1], Edn::Double(1.2f64));
+        assert_eq!(edn[1], Edn::Double(1.2f64.into()));
         assert_eq!(edn[3]["false"], edn!(:f));
         assert_eq!(edn[3]["false"], Edn::Key("f".to_string()));
     }
