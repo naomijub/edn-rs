@@ -27,3 +27,27 @@ mod tests {
             && edn.clone().serialize().contains(":tuples (3, true, \\d),"));
     }
 }
+
+#[test]
+fn pub_struct() {
+    let edn = helper::Edn {
+        val: 6i32,
+        tuples: (3i32, true, 'd')
+    };
+
+    assert_eq!(edn.val, 6i32);
+    assert_eq!(edn.tuples, (3i32, true, 'd'));
+}
+
+
+mod helper {
+    use crate::edn_rs::serialize::Serialize;
+
+    ser_struct!{
+        #[derive(Debug, Clone)]
+        pub struct Edn {
+            val: i32,
+            tuples: (i32, bool, char),
+        }
+    }
+}

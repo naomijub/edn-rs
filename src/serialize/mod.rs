@@ -343,16 +343,47 @@ ser_hashmap_str![BTreeSet<i8>, BTreeSet<i16>, BTreeSet<i32>, BTreeSet<i64>, BTre
 /// 
 /// fn main() {
 ///     ser_struct! {
-///     #[derive(Debug)]
-///     struct Foo {
-///         foo: i32,
-///         bar: String,
-///         boz: char
+///         #[derive(Debug)]
+///         struct Foo {
+///             foo: i32,
+///             bar: String,
+///             boz: char
 ///         }
 ///     }
 ///     let foo  = Foo { foo: 1, bar: String::from("blahb"), boz: 'c'};
 ///
 ///     assert_eq!(foo.serialize(), "{ :foo 1, :bar \"blahb\", :boz \\c, }");
+/// }
+/// ```
+/// 
+/// There is also the possibility to create a public struct. This is done by adding the `pub` keyword
+/// before the structs naming, `pub struct Foo {`. Note that all inner fields will be public as well.
+/// ```
+/// #![recursion_limit="512"]
+/// #[macro_use] extern crate edn_rs;
+/// 
+/// #[test]
+/// fn pub_struct() {
+///     let edn = helper::Edn {
+///         val: 6i32,
+///         tuples: (3i32, true, 'd')
+///     };
+/// 
+///     assert_eq!(edn.val, 6i32);
+///     assert_eq!(edn.tuples, (3i32, true, 'd'));
+/// }
+/// 
+/// mod helper {
+///     use std::collections::{HashMap, HashSet};
+///     use crate::edn_rs::serialize::Serialize;
+/// 
+///     ser_struct!{
+///         #[derive(Debug, Clone)]
+///         pub struct Edn {
+///             val: i32,
+///             tuples: (i32, bool, char),
+///         }
+///     }
 /// }
 /// ```
 /// **PLEASE USE `#[derive(Debug)]` for now**
@@ -383,7 +414,7 @@ macro_rules! ser_struct {
     };
 
     (@gen () -> {$(#[$attr:meta])* pub struct $name:ident $(($id:ident: $ty:ty))*}) => {
-        $(#[$attr])* pub struct $name { $($id: $ty),* }
+        $(#[$attr])* pub struct $name { $(pub $id: $ty),* }
 
         impl Serialize for $name {
             fn serialize(self) -> String {
@@ -421,7 +452,7 @@ macro_rules! ser_struct {
         ser_struct!(@gen ($($input)*) -> {$(#[$attr])* struct $name});
     };
 
-     // pub
+     // pub struct
      ($(#[$attr:meta])* pub struct $name:ident { $($input:tt)*} ) => {
         ser_struct!(@gen ($($input)*) -> {$(#[$attr])* pub struct $name});
     };
