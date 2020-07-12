@@ -205,6 +205,54 @@ macro_rules! ser_hashmap_str {
     };
 }
 
+macro_rules! ser_btreemap {
+    ( $( $name:ty ),+ ) => {
+        $(
+            impl Serialize for std::collections::BTreeMap<String, $name>
+            {
+                fn serialize(self) -> String {
+                    let aux_vec = self.iter()
+                        .map(|(k, v)|
+                            format!(":{} {}",
+                            k.to_string().replace(" ", "-").replace("_", "-"),
+                            v.to_owned().serialize())
+                        )
+                        .collect::<Vec<String>>();
+                    let mut s = String::new();
+                    s.push_str("{");
+                    s.push_str(&aux_vec.join(", "));
+                    s.push_str("}");
+                    s
+                }
+            }
+        )+
+    };
+}
+
+macro_rules! ser_btreemap_str {
+    ( $( $name:ty ),+ ) => {
+        $(
+            impl Serialize for std::collections::BTreeMap<&str, $name>
+            {
+                fn serialize(self) -> String {
+                    let aux_vec = self.iter()
+                        .map(|(k, v)|
+                            format!(":{} {}",
+                            k.to_string().replace(" ", "-").replace("_", "-"),
+                            v.to_owned().serialize())
+                        )
+                        .collect::<Vec<String>>();
+                    let mut s = String::new();
+                    s.push_str("{");
+                    s.push_str(&aux_vec.join(", "));
+                    s.push_str("}");
+                    s
+                }
+            }
+        )+
+    };
+}
+
 // Primitive Types
 ser_primitives![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool];
 ser_option_primitives![Option<i8>, Option<i16>, Option<i32>, Option<i64>, Option<isize>, Option<u8>, Option<u16>, 
@@ -302,6 +350,10 @@ ser_hashmap![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool,
 ser_hashmap_str![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];
 ser_hashmap![Vec<i8>, Vec<i16>, Vec<i32>, Vec<i64>, Vec<isize>, Vec<u8>, Vec<u16>, Vec<u32>, Vec<u64>, Vec<usize>, Vec<f32>, Vec<f64>, Vec<bool>, Vec<String>, Vec<&str>];
 ser_hashmap_str![Vec<i8>, Vec<i16>, Vec<i32>, Vec<i64>, Vec<isize>, Vec<u8>, Vec<u16>, Vec<u32>, Vec<u64>, Vec<usize>, Vec<f32>, Vec<f64>, Vec<bool>, Vec<String>, Vec<&str>];
+ser_btreemap![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];
+ser_btreemap_str![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];
+ser_btreemap![Vec<i8>, Vec<i16>, Vec<i32>, Vec<i64>, Vec<isize>, Vec<u8>, Vec<u16>, Vec<u32>, Vec<u64>, Vec<usize>, Vec<f32>, Vec<f64>, Vec<bool>, Vec<String>, Vec<&str>];
+ser_btreemap_str![Vec<i8>, Vec<i16>, Vec<i32>, Vec<i64>, Vec<isize>, Vec<u8>, Vec<u16>, Vec<u32>, Vec<u64>, Vec<usize>, Vec<f32>, Vec<f64>, Vec<bool>, Vec<String>, Vec<&str>];
 
 use std::collections::HashMap;
 ser_vec![HashMap<String, i8>, HashMap<String, i16>, HashMap<String, i32>, HashMap<String, i64>, HashMap<String, isize>, HashMap<String, u8>, HashMap<String, u16>, HashMap<String, u32>, HashMap<String, u64>, HashMap<String, usize>, HashMap<String, f32>, HashMap<String, f64>, HashMap<String, bool>, HashMap<String, String>, HashMap<String, &str>];

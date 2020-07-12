@@ -15,7 +15,7 @@
 ///             List::new(
 ///                 vec![
 ///                     Edn::Int(1),
-///                     Edn::Double(1.2),
+///                     Edn::Double(1.2.into()),
 ///                     Edn::Int(3),
 ///                     Edn::Bool(false),
 ///                     Edn::Key("f".to_string()),
@@ -30,15 +30,15 @@
 ///     let set = edn!(#{1 1.2 3 false :f nil 3/4}); 
 ///     let expected = Edn::Set(
 ///     Set::new(
-///         vec![
+///         set!{
 ///             Edn::Int(1),
-///             Edn::Double(1.2),
+///             Edn::Double(1.2.into()),
 ///             Edn::Int(3),
 ///             Edn::Bool(false),
 ///             Edn::Key("f".to_string()),
 ///             Edn::Nil,
 ///             Edn::Rational("3/4".to_string())
-///             ]
+///             }
 ///         )
 ///     );
 ///
@@ -69,7 +69,7 @@
 ///     List::new(
 ///         vec![
 ///             Edn::Int(1),
-///             Edn::Double(1.2),
+///             Edn::Double(1.2.into()),
 ///             Edn::Int(3),
 ///             Edn::Map(
 ///                 Map::new( map![
@@ -102,7 +102,7 @@
 ///     let edn = edn!([ 1 1.2 3 {false :f nil 3/4}]);
 ///
 ///     assert_eq!(edn[1], edn!(1.2));
-///     assert_eq!(edn[1], Edn::Double(1.2f64));
+///     assert_eq!(edn[1], Edn::Double(1.2f64.into()));
 ///     assert_eq!(edn[3]["false"], edn!(:f));
 ///     assert_eq!(edn[3]["false"], Edn::Key("f".to_string()));
 /// }
@@ -135,7 +135,7 @@ macro_rules! edn_internal {
     };
 
     (@seq @set [$($elems:expr,)*]) => {
-        std::vec![$($elems,)*]
+        set!{$($elems,)*}
     };
 
     // this matches an even number of things between square brackets
@@ -252,8 +252,8 @@ macro_rules! edn_internal {
             el if el.parse::<u32>().is_ok() => Edn::UInt(el.parse::<usize>().unwrap()),
             el if el.parse::<u64>().is_ok() => Edn::UInt(el.parse::<usize>().unwrap()),
             el if el.parse::<usize>().is_ok() => Edn::UInt(el.parse::<usize>().unwrap()),
-            el if el.parse::<f32>().is_ok() => Edn::Double(el.parse::<f64>().unwrap()),
-            el if el.parse::<f64>().is_ok() => Edn::Double(el.parse::<f64>().unwrap()),
+            el if el.parse::<f32>().is_ok() => Edn::Double(el.parse::<f64>().unwrap().into()),
+            el if el.parse::<f64>().is_ok() => Edn::Double(el.parse::<f64>().unwrap().into()),
             el if el.parse::<bool>().is_ok() => Edn::Bool(el.parse::<bool>().unwrap()),
             el => Edn::Str(el)
         }
@@ -266,10 +266,40 @@ macro_rules! edn_unexpected {
     () => {};
 }
 
-/// Creates a `HashMap` from a seq of `$key => $value, `
+/// Creates a `BTreeMap` from a seq of `$key => $value, `
 /// `map!{a => "b", c => "d"}`
 #[macro_export]
 macro_rules! map(
+    { $($key:expr => $value:expr),+ } => {
+        {
+            let mut m = std::collections::BTreeMap::new();
+            $(
+                m.insert($key, $value);
+            )+
+            m
+        }
+     };
+);
+
+/// Creates a `BTreeSet` from a seq of `$x, `
+/// `set!{1, 2, 3, 4}`
+#[macro_export]
+macro_rules! set {
+    ($($x:expr),+ $(,)?) => (
+        {
+            let mut s = std::collections::BTreeSet::new();
+            $(
+                s.insert($x);
+            )*
+            s
+        }
+    );
+}
+
+/// Creates a `HashMap` from a seq of `$key => $value, `
+/// `hmap!{a => "b", c => "d"}`
+#[macro_export]
+macro_rules! hmap(
     { $($key:expr => $value:expr),+ } => {
         {
             let mut m = std::collections::HashMap::new();
@@ -284,14 +314,14 @@ macro_rules! map(
 /// Creates a `HashSet` from a seq of `$x, `
 /// `set!{1, 2, 3, 4}`
 #[macro_export]
-macro_rules! set {
-    ( $( $x:expr ),* ) => { 
+macro_rules! hset {
+    ($($x:expr),+ $(,)?) => (
         {
-            let mut s = std::collections::HashSet::new(); 
+            let mut s = std::collections::HashSet::new();
             $(
                 s.insert($x);
             )*
             s
         }
-    };
+    );
 }

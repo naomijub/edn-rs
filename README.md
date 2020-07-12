@@ -24,7 +24,7 @@ fn main() {
         List::new(
             vec![
                 Edn::Symbol("sym".to_string()),
-                Edn::Double(1.2),
+                Edn::Double(1.2.into()),
                 Edn::Int(3),
                 Edn::Bool(false),
                 Edn::Key("f".to_string()),
@@ -44,7 +44,7 @@ To navigate through `Edn` data you can just use `get` and `get_mut`:
 let edn = edn!([ 1 1.2 3 {false :f nil 3/4}]);
 
 assert_eq!(edn[1], edn!(1.2));
-assert_eq!(edn[1], Edn::Double(1.2f64));
+assert_eq!(edn[1], Edn::Double(1.2f64.into()));
 assert_eq!(edn[3]["false"], edn!(:f));
 assert_eq!(edn[3]["false"], Edn::Key("f".to_string()));
 ```
@@ -54,25 +54,30 @@ assert_eq!(edn[3]["false"], Edn::Key("f".to_string()));
  #![recursion_limit="512"]
  #[macro_use] extern crate edn_rs;
  
- use std::collections::{HashMap, HashSet};
+ use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
  use crate::edn_rs::serialize::Serialize;
  
  fn main() {
      ser_struct!{
-         #[derive(Debug)]
+         #[derive(Debug, Clone)]
          struct Edn {
-             map: HashMap<String, Vec<String>>,
-             set: HashSet<i64>,
+             btreemap: BTreeMap<String, Vec<String>>,
+             btreeset: BTreeSet<i64>,
+             hashmap: HashMap<String, Vec<String>>,
+             hashset: HashSet<i64>,
              tuples: (i32, bool, char),
          }
      };
      let edn = Edn {
-         map: map!{"this is a key".to_string() => vec!["with".to_string(), "many".to_string(), "keys".to_string()]},
-         set: set!{3i64, 4i64, 5i64},
+         btreemap: map!{"this is a key".to_string() => vec!["with".to_string(), "many".to_string(), "keys".to_string()]},
+         btreeset: set!{3i64, 4i64, 5i64},
+         hashmap: hmap!{"this is a key".to_string() => vec!["with".to_string(), "many".to_string(), "keys".to_string()]},
+         hashset: hset!{3i64},
          tuples: (3i32, true, 'd')
      };
+
      println!("{}",edn.serialize());
-     // { :map {:this-is-a-key ["with", "many", "keys"]}, :set #{3, 4, 5}, :tuples (3, true, \d), }
+     // { :btreemap {:this-is-a-key [\"with\", \"many\", \"keys\"]}, :btreeset #{3, 4, 5}, :hashmap {:this-is-a-key [\"with\", \"many\", \"keys\"]}, :hashset #{3}, :tuples (3, true, \\d), }
  }
 ```
 
@@ -99,7 +104,7 @@ assert_eq!(edn[3]["false"], Edn::Key("f".to_string()));
     - [x] Symbol `sym-bol-s`
     - [x] Vector `"[1 :2 \"d\"]"`
     - [x] List `"(1 :2 \"d\")"`
-    - [x] Set `"#{1 2 3}"` For now the usage of Set is defined as a `Vec<Edn>`, this is due to the fact that the lib should not be necessarily responsible for assuring the Set's unicity. A solution could be changing the implementation to `HashSet`.
+    - [x] Set `"#{1 2 3}"`
     - [x] Map `"{:a 1 :b 2 }"`
 - [ ] Simple data structures in one another:
     - [x] Vec in Vec `"[1 2 [:3 \"4\"]]"`
