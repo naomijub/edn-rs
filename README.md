@@ -14,9 +14,10 @@ edn-rs = "0.6.2"
 
 **Parse an EDN** into a `Edn` with `edn!` macro:
 ```rust
-#![recursion_limit="512"]
-#[macro_use]
-extern crate edn_rs;
+use edn_rs::{
+    edn,
+    edn::{Edn,List}
+};
 
 fn main() {
     let edn = edn!((sym 1.2 3 false :f nil 3/4));
@@ -34,6 +35,7 @@ fn main() {
         )
     );
 
+    println!("{:?}", edn);
     assert_eq!(edn, expected);
 }
 ```
@@ -41,56 +43,85 @@ fn main() {
 To navigate through `Edn` data you can just use `get` and `get_mut`:
 
 ```rust
-let edn = edn!([ 1 1.2 3 {false :f nil 3/4}]);
+use edn_rs::{
+    edn,
+    edn::{Edn,List, Map}
+};
 
-assert_eq!(edn[1], edn!(1.2));
-assert_eq!(edn[1], Edn::Double(1.2f64.into()));
-assert_eq!(edn[3]["false"], edn!(:f));
-assert_eq!(edn[3]["false"], Edn::Key("f".to_string()));
+fn main() {
+    let edn = edn!((sym 1.2 3 {false :f nil 3/4}));
+
+    println!("{:?}", edn);
+    assert_eq!(edn[1], edn!(1.2));
+    assert_eq!(edn[1], Edn::Double(1.2f64.into()));
+    assert_eq!(edn[3]["false"], edn!(:f));
+    assert_eq!(edn[3]["false"], Edn::Key("f".to_string()));
+}
 ```
 
 **Serializes Rust Types into EDN**
  ```rust
- #![recursion_limit="512"]
- #[macro_use] extern crate edn_rs;
- 
- use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
- use crate::edn_rs::serialize::Serialize;
- 
- fn main() {
-     ser_struct!{
-         #[derive(Debug, Clone)]
-         struct Edn {
-             btreemap: BTreeMap<String, Vec<String>>,
-             btreeset: BTreeSet<i64>,
-             hashmap: HashMap<String, Vec<String>>,
-             hashset: HashSet<i64>,
-             tuples: (i32, bool, char),
-         }
-     };
-     let edn = Edn {
-         btreemap: map!{"this is a key".to_string() => vec!["with".to_string(), "many".to_string(), "keys".to_string()]},
-         btreeset: set!{3i64, 4i64, 5i64},
-         hashmap: hmap!{"this is a key".to_string() => vec!["with".to_string(), "many".to_string(), "keys".to_string()]},
-         hashset: hset!{3i64},
-         tuples: (3i32, true, 'd')
-     };
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
+use edn_rs::{
+    serialize::{Serialize},
+    ser_struct, map, set, hmap, hset
+};
 
-     println!("{}",edn.serialize());
-     // { :btreemap {:this-is-a-key [\"with\", \"many\", \"keys\"]}, :btreeset #{3, 4, 5}, :hashmap {:this-is-a-key [\"with\", \"many\", \"keys\"]}, :hashset #{3}, :tuples (3, true, \\d), }
- }
+fn main() {
+    ser_struct!{
+        #[derive(Debug, Clone)]
+        struct Edn {
+            btreemap: BTreeMap<String, Vec<String>>,
+            btreeset: BTreeSet<i64>,
+            hashmap: HashMap<String, Vec<String>>,
+            hashset: HashSet<i64>,
+            tuples: (i32, bool, char),
+        }
+    };
+    let edn = Edn {
+        btreemap: map!{"this is a key".to_string() => vec!["with".to_string(), "many".to_string(), "keys".to_string()]},
+        btreeset: set!{3i64, 4i64, 5i64},
+        hashmap: hmap!{"this is a key".to_string() => vec!["with".to_string(), "many".to_string(), "keys".to_string()]},
+        hashset: hset!{3i64},
+        tuples: (3i32, true, 'd')
+    };
+
+    println!("{}",edn.serialize());
+    // { :btreemap {:this-is-a-key [\"with\", \"many\", \"keys\"]}, :btreeset #{3, 4, 5}, :hashmap {:this-is-a-key [\"with\", \"many\", \"keys\"]}, :hashset #{3}, :tuples (3, true, \\d), }
+}
 ```
 
 **Emits EDN** format from a Json file
  ```rust
- use edn_rs::json_to_edn;
+use edn_rs::json_to_edn;
 
- fn main() {
-     let json = String::from("{\"hello\": \"world\"}");
-     let edn = String::from("{:hello \"world\"}");
+fn main() {
+    let json = String::from(r#"{"hello": "world"}"#);
+    let edn = String::from(r#"{:hello "world"}"#);
 
-     assert_eq!(edn, json_to_edn(json));
- }
+    println!("{:?}", json_to_edn(json.clone()));
+    assert_eq!(edn, json_to_edn(json));
+
+    let complex_json = String::from(r#"{
+            "people": 
+            [
+                {
+                    "name": "otavio",
+                    "age": 22
+                },
+                {
+                    "name": "Julia",
+                    "age": 32.0
+                }
+            ],
+            "country or origin": "Brazil",
+            "queerentener": true,
+            "brain": null
+        }"#);
+
+    println!("{:?}", json_to_edn(complex_json.clone()).replace("  ", "").replace("\n", " "));
+    // "{ :people  [ { :name \"otavio\", :age 22 }, { :name \"Julia\", :age 32.0 } ], :country-or-origin \"Brazil\", :queerentener true, :brain nil }"
+}
  ```
 
 ## Current Features
