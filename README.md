@@ -9,7 +9,7 @@ Crate to parse and emit EDN [![Build Status](https://travis-ci.org/naomijub/edn-
 `Cargo.toml`
 ```toml
 [dependencies]
-edn-rs = "0.5.3"
+edn-rs = "0.6.2"
 ```
 
 **Parse an EDN** into a `Edn` with `edn!` macro:
@@ -83,13 +83,13 @@ assert_eq!(edn[3]["false"], Edn::Key("f".to_string()));
 
 **Emits EDN** format from a Json file
  ```rust
- use edn_rs::emit_edn;
+ use edn_rs::json_to_edn;
 
  fn main() {
      let json = String::from("{\"hello\": \"world\"}");
      let edn = String::from("{:hello \"world\"}");
 
-     assert_eq!(edn, emit_edn(json));
+     assert_eq!(edn, json_to_edn(json));
  }
  ```
 
