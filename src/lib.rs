@@ -40,7 +40,7 @@ pub mod edn;
 pub mod serialize;
 
 use edn::{utils::{replace_keywords, replace_char}};
-
+pub mod deserialize;
 /// `json_to_edn` receives a json string and parses its common key-values to a regular EDN format. 
 /// tested examples are: 
 /// 1. `"{\"hello world\": \"julia\"}"` becomes `"{:hello-world \"julia\"}"`

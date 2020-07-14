@@ -19,9 +19,10 @@ pub enum Edn {
     UInt(usize),
     Double(Double),
     Rational(String),
-    // Char(char),
+    Char(char),
     Bool(bool),
     Nil,
+    Empty,
 }
 
 #[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone)]
@@ -33,6 +34,10 @@ impl Vector {
 
     pub fn empty() -> Vector {
         Vector(Vec::new())
+    }
+
+    pub fn push(&mut self, e: Edn) {
+        self.0.push(e);
     }
 }
 
@@ -113,7 +118,9 @@ impl core::fmt::Display for Edn {
             Edn::Double(d) => format!("{}", d),
             Edn::Rational(r) => r.to_string(),
             Edn::Bool(b) => format!("{}", b),
+            Edn::Char(c) => format!("{}", c),
             Edn::Nil => String::from("nil"),
+            Edn::Empty => String::from(""),
         };
         write!(f, "{}", text)
     }
@@ -147,7 +154,9 @@ impl Edn {
             Edn::Double(d) => Some(d.into_inner()),
             Edn::Rational(r) => rational_to_double(&r),
             Edn::Bool(_) => None,
+            Edn::Char(_) => None,
             Edn::Nil => None,
+            Edn::Empty => None, 
         }
     }
 
@@ -178,7 +187,9 @@ impl Edn {
             Edn::Double(d) => Some(d.to_owned().round() as isize),
             Edn::Rational(r) => Some(rational_to_double(&r).unwrap_or(0f64).round() as isize),
             Edn::Bool(_) => None,
+            Edn::Char(_) => None,
             Edn::Nil => None,
+            Edn::Empty => None,
         }
     }
 
@@ -234,6 +245,26 @@ impl Edn {
     /// ```
     pub fn get_mut<I: Index>(&mut self, index: I) -> Option<&mut Edn> {
         index.index_into_mut(self)
+    }
+
+    pub fn parse_word(word: String) -> Edn {
+        match word {
+            w if w.starts_with(":") => Edn::Key(w),
+            w if w.starts_with("\\") && w.len() == 2 => Edn::Char(w.chars().last().unwrap()),
+            w if w.starts_with("\"") && w.ends_with("\"") => Edn::Str(w.replace("\"", "")),
+            w if w.parse::<bool>().is_ok() => Edn::Bool(w.parse::<bool>().unwrap()),
+            w if w == "nil" || w == "Nil" => Edn::Nil,
+            w if w.contains("/") && w.split("/").all(|d| d.parse::<f64>().is_ok()) => Edn::Rational(w),
+            w if w.parse::<isize>().is_ok() => Edn::Int(w.parse::<isize>().unwrap()),
+            w if w.parse::<usize>().is_ok() => Edn::UInt(w.parse::<usize>().unwrap()),
+            w if w.parse::<f64>().is_ok() => Edn::Double(OrderedFloat(w.parse::<f64>().unwrap())),
+            w if w == "(" => Edn::List(List::empty()),
+            w if w == "[" => Edn::Vector(Vector::empty()),
+            w if w == "{" => Edn::Map(Map::empty()),
+            w if w == "#{" => Edn::Set(Set::empty()),
+            w if w == "]" || w == "}" || w == ")" => Edn::Empty, 
+            w => Edn::Symbol(w),
+        }
     }
 }
 
