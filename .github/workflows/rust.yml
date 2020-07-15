@@ -20,3 +20,7 @@ jobs:
         cargo run --example parse_str
         cargo run --example serialize
         cargo run --example tokenize_edn
+    - name: FMT
+      run: |
+        rustup component add rustfmt
+        cargo fmt -- --check
