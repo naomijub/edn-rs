@@ -7,6 +7,7 @@ pub mod utils;
 
 /// `EdnType` is an Enum with possible values for an EDN type
 /// Symbol and Char are not yet implemented
+/// String implementation of Edn can be obtained with `.to_string()`
 #[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub enum Edn {
     Vector(Vector),
@@ -209,6 +210,27 @@ impl Edn {
             Edn::Int(i) => Some(i.to_owned()),
             Edn::Double(d) => Some(d.to_owned().round() as isize),
             Edn::Rational(r) => Some(rational_to_double(&r).unwrap_or(0f64).round() as isize),
+            _ => None,
+        }
+    }
+
+    /// `to_bool` takes an `Edn` and returns an `Option<bool>` with its value. Most types return None
+    /// ```rust
+    /// use edn_rs::edn::{Edn};
+    ///
+    /// let b = Edn::Bool(true);
+    /// let s = Edn::Str("true".to_string());
+    /// let symbol = Edn::Symbol("false".to_string());
+    ///
+    /// assert_eq!(b.to_bool().unwrap(),true);
+    /// assert_eq!(s.to_bool().unwrap(),true);
+    /// assert_eq!(symbol.to_bool().unwrap(),false);
+    /// ```
+    pub fn to_bool(&self) -> Option<bool> {
+        match self {
+            Edn::Bool(b) => Some(*b),
+            Edn::Str(s) => s.parse::<bool>().ok(),
+            Edn::Symbol(s) => s.parse::<bool>().ok(),
             _ => None,
         }
     }
