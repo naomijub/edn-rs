@@ -10,8 +10,8 @@ matrix:
 script:
     - cargo build --verbose
     - cargo test --verbose
-    - cargo run --example json_to_edn && \
-      cargo run --example navegate_edn && \
-      cargo run --example parse_str && \
-      cargo run --example serialize && \
-      cargo run --example tokenize_edn
+    - cargo run --example json_to_edn
+    - cargo run --example navegate_edn
+    - cargo run --example parse_str
+    - cargo run --example serialize
+    - cargo run --example tokenize_edn
