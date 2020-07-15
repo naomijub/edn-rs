@@ -13,3 +13,10 @@ jobs:
       run: cargo build --verbose
     - name: Run tests
       run: cargo test --verbose
+    - name: Examples
+      run: |
+        cargo run --example json_to_edn
+        cargo run --example navegate_edn
+        cargo run --example parse_str
+        cargo run --example serialize
+        cargo run --example tokenize_edn

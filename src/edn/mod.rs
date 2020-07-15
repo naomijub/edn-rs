@@ -301,6 +301,14 @@ impl Edn {
     }
 }
 
+impl std::str::FromStr for Edn {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        crate::deserialize::parse_edn(s)
+    }
+}
+
 fn to_double<T>(i: T) -> Result<f64, std::num::ParseFloatError>
 where
     T: std::fmt::Debug,

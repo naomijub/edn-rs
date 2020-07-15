@@ -9,10 +9,10 @@ Crate to parse and emit EDN [![Build Status](https://travis-ci.org/naomijub/edn-
 `Cargo.toml`
 ```toml
 [dependencies]
-edn-rs = "0.6.2"
+edn-rs = "0.7.0"
 ```
 
-**Parse an EDN** into a `Edn` with `edn!` macro:
+**Parse an EDN token** into a `Edn` with `edn!` macro:
 ```rust
 use edn_rs::{
     edn,
@@ -37,6 +37,41 @@ fn main() {
 
     println!("{:?}", edn);
     assert_eq!(edn, expected);
+}
+```
+
+**Parse an EDN String** with `parse_edn`:
+```rust
+use edn_rs::{
+    set, map,
+    edn::{Edn, Map, Vector, Set},
+    deserialize::parse_edn
+};
+use std::str::FromStr;
+
+fn main() -> Result<(), String> {
+    let edn_str = "{:a \"2\" :b [true false] :c #{:A {:a :b} nil}}";
+    let edn = Edn::from_str(edn_str);
+
+    assert_eq!(
+        edn,
+        Ok(Edn::Map(Map::new(
+            map!{
+                ":a".to_string() => Edn::Str("2".to_string()),
+                ":b".to_string() => Edn::Vector(Vector::new(vec![Edn::Bool(true), Edn::Bool(false)])),
+                ":c".to_string() => Edn::Set(Set::new(
+                    set!{
+                        Edn::Map(Map::new(map!{":a".to_string() => Edn::Key(":b".to_string())})),
+                        Edn::Key(":A".to_string()),
+                        Edn::Nil}))}
+        )))
+    );
+
+    // OR 
+
+    let edn_resp = parse_edn(edn_str)?;
+    assert_eq!(edn_resp[":b"][0], Edn::Bool(true));
+    Ok(())
 }
 ```
 
@@ -127,7 +162,8 @@ fn main() {
 ## Current Features
 - [x] Define `struct` to map EDN info `EdnNode`
 - [x] Define EDN types, `EdnType`
-- [x] Parse simples EDN data:
+ - [ ] Edn Type into primitive: `Edn::Bool(true).into() -> true`
+- [x] Parse EDN data [`parse_edn`](https://docs.rs/edn-rs/0.7.0/edn_rs/deserialize/fn.parse_edn.html):
     - [x] nil `""`
     - [x] String `"\"string\""`
     - [x] Numbers `"324352"`, `"3442.234"`, `"3/4"`
@@ -137,7 +173,8 @@ fn main() {
     - [x] List `"(1 :2 \"d\")"`
     - [x] Set `"#{1 2 3}"`
     - [x] Map `"{:a 1 :b 2 }"`
-- [ ] Simple data structures in one another:
+    - [x] Nested structures `"{:a \"2\" :b [true false] :c #{:A {:a :b} nil}}"`
+- [ ] Simple data structures in one another [`edn!`](https://docs.rs/edn-rs/0.7.0/edn_rs/macro.edn.html):
     - [x] Vec in Vec `"[1 2 [:3 \"4\"]]"`
     - [ ] Set in _Vec_ `"[1 2 #{:3 \"4\"}]"`
     - [x] List in List `"(1 2 (:3 \"4\"))"`
@@ -146,6 +183,7 @@ fn main() {
 - [x] Multiple simple data structures in one another (Map and Set in a vector)
 - [x] Multi deepen data structures (Map in a Set in a List in a  Vec in a Vec)
 - [x] Navigate through Edn Data 
+    - [ ] Navigate through Sets
 - [x] Json to Edn
     - [x] Json String to EDN String
     - [x] macro to process Structs and Enums to EDN
