@@ -2,6 +2,7 @@ use ordered_float::OrderedFloat;
 use std::cmp::{Ord, PartialOrd};
 use std::collections::{BTreeMap, BTreeSet};
 use utils::index::Index;
+#[doc(hidden)]
 pub mod utils;
 
 /// `EdnType` is an Enum with possible values for an EDN type
@@ -283,7 +284,7 @@ impl Edn {
         index.index_into_mut(self)
     }
 
-    pub fn parse_word(word: String) -> Edn {
+    pub(crate) fn parse_word(word: String) -> Edn {
         match word {
             w if w.starts_with(":") => Edn::Key(w),
             w if w.starts_with("\\") && w.len() == 2 => Edn::Char(w.chars().last().unwrap()),

@@ -42,6 +42,7 @@ pub trait Serialize {
     fn serialize(self) -> String;
 }
 
+#[doc(hidden)]
 pub fn field_names(id: Vec<String>) -> std::collections::HashMap<String, String> {
     let mut hashmap = std::collections::HashMap::new();
     for i in id.into_iter() {

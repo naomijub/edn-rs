@@ -7,7 +7,7 @@ extern crate edn_rs;
 mod tests {
     use std::collections::{BTreeMap, BTreeSet};
 
-    use crate::edn_rs::edn::{Edn, List, Map, Set, Vector};
+    use crate::edn_rs::{Edn, List, Map, Set, Vector};
 
     #[test]
     fn parse_primitive_types() {

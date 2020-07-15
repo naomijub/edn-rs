@@ -1,10 +1,11 @@
 #![recursion_limit = "512"]
 #[macro_use]
-pub mod macros;
+mod macros;
 
 #[cfg(feature = "preserve_order")]
 extern crate regex;
 
+/// Edn type implementation
 pub mod edn;
 
 /// Serialization module for most possible types.
@@ -16,7 +17,7 @@ pub mod edn;
 /// #[macro_use] extern crate edn_rs;
 ///
 /// use std::collections::{BTreeMap, BTreeSet};
-/// use crate::edn_rs::serialize::Serialize;
+/// use crate::edn_rs::Serialize;
 ///
 /// fn main() {
 ///     ser_struct!{
@@ -39,7 +40,7 @@ pub mod edn;
 pub mod serialize;
 
 use edn::utils::{replace_char, replace_keywords};
-pub mod deserialize;
+mod deserialize;
 /// `json_to_edn` receives a json string and parses its common key-values to a regular EDN format.
 /// tested examples are:
 /// 1. `"{\"hello world\": \"julia\"}"` becomes `"{:hello-world \"julia\"}"`
@@ -69,3 +70,7 @@ pub fn json_to_edn(json: String) -> String {
     let edn = replace_char(edn_aux);
     edn.replace("null", "nil")
 }
+
+pub use deserialize::parse_edn;
+pub use edn::{Double, Edn, List, Map, Set, Vector};
+pub use serialize::Serialize;

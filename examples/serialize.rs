@@ -1,4 +1,4 @@
-use edn_rs::{hmap, hset, map, ser_struct, serialize::Serialize, set};
+use edn_rs::{hmap, hset, map, ser_struct, set, Serialize};
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 
 fn main() {

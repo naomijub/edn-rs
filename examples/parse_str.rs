@@ -1,8 +1,4 @@
-use edn_rs::{
-    deserialize::parse_edn,
-    edn::{Edn, Map, Set, Vector},
-    map, set,
-};
+use edn_rs::{map, parse_edn, set, Edn, Map, Set, Vector};
 use std::str::FromStr;
 
 fn main() -> Result<(), String> {
@@ -20,6 +16,8 @@ fn main() -> Result<(), String> {
                 Edn::Key(":A".to_string()),
                 Edn::Nil}))})))
     );
+
+    println!("{:?}", edn);
 
     // OR
 
