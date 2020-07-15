@@ -14,3 +14,8 @@ edition = "2018"
 [dependencies]
 regex = "1"
 ordered-float = "1.1"
+
+[dev-dependencies.cargo-husky]
+version = "1"
+default-features = false
+features = ["user-hooks"]
