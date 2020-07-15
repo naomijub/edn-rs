@@ -1,6 +1,6 @@
 use edn_rs::{
     edn,
-    edn::{Edn,List, Map}
+    edn::{Edn, List, Map},
 };
 
 fn main() {

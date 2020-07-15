@@ -1,6 +1,6 @@
+use crate::edn::{Edn, Map};
 use std::fmt;
 use std::ops;
-use crate::edn::{Edn, Map};
 
 /// This is a Copy of [Serde_json::index](https://docs.serde.rs/src/serde_json/value/index.rs.html)
 pub trait Index: private::Sealed {
@@ -109,6 +109,7 @@ struct Type<'a>(&'a Edn);
 impl<'a> fmt::Display for Type<'a> {
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         match *self.0 {
+            Edn::Empty => formatter.write_str("empty"),
             Edn::Nil => formatter.write_str("null"),
             Edn::Bool(_) => formatter.write_str("boolean"),
             Edn::Int(_) => formatter.write_str("integer"),
@@ -119,6 +120,7 @@ impl<'a> fmt::Display for Type<'a> {
             Edn::List(_) => formatter.write_str("list"),
             Edn::Map(_) => formatter.write_str("map"),
             Edn::Key(_) => formatter.write_str("key"),
+            Edn::Char(_) => formatter.write_str("char"),
             Edn::Symbol(_) => formatter.write_str("symbol"),
             Edn::Double(_) => formatter.write_str("double"),
             Edn::Rational(_) => formatter.write_str("rational"),

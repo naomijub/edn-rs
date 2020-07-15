@@ -3,10 +3,10 @@
 ///  
 /// ```rust
 /// #![recursion_limit="512"] //recomended recursion size
-/// 
+///
 /// #[macro_use]
 /// extern crate edn_rs;
-/// 
+///
 /// use edn_rs::edn::{Edn, List, Set, Map};
 ///
 /// fn main() {
@@ -26,8 +26,8 @@
 ///         );
 ///
 ///     assert_eq!(list, expected);
-/// 
-///     let set = edn!(#{1 1.2 3 false :f nil 3/4}); 
+///
+///     let set = edn!(#{1 1.2 3 false :f nil 3/4});
 ///     let expected = Edn::Set(
 ///     Set::new(
 ///         set!{
@@ -57,12 +57,12 @@
 ///     assert_eq!(map, expected);
 /// }
 /// ```
-/// 
-/// A more complete exemple: 
+///
+/// A more complete exemple:
 /// ```rust
 /// #[macro_use]
 /// extern crate edn_rs;
-/// 
+///
 /// use edn_rs::edn::{Edn, List, Vector, Map};
 /// fn main() {
 ///     let expected = Edn::List(
@@ -74,7 +74,7 @@
 ///             Edn::Map(
 ///                 Map::new( map![
 ///                     String::from("false") => Edn::Map(
-///                         Map::new( map![ 
+///                         Map::new( map![
 ///                             String::from("f") => Edn::Key(String::from("b"))
 ///                         ])),
 ///                     String::from("nil") => Edn::Vector(
@@ -90,14 +90,14 @@
 ///     assert_eq!(edn!(( 1 1.2 3 {false {:f :b} nil [3/4 1]})), expected);
 /// }
 /// ```
-/// 
+///
 ///  To navigate through `Edn` data you can just use `get` and `get_mut`:
 ///
 /// ```rust
 /// #[macro_use]
 /// extern crate edn_rs;
 /// use edn_rs::edn::{Edn, Map, Vector};
-/// 
+///
 /// fn main() {
 ///     let edn = edn!([ 1 1.2 3 {false :f nil 3/4}]);
 ///
@@ -107,7 +107,7 @@
 ///     assert_eq!(edn[3]["false"], Edn::Key("f".to_string()));
 /// }
 /// ```
-/// 
+///
 /// Internal implementation is hidden, please look at source.
 macro_rules! edn {
     // Hide distracting implementation details from the generated rustdoc.

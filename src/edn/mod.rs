@@ -1,7 +1,7 @@
-use std::collections::{BTreeSet, BTreeMap};
-use utils::index::Index;
 use ordered_float::OrderedFloat;
 use std::cmp::{Ord, PartialOrd};
+use std::collections::{BTreeMap, BTreeSet};
+use utils::index::Index;
 pub mod utils;
 
 /// `EdnType` is an Enum with possible values for an EDN type
@@ -19,9 +19,10 @@ pub enum Edn {
     UInt(usize),
     Double(Double),
     Rational(String),
-    // Char(char),
+    Char(char),
     Bool(bool),
     Nil,
+    Empty,
 }
 
 #[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone)]
@@ -61,7 +62,7 @@ impl Set {
 }
 
 #[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone)]
-pub struct Map(BTreeMap<String,Edn>);
+pub struct Map(BTreeMap<String, Edn>);
 impl Map {
     pub fn new(m: BTreeMap<String, Edn>) -> Map {
         Map(m)
@@ -76,25 +77,65 @@ pub type Double = OrderedFloat<f64>;
 
 impl core::fmt::Display for Vector {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(f, "[{}]", self.0.iter().map(|i| format!("{:?}, ", i)).fold(String::new(),|mut acc, i| {acc.push_str(&i); acc}))
+        write!(
+            f,
+            "[{}]",
+            self.0
+                .iter()
+                .map(|i| format!("{:?}, ", i))
+                .fold(String::new(), |mut acc, i| {
+                    acc.push_str(&i);
+                    acc
+                })
+        )
     }
 }
 
 impl core::fmt::Display for List {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(f, "({})", self.0.iter().map(|i| format!("{:?}, ", i)).fold(String::new(),|mut acc, i| {acc.push_str(&i); acc}))
+        write!(
+            f,
+            "({})",
+            self.0
+                .iter()
+                .map(|i| format!("{:?}, ", i))
+                .fold(String::new(), |mut acc, i| {
+                    acc.push_str(&i);
+                    acc
+                })
+        )
     }
 }
 
 impl core::fmt::Display for Set {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(f, "#{{{}}}", self.0.iter().map(|i| format!("{:?}, ", i)).fold(String::new(),|mut acc, i| {acc.push_str(&i); acc}))
+        write!(
+            f,
+            "#{{{}}}",
+            self.0
+                .iter()
+                .map(|i| format!("{:?}, ", i))
+                .fold(String::new(), |mut acc, i| {
+                    acc.push_str(&i);
+                    acc
+                })
+        )
     }
 }
 
 impl core::fmt::Display for Map {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(f, "{{{}}}", self.0.iter().map(|(k,v)| format!("{}: {:?}, ", k, v)).fold(String::new(),|mut acc, i| {acc.push_str(&i); acc}))
+        write!(
+            f,
+            "{{{}}}",
+            self.0
+                .iter()
+                .map(|(k, v)| format!("{}: {:?}, ", k, v))
+                .fold(String::new(), |mut acc, i| {
+                    acc.push_str(&i);
+                    acc
+                })
+        )
     }
 }
 
@@ -113,7 +154,9 @@ impl core::fmt::Display for Edn {
             Edn::Double(d) => format!("{}", d),
             Edn::Rational(r) => r.to_string(),
             Edn::Bool(b) => format!("{}", b),
+            Edn::Char(c) => format!("{}", c),
             Edn::Nil => String::from("nil"),
+            Edn::Empty => String::from(""),
         };
         write!(f, "{}", text)
     }
@@ -123,11 +166,11 @@ impl Edn {
     /// `to_float` takes an `Edn` and returns an `Option<f64>` with its value. Most types return None
     /// ```rust
     /// use edn_rs::edn::{Edn, Vector};
-    /// 
+    ///
     /// let key = Edn::Key(String::from("1234"));
     /// let q = Edn::Rational(String::from("3/4"));
     /// let i = Edn::Int(12isize);
-    /// 
+    ///
     /// assert_eq!(Edn::Vector(Vector::empty()).to_float(), None);
     /// assert_eq!(key.to_float().unwrap(),1234f64);
     /// assert_eq!(q.to_float().unwrap(), 0.75f64);
@@ -147,18 +190,20 @@ impl Edn {
             Edn::Double(d) => Some(d.into_inner()),
             Edn::Rational(r) => rational_to_double(&r),
             Edn::Bool(_) => None,
+            Edn::Char(_) => None,
             Edn::Nil => None,
+            Edn::Empty => None,
         }
     }
 
     /// `to_int` takes an `Edn` and returns an `Option<isize>` with its value. Most types return None
     /// ```rust
     /// use edn_rs::edn::{Edn, Vector};
-    /// 
+    ///
     /// let key = Edn::Key(String::from("1234"));
     /// let q = Edn::Rational(String::from("3/4"));
     /// let f = Edn::Double(12.3f64.into());
-    /// 
+    ///
     /// assert_eq!(Edn::Vector(Vector::empty()).to_float(), None);
     /// assert_eq!(key.to_int().unwrap(),1234isize);
     /// assert_eq!(q.to_int().unwrap(), 1isize);
@@ -178,7 +223,9 @@ impl Edn {
             Edn::Double(d) => Some(d.to_owned().round() as isize),
             Edn::Rational(r) => Some(rational_to_double(&r).unwrap_or(0f64).round() as isize),
             Edn::Bool(_) => None,
+            Edn::Char(_) => None,
             Edn::Nil => None,
+            Edn::Empty => None,
         }
     }
 
@@ -190,12 +237,12 @@ impl Edn {
     /// index, for example if the index is a string and `self` is a seq or a
     /// number. Also returns `None` if the given key does not exist in the map
     /// or the given index is not within the bounds of the seq.
-    /// 
+    ///
     /// ```rust
     /// #[macro_use]
     /// extern crate edn_rs;
     /// use edn_rs::edn::{Edn, Map, Vector};
-    /// 
+    ///
     /// fn main() {
     ///     let edn = edn!([ 1 1.2 3 {false :f nil 3/4}]);
     ///
@@ -217,12 +264,12 @@ impl Edn {
     /// index, for example if the index is a string and `self` is a seq or a
     /// number. Also returns `None` if the given key does not exist in the map
     /// or the given index is not within the bounds of the seq.
-    /// 
+    ///
     /// ```rust
     /// #[macro_use]
     /// extern crate edn_rs;
     /// use edn_rs::edn::{Edn, Map, Vector};
-    /// 
+    ///
     /// fn main() {
     ///     let mut edn = edn!([ 1 1.2 3 {false :f nil 3/4}]);
     ///
@@ -235,16 +282,44 @@ impl Edn {
     pub fn get_mut<I: Index>(&mut self, index: I) -> Option<&mut Edn> {
         index.index_into_mut(self)
     }
+
+    pub fn parse_word(word: String) -> Edn {
+        match word {
+            w if w.starts_with(":") => Edn::Key(w),
+            w if w.starts_with("\\") && w.len() == 2 => Edn::Char(w.chars().last().unwrap()),
+            w if w.starts_with("\"") && w.ends_with("\"") => Edn::Str(w.replace("\"", "")),
+            w if w.parse::<bool>().is_ok() => Edn::Bool(w.parse::<bool>().unwrap()),
+            w if w == "nil" || w == "Nil" => Edn::Nil,
+            w if w.contains("/") && w.split("/").all(|d| d.parse::<f64>().is_ok()) => {
+                Edn::Rational(w)
+            }
+            w if w.parse::<isize>().is_ok() => Edn::Int(w.parse::<isize>().unwrap()),
+            w if w.parse::<usize>().is_ok() => Edn::UInt(w.parse::<usize>().unwrap()),
+            w if w.parse::<f64>().is_ok() => Edn::Double(OrderedFloat(w.parse::<f64>().unwrap())),
+            w => Edn::Symbol(w),
+        }
+    }
 }
 
-fn to_double<T>(i: T) -> Result<f64,std::num::ParseFloatError> 
-    where T : std::fmt::Debug {
+impl std::str::FromStr for Edn {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        crate::deserialize::parse_edn(s)
+    }
+}
+
+fn to_double<T>(i: T) -> Result<f64, std::num::ParseFloatError>
+where
+    T: std::fmt::Debug,
+{
     format!("{:?}", i).parse::<f64>()
 }
 
 fn rational_to_double(r: &str) -> Option<f64> {
     if r.split('/').count() == 2 {
-        let vals = r.split('/')
+        let vals = r
+            .split('/')
             .map(ToString::to_string)
             .map(|v| v.parse::<f64>())
             .map(Result::ok)
