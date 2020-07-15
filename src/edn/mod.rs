@@ -35,10 +35,6 @@ impl Vector {
     pub fn empty() -> Vector {
         Vector(Vec::new())
     }
-
-    pub fn push(&mut self, e: Edn) {
-        self.0.push(e);
-    }
 }
 
 #[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone)]
@@ -258,11 +254,11 @@ impl Edn {
             w if w.parse::<isize>().is_ok() => Edn::Int(w.parse::<isize>().unwrap()),
             w if w.parse::<usize>().is_ok() => Edn::UInt(w.parse::<usize>().unwrap()),
             w if w.parse::<f64>().is_ok() => Edn::Double(OrderedFloat(w.parse::<f64>().unwrap())),
-            w if w == "(" => Edn::List(List::empty()),
-            w if w == "[" => Edn::Vector(Vector::empty()),
-            w if w == "{" => Edn::Map(Map::empty()),
-            w if w == "#{" => Edn::Set(Set::empty()),
-            w if w == "]" || w == "}" || w == ")" => Edn::Empty, 
+            // w if w == "(" => Edn::List(List::empty()),
+            // w if w == "[" => Edn::Vector(Vector::empty()),
+            // w if w == "{" => Edn::Map(Map::empty()),
+            // w if w == "#{" => Edn::Set(Set::empty()),
+            // w if w == "]" || w == "}" || w == ")" => Edn::Empty, 
             w => Edn::Symbol(w),
         }
     }
