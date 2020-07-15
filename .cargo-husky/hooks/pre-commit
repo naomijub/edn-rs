@@ -1,0 +1,10 @@
+#!/bin/bash
+
+cargo fmt -- --check
+
+exit_code=$?
+
+if [ $exit_code == "1" ]; then
+  echo "There was a problem formatting, to fix run \`cargo fmt\`"
+  exit 1
+fi
