@@ -46,7 +46,8 @@ mod tests {
 
     #[test]
     fn multiline_json_to_edn() {
-        let json = String::from("{
+        let json = String::from(
+            "{
             \"hello\": [
                 {
                     \"country name\": \"brazil\",
@@ -57,8 +58,10 @@ mod tests {
                     \"word\": \"world\"
                 }
             ]
-        }");
-        let edn = String::from("{
+        }",
+        );
+        let edn = String::from(
+            "{
             :hello [
                 {
                     :country-name \"brazil\",
@@ -69,7 +72,8 @@ mod tests {
                     :word \"world\"
                 }
             ]
-        }");
+        }",
+        );
 
         assert_eq!(edn, json_to_edn(json));
     }

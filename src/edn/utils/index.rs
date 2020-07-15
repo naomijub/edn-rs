@@ -1,6 +1,6 @@
+use crate::edn::{Edn, Map};
 use std::fmt;
 use std::ops;
-use crate::edn::{Edn, Map};
 
 /// This is a Copy of [Serde_json::index](https://docs.serde.rs/src/serde_json/value/index.rs.html)
 pub trait Index: private::Sealed {
