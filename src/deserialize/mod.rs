@@ -207,16 +207,14 @@ mod test {
 
         assert_eq!(
             parse_edn(edn),
-            Ok(Edn::Map(Map::new(
-                map!{
-                    ":a".to_string() =>Edn::Str("2".to_string()),
-                    ":b".to_string() => Edn::Vector(Vector::new(vec![Edn::Bool(true), Edn::Bool(false)])),
-                    ":c".to_string() => Edn::Set(Set::new(
-                        set!{
-                            Edn::Map(Map::new(map!{":a".to_string() => Edn::Key(":b".to_string())})),
-                            Edn::Key(":A".to_string()),
-                            Edn::Nil}))}
-            )))
+            Ok(Edn::Map(Map::new(map! {
+            ":a".to_string() =>Edn::Str("2".to_string()),
+            ":b".to_string() => Edn::Vector(Vector::new(vec![Edn::Bool(true), Edn::Bool(false)])),
+            ":c".to_string() => Edn::Set(Set::new(
+                set!{
+                    Edn::Map(Map::new(map!{":a".to_string() => Edn::Key(":b".to_string())})),
+                    Edn::Key(":A".to_string()),
+                    Edn::Nil}))})))
         );
     }
 }

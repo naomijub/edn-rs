@@ -1,7 +1,7 @@
 use edn_rs::{
-    set, map,
-    edn::{Edn, Map, Vector, Set},
-    deserialize::parse_edn
+    deserialize::parse_edn,
+    edn::{Edn, Map, Set, Vector},
+    map, set,
 };
 use std::str::FromStr;
 
@@ -11,19 +11,17 @@ fn main() -> Result<(), String> {
 
     assert_eq!(
         edn,
-        Ok(Edn::Map(Map::new(
-            map!{
-                ":a".to_string() => Edn::Str("2".to_string()),
-                ":b".to_string() => Edn::Vector(Vector::new(vec![Edn::Bool(true), Edn::Bool(false)])),
-                ":c".to_string() => Edn::Set(Set::new(
-                    set!{
-                        Edn::Map(Map::new(map!{":a".to_string() => Edn::Key(":b".to_string())})),
-                        Edn::Key(":A".to_string()),
-                        Edn::Nil}))}
-        )))
+        Ok(Edn::Map(Map::new(map! {
+        ":a".to_string() => Edn::Str("2".to_string()),
+        ":b".to_string() => Edn::Vector(Vector::new(vec![Edn::Bool(true), Edn::Bool(false)])),
+        ":c".to_string() => Edn::Set(Set::new(
+            set!{
+                Edn::Map(Map::new(map!{":a".to_string() => Edn::Key(":b".to_string())})),
+                Edn::Key(":A".to_string()),
+                Edn::Nil}))})))
     );
 
-    // OR 
+    // OR
 
     let edn_resp = parse_edn(edn_str)?;
     assert_eq!(edn_resp[":b"][0], Edn::Bool(true));
