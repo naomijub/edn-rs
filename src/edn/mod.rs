@@ -179,21 +179,13 @@ impl Edn {
     /// ```
     pub fn to_float(&self) -> Option<f64> {
         match self {
-            Edn::Vector(_) => None,
-            Edn::Set(_) => None,
-            Edn::Map(_) => None,
-            Edn::List(_) => None,
-            Edn::Symbol(_) => None,
             Edn::Key(k) => k.parse::<f64>().ok(),
             Edn::Str(s) => s.parse::<f64>().ok(),
             Edn::Int(i) => to_double(i).ok(),
             Edn::UInt(u) => to_double(u).ok(),
             Edn::Double(d) => Some(d.into_inner()),
             Edn::Rational(r) => rational_to_double(&r),
-            Edn::Bool(_) => None,
-            Edn::Char(_) => None,
-            Edn::Nil => None,
-            Edn::Empty => None,
+            _ => None,
         }
     }
 
@@ -212,21 +204,12 @@ impl Edn {
     /// ```
     pub fn to_int(&self) -> Option<isize> {
         match self {
-            Edn::Vector(_) => None,
-            Edn::Set(_) => None,
-            Edn::Map(_) => None,
-            Edn::List(_) => None,
-            Edn::Symbol(_) => None,
             Edn::Key(k) => k.parse::<isize>().ok(),
             Edn::Str(s) => s.parse::<isize>().ok(),
             Edn::Int(i) => Some(i.to_owned()),
-            Edn::UInt(_) => None,
             Edn::Double(d) => Some(d.to_owned().round() as isize),
             Edn::Rational(r) => Some(rational_to_double(&r).unwrap_or(0f64).round() as isize),
-            Edn::Bool(_) => None,
-            Edn::Char(_) => None,
-            Edn::Nil => None,
-            Edn::Empty => None,
+            _ => None,
         }
     }
 
