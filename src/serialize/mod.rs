@@ -46,7 +46,10 @@ pub trait Serialize {
 pub fn field_names(id: Vec<String>) -> std::collections::HashMap<String, String> {
     let mut hashmap = std::collections::HashMap::new();
     for i in id.into_iter() {
-        let mut value = format!("{}", i).replace("_", "-");
+        let mut value = format!("{}", i)
+            .replace("___", "/")
+            .replace("__", ".")
+            .replace("_", "-");
         value.insert(0, ':');
         hashmap.insert(format!("{}", i), value);
     }
@@ -651,6 +654,8 @@ ser_hashmap_str![
 ///     }
 /// }
 /// ```
+///
+/// Note than when you `serialize` `_` will become `-`, `__` will become `.` and `___` will become `/`
 /// **PLEASE USE `#[derive(Debug)]` for now**
 #[macro_export]
 macro_rules! ser_struct {
@@ -1014,4 +1019,18 @@ fn out_pub_struct_ser() {
     };
 
     assert_eq!(actual.serialize(), "{ :foo 1, :bar \"blahb\", :boz \\c, }");
+}
+
+#[test]
+fn struct_fields_special_chars() {
+    ser_struct! {
+        #[derive(Debug)]
+        #[allow(non_snake_case)]
+        pub struct Foo {
+            foo__bar___boz: i32,
+        }
+    }
+
+    let foobar = Foo { foo__bar___boz: 3 };
+    assert_eq!(foobar.serialize(), "{ :foo.bar/boz 3, }")
 }
