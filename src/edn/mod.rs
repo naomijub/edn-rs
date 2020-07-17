@@ -247,6 +247,26 @@ impl Edn {
         }
     }
 
+    /// `to_vec` converts `Edn` types `Vector` and `List` into an `Option<Vec<String>>`.
+    /// Type String was selected because it is the current way to mix floats, integers and Strings.
+    pub fn to_vec(&self) -> Option<Vec<String>> {
+        match self {
+            Edn::Vector(_) => Some(
+                self.iter()
+                    .unwrap()
+                    .map(|e| e.to_string())
+                    .collect::<Vec<String>>(),
+            ),
+            Edn::List(_) => Some(
+                self.iter()
+                    .unwrap()
+                    .map(|e| e.to_string())
+                    .collect::<Vec<String>>(),
+            ),
+            _ => None,
+        }
+    }
+
     /// Index into a EDN vector, list, set or map. A string index can be used to access a
     /// value in a map, and a usize index can be used to access an element of a
     /// seqs.
@@ -406,4 +426,12 @@ fn iterator() {
         .sum();
 
     assert_eq!(18isize, sum);
+}
+
+#[test]
+fn to_vec() {
+    let edn = Edn::Vector(Vector::new(vec![Edn::Int(5), Edn::Int(6), Edn::Int(7)]));
+    let v = vec![String::from("5"), String::from("6"), String::from("7")];
+
+    assert_eq!(edn.to_vec().unwrap(), v);
 }

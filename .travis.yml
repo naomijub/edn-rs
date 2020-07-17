@@ -15,3 +15,5 @@ script:
     - cargo run --example parse_str
     - cargo run --example serialize
     - cargo run --example tokenize_edn
+    - cargo run --example iterator
+    - cargo run --example to_vec
