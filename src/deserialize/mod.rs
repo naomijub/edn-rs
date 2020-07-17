@@ -146,7 +146,7 @@ mod test {
         assert_eq!(
             parse_edn(edn),
             Ok(Edn::Vector(Vector::new(vec![
-                Edn::Int(1),
+                Edn::UInt(1),
                 Edn::Str("2".to_string()),
                 Edn::Double(3.3.into()),
                 Edn::Key(":b".to_string()),
@@ -163,7 +163,7 @@ mod test {
         assert_eq!(
             parse_edn(edn),
             Ok(Edn::List(List::new(vec![
-                Edn::Int(1),
+                Edn::UInt(1),
                 Edn::Str("2".to_string()),
                 Edn::Double(3.3.into()),
                 Edn::Key(":b".to_string()),
@@ -179,7 +179,7 @@ mod test {
         assert_eq!(
             parse_edn(edn),
             Ok(Edn::List(List::new(vec![
-                Edn::Int(1),
+                Edn::UInt(1),
                 Edn::Str("2".to_string()),
                 Edn::Double(3.3.into()),
                 Edn::Key(":b".to_string()),

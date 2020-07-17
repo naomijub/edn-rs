@@ -207,9 +207,21 @@ impl Edn {
         match self {
             Edn::Key(k) => k.parse::<isize>().ok(),
             Edn::Str(s) => s.parse::<isize>().ok(),
-            Edn::Int(i) => Some(i.to_owned()),
+            Edn::Int(i) => Some(i.to_owned() as isize),
             Edn::Double(d) => Some(d.to_owned().round() as isize),
             Edn::Rational(r) => Some(rational_to_double(&r).unwrap_or(0f64).round() as isize),
+            _ => None,
+        }
+    }
+
+    /// Similar to `to_int` but returns an `Option<usize>`
+    pub fn to_uint(&self) -> Option<usize> {
+        match self {
+            Edn::Str(s) => s.parse::<usize>().ok(),
+            Edn::Int(i) => Some(i.to_owned() as usize),
+            Edn::UInt(i) => Some(i.to_owned()),
+            Edn::Double(d) => Some(d.to_owned().round() as usize),
+            Edn::Rational(r) => Some(rational_to_double(&r).unwrap_or(0f64).round() as usize),
             _ => None,
         }
     }
@@ -289,6 +301,44 @@ impl Edn {
         index.index_into_mut(self)
     }
 
+    /// `iter` returns am `Option<Iter<Edn>>` with `Some` for types `Edn::Vector` and `Edn::List`
+    /// Other types return `None`
+    /// ```
+    /// use edn_rs::{Edn, Vector};
+    ///
+    /// fn main() {
+    ///     let v = Edn::Vector(Vector::new(vec![Edn::Int(5), Edn::Int(6), Edn::Int(7)]));
+    ///     let sum = v.iter().unwrap().filter(|e| e.to_int().is_some()).map(|e| e.to_int().unwrap()).sum();
+    ///
+    ///     assert_eq!(18isize, sum);
+    /// }
+    /// ```
+    pub fn iter(&self) -> Option<std::slice::Iter<'_, Edn>> {
+        match self {
+            Edn::Vector(v) => Some(v.0.iter()),
+            Edn::List(l) => Some(l.0.iter()),
+            _ => None,
+        }
+    }
+
+    /// `set_iter` returns am `Option<btree_set::Iter<Edn>>` with `Some` for type `Edn::Set`
+    /// Other types return `None`
+    pub fn set_iter(&self) -> Option<std::collections::btree_set::Iter<'_, Edn>> {
+        match self {
+            Edn::Set(s) => Some(s.0.iter()),
+            _ => None,
+        }
+    }
+
+    /// `map_iter` returns am `Option<btree_map::Iter<String, Edn>>` with `Some` for type `Edn::Map`
+    /// Other types return `None`
+    pub fn map_iter(&self) -> Option<std::collections::btree_map::Iter<'_, String, Edn>> {
+        match self {
+            Edn::Map(m) => Some(m.0.iter()),
+            _ => None,
+        }
+    }
+
     pub(crate) fn parse_word(word: String) -> Edn {
         match word {
             w if w.starts_with(":") => Edn::Key(w),
@@ -299,8 +349,8 @@ impl Edn {
             w if w.contains("/") && w.split("/").all(|d| d.parse::<f64>().is_ok()) => {
                 Edn::Rational(w)
             }
-            w if w.parse::<isize>().is_ok() => Edn::Int(w.parse::<isize>().unwrap()),
             w if w.parse::<usize>().is_ok() => Edn::UInt(w.parse::<usize>().unwrap()),
+            w if w.parse::<isize>().is_ok() => Edn::Int(w.parse::<isize>().unwrap()),
             w if w.parse::<f64>().is_ok() => Edn::Double(OrderedFloat(w.parse::<f64>().unwrap())),
             w => Edn::Symbol(w),
         }
@@ -343,4 +393,17 @@ fn parses_rationals() {
     assert_eq!(rational_to_double("3 4"), None);
     assert_eq!(rational_to_double("3/4/5"), None);
     assert_eq!(rational_to_double("text/moretext"), None);
+}
+
+#[test]
+fn iterator() {
+    let v = Edn::Vector(Vector::new(vec![Edn::Int(5), Edn::Int(6), Edn::Int(7)]));
+    let sum = v
+        .iter()
+        .unwrap()
+        .filter(|e| e.to_int().is_some())
+        .map(|e| e.to_int().unwrap())
+        .sum();
+
+    assert_eq!(18isize, sum);
 }
