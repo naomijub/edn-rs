@@ -383,6 +383,23 @@ impl<A: Serialize, B: Serialize, C: Serialize, D: Serialize, E: Serialize, F: Se
 
 ser_vec![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];
 ser_vec![
+    Option<i8>,
+    Option<i16>,
+    Option<i32>,
+    Option<i64>,
+    Option<isize>,
+    Option<u8>,
+    Option<u16>,
+    Option<u32>,
+    Option<u64>,
+    Option<usize>,
+    Option<f32>,
+    Option<f64>,
+    Option<bool>,
+    Option<String>,
+    Option<&str>
+];
+ser_vec![
     Vec<i8>,
     Vec<i16>,
     Vec<i32>,
@@ -399,11 +416,113 @@ ser_vec![
     Vec<String>,
     Vec<&str>
 ];
+ser_vec![
+    Vec<Option<i8>>,
+    Vec<Option<i16>>,
+    Vec<Option<i32>>,
+    Vec<Option<i64>>,
+    Vec<Option<isize>>,
+    Vec<Option<u8>>,
+    Vec<Option<u16>>,
+    Vec<Option<u32>>,
+    Vec<Option<u64>>,
+    Vec<Option<usize>>,
+    Vec<Option<f32>>,
+    Vec<Option<f64>>,
+    Vec<Option<bool>>,
+    Vec<Option<String>>,
+    Vec<Option<&str>>
+];
 ser_hashset![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];
+ser_hashset![
+    Option<i8>,
+    Option<i16>,
+    Option<i32>,
+    Option<i64>,
+    Option<isize>,
+    Option<u8>,
+    Option<u16>,
+    Option<u32>,
+    Option<u64>,
+    Option<usize>,
+    Option<f32>,
+    Option<f64>,
+    Option<bool>,
+    Option<String>,
+    Option<&str>
+];
 ser_set![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];
+ser_set![
+    Option<i8>,
+    Option<i16>,
+    Option<i32>,
+    Option<i64>,
+    Option<isize>,
+    Option<u8>,
+    Option<u16>,
+    Option<u32>,
+    Option<u64>,
+    Option<usize>,
+    Option<f32>,
+    Option<f64>,
+    Option<bool>,
+    Option<String>,
+    Option<&str>
+];
 ser_list![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];
+ser_list![
+    Option<i8>,
+    Option<i16>,
+    Option<i32>,
+    Option<i64>,
+    Option<isize>,
+    Option<u8>,
+    Option<u16>,
+    Option<u32>,
+    Option<u64>,
+    Option<usize>,
+    Option<f32>,
+    Option<f64>,
+    Option<bool>,
+    Option<String>,
+    Option<&str>
+];
 ser_hashmap![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];
+ser_hashmap![
+    Option<i8>,
+    Option<i16>,
+    Option<i32>,
+    Option<i64>,
+    Option<isize>,
+    Option<u8>,
+    Option<u16>,
+    Option<u32>,
+    Option<u64>,
+    Option<usize>,
+    Option<f32>,
+    Option<f64>,
+    Option<bool>,
+    Option<String>,
+    Option<&str>
+];
 ser_hashmap_str![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];
+ser_hashmap_str![
+    Option<i8>,
+    Option<i16>,
+    Option<i32>,
+    Option<i64>,
+    Option<isize>,
+    Option<u8>,
+    Option<u16>,
+    Option<u32>,
+    Option<u64>,
+    Option<usize>,
+    Option<f32>,
+    Option<f64>,
+    Option<bool>,
+    Option<String>,
+    Option<&str>
+];
 ser_hashmap![
     Vec<i8>,
     Vec<i16>,
@@ -420,6 +539,23 @@ ser_hashmap![
     Vec<bool>,
     Vec<String>,
     Vec<&str>
+];
+ser_hashmap![
+    Vec<Option<i8>>,
+    Vec<Option<i16>>,
+    Vec<Option<i32>>,
+    Vec<Option<i64>>,
+    Vec<Option<isize>>,
+    Vec<Option<u8>>,
+    Vec<Option<u16>>,
+    Vec<Option<u32>>,
+    Vec<Option<u64>>,
+    Vec<Option<usize>>,
+    Vec<Option<f32>>,
+    Vec<Option<f64>>,
+    Vec<Option<bool>>,
+    Vec<Option<String>>,
+    Vec<Option<&str>>
 ];
 ser_hashmap_str![
     Vec<i8>,
@@ -438,8 +574,59 @@ ser_hashmap_str![
     Vec<String>,
     Vec<&str>
 ];
+ser_hashmap_str![
+    Vec<Option<i8>>,
+    Vec<Option<i16>>,
+    Vec<Option<i32>>,
+    Vec<Option<i64>>,
+    Vec<Option<isize>>,
+    Vec<Option<u8>>,
+    Vec<Option<u16>>,
+    Vec<Option<u32>>,
+    Vec<Option<u64>>,
+    Vec<Option<usize>>,
+    Vec<Option<f32>>,
+    Vec<Option<f64>>,
+    Vec<Option<bool>>,
+    Vec<Option<String>>,
+    Vec<Option<&str>>
+];
 ser_btreemap![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];
+ser_btreemap![
+    Option<i8>,
+    Option<i16>,
+    Option<i32>,
+    Option<i64>,
+    Option<isize>,
+    Option<u8>,
+    Option<u16>,
+    Option<u32>,
+    Option<u64>,
+    Option<usize>,
+    Option<f32>,
+    Option<f64>,
+    Option<bool>,
+    Option<String>,
+    Option<&str>
+];
 ser_btreemap_str![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];
+ser_btreemap_str![
+    Option<i8>,
+    Option<i16>,
+    Option<i32>,
+    Option<i64>,
+    Option<isize>,
+    Option<u8>,
+    Option<u16>,
+    Option<u32>,
+    Option<u64>,
+    Option<usize>,
+    Option<f32>,
+    Option<f64>,
+    Option<bool>,
+    Option<String>,
+    Option<&str>
+];
 ser_btreemap![
     Vec<i8>,
     Vec<i16>,
@@ -456,6 +643,23 @@ ser_btreemap![
     Vec<bool>,
     Vec<String>,
     Vec<&str>
+];
+ser_btreemap![
+    Vec<Option<i8>>,
+    Vec<Option<i16>>,
+    Vec<Option<i32>>,
+    Vec<Option<i64>>,
+    Vec<Option<isize>>,
+    Vec<Option<u8>>,
+    Vec<Option<u16>>,
+    Vec<Option<u32>>,
+    Vec<Option<u64>>,
+    Vec<Option<usize>>,
+    Vec<Option<f32>>,
+    Vec<Option<f64>>,
+    Vec<Option<bool>>,
+    Vec<Option<String>>,
+    Vec<Option<&str>>
 ];
 ser_btreemap_str![
     Vec<i8>,
@@ -474,12 +678,28 @@ ser_btreemap_str![
     Vec<String>,
     Vec<&str>
 ];
+ser_btreemap_str![
+    Vec<Option<i8>>,
+    Vec<Option<i16>>,
+    Vec<Option<i32>>,
+    Vec<Option<i64>>,
+    Vec<Option<isize>>,
+    Vec<Option<u8>>,
+    Vec<Option<u16>>,
+    Vec<Option<u32>>,
+    Vec<Option<u64>>,
+    Vec<Option<usize>>,
+    Vec<Option<f32>>,
+    Vec<Option<f64>>,
+    Vec<Option<bool>>,
+    Vec<Option<String>>,
+    Vec<Option<&str>>
+];
 
 use std::collections::HashMap;
 ser_vec![HashMap<String, i8>, HashMap<String, i16>, HashMap<String, i32>, HashMap<String, i64>, HashMap<String, isize>, HashMap<String, u8>, HashMap<String, u16>, HashMap<String, u32>, HashMap<String, u64>, HashMap<String, usize>, HashMap<String, f32>, HashMap<String, f64>, HashMap<String, bool>, HashMap<String, String>, HashMap<String, &str>];
 ser_vec![HashMap<&str, i8>, HashMap<&str, i16>, HashMap<&str, i32>, HashMap<&str, i64>, HashMap<&str, isize>, HashMap<&str, u8>, HashMap<&str, u16>, HashMap<&str, u32>, HashMap<&str, u64>, HashMap<&str, usize>, HashMap<&str, f32>, HashMap<&str, f64>, HashMap<&str, bool>, HashMap<&str, String>, HashMap<&str, &str>];
 ser_vec![HashMap<String, Vec<i8>>, HashMap<String, Vec<i16>>, HashMap<String, Vec<i32>>, HashMap<String, Vec<i64>>, HashMap<String, Vec<isize>>, HashMap<String, Vec<u8>>, HashMap<String, Vec<u16>>, HashMap<String, Vec<u32>>, HashMap<String, Vec<u64>>, HashMap<String, Vec<usize>>, HashMap<String, Vec<f32>>, HashMap<String, Vec<f64>>, HashMap<String, Vec<bool>>, HashMap<String, Vec<String>>, HashMap<String, Vec<&str>>];
-ser_vec![HashMap<&str, Vec<i8>>, HashMap<&str, Vec<i16>>, HashMap<&str, Vec<i32>>, HashMap<&str, Vec<i64>>, HashMap<&str, Vec<isize>>, HashMap<&str, Vec<u8>>, HashMap<&str, Vec<u16>>, HashMap<&str, Vec<u32>>, HashMap<&str, Vec<u64>>, HashMap<&str, Vec<usize>>, HashMap<&str, Vec<f32>>, HashMap<&str, Vec<f64>>, HashMap<&str, Vec<bool>>, HashMap<&str, Vec<String>>, HashMap<&str, Vec<&str>>];
 
 ser_hashmap![
     Vec<HashMap<String, i8>>,
@@ -536,6 +756,24 @@ ser_hashmap![
     HashSet<String>,
     HashSet<&str>
 ];
+
+ser_hashmap![
+    HashSet<Option<i8>>,
+    HashSet<Option<i16>>,
+    HashSet<Option<i32>>,
+    HashSet<Option<i64>>,
+    HashSet<Option<isize>>,
+    HashSet<Option<u8>>,
+    HashSet<Option<u16>>,
+    HashSet<Option<u32>>,
+    HashSet<Option<u64>>,
+    HashSet<Option<usize>>,
+    HashSet<Option<f32>>,
+    HashSet<Option<f64>>,
+    HashSet<Option<bool>>,
+    HashSet<Option<String>>,
+    HashSet<Option<&str>>
+];
 ser_hashmap_str![
     HashSet<i8>,
     HashSet<i16>,
@@ -552,6 +790,24 @@ ser_hashmap_str![
     HashSet<bool>,
     HashSet<String>,
     HashSet<&str>
+];
+
+ser_hashmap_str![
+    HashSet<Option<i8>>,
+    HashSet<Option<i16>>,
+    HashSet<Option<i32>>,
+    HashSet<Option<i64>>,
+    HashSet<Option<isize>>,
+    HashSet<Option<u8>>,
+    HashSet<Option<u16>>,
+    HashSet<Option<u32>>,
+    HashSet<Option<u64>>,
+    HashSet<Option<usize>>,
+    HashSet<Option<f32>>,
+    HashSet<Option<f64>>,
+    HashSet<Option<bool>>,
+    HashSet<Option<String>>,
+    HashSet<Option<&str>>
 ];
 
 use std::collections::BTreeSet;
@@ -572,6 +828,23 @@ ser_hashmap![
     BTreeSet<String>,
     BTreeSet<&str>
 ];
+ser_hashmap![
+    BTreeSet<Option<i8>>,
+    BTreeSet<Option<i16>>,
+    BTreeSet<Option<i32>>,
+    BTreeSet<Option<i64>>,
+    BTreeSet<Option<isize>>,
+    BTreeSet<Option<u8>>,
+    BTreeSet<Option<u16>>,
+    BTreeSet<Option<u32>>,
+    BTreeSet<Option<u64>>,
+    BTreeSet<Option<usize>>,
+    BTreeSet<Option<f32>>,
+    BTreeSet<Option<f64>>,
+    BTreeSet<Option<bool>>,
+    BTreeSet<Option<String>>,
+    BTreeSet<Option<&str>>
+];
 ser_hashmap_str![
     BTreeSet<i8>,
     BTreeSet<i16>,
@@ -588,6 +861,23 @@ ser_hashmap_str![
     BTreeSet<bool>,
     BTreeSet<String>,
     BTreeSet<&str>
+];
+ser_hashmap_str![
+    BTreeSet<Option<i8>>,
+    BTreeSet<Option<i16>>,
+    BTreeSet<Option<i32>>,
+    BTreeSet<Option<i64>>,
+    BTreeSet<Option<isize>>,
+    BTreeSet<Option<u8>>,
+    BTreeSet<Option<u16>>,
+    BTreeSet<Option<u32>>,
+    BTreeSet<Option<u64>>,
+    BTreeSet<Option<usize>>,
+    BTreeSet<Option<f32>>,
+    BTreeSet<Option<f64>>,
+    BTreeSet<Option<bool>>,
+    BTreeSet<Option<String>>,
+    BTreeSet<Option<&str>>
 ];
 
 /// `ser_struct!` creates a struct with the serialization trait already implemented:
