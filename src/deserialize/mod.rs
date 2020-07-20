@@ -1,6 +1,6 @@
 use crate::edn::{Edn, List, Map, Set, Vector};
 
-/// `parse_edn` parses a EDN String into [`Edn`](../edn/enum.Edn.html)
+/// `parse_edn` parses a EDN String into [`Edn`](../edn_rs/edn/enum.Edn.html)
 pub fn parse_edn(edn: &str) -> Result<Edn, String> {
     let tokens = tokenize(edn);
 
