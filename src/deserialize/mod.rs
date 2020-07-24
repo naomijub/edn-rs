@@ -17,6 +17,7 @@ fn tokenize(edn: &str) -> Vec<String> {
         .replace(")", " ) ")
         .replace("\n", " ")
         .replace(",", " ")
+        .replace("\"", " \" ")
         .replace("#inst", "")
         .trim()
         .split(" ")
@@ -39,6 +40,7 @@ fn parse<'a>(tokens: &'a [String]) -> Result<(Edn, &'a [String]), String> {
         "@" => read_set(rest),
         "{" => read_map(rest),
         "}" => Err("Unexpected Token `}`".to_string()),
+        "\"" => read_str(rest),
         _ => Ok((Edn::parse_word(token.to_string()), rest)),
     }
 }
@@ -112,6 +114,29 @@ fn read_map<'a>(tokens: &'a [String]) -> Result<(Edn, &'a [String]), String> {
     }
 }
 
+fn read_str<'a>(tokens: &'a [String]) -> Result<(Edn, &'a [String]), String> {
+    let mut res = String::new();
+    let mut xs = tokens;
+    let mut counter = 0;
+    loop {
+        let (next_token, rest) = xs
+            .split_first()
+            .ok_or("Could not find closing `\"` for Str".to_string())?;
+        if next_token == "\"" {
+            return Ok((Edn::Str(res), rest));
+        }
+        let (exp, new_xs) = xs
+            .split_first()
+            .ok_or("Could not find closing `\"` for Str".to_string())?;
+        if counter != 0 {
+            res.push_str(" ");
+        }
+        res.push_str(exp);
+        xs = new_xs;
+        counter += 1;
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -127,7 +152,9 @@ mod test {
             vec![
                 "[".to_string(),
                 "1".to_string(),
-                "\"2\"".to_string(),
+                "\"".to_string(),
+                "2".to_string(),
+                "\"".to_string(),
                 "3.3".to_string(),
                 ":b".to_string(),
                 "[".to_string(),
@@ -216,5 +243,17 @@ mod test {
                     Edn::Key(":A".to_string()),
                     Edn::Nil}))})))
         );
+    }
+
+    #[test]
+    fn parse_wordy_str() {
+        let edn = "[\"hello brave new world\"]";
+
+        assert_eq!(
+            parse_edn(edn).unwrap(),
+            Edn::Vector(Vector::new(vec![Edn::Str(
+                "hello brave new world".to_string()
+            )]))
+        )
     }
 }
