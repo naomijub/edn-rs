@@ -437,7 +437,7 @@ fn to_vec() {
 }
 
 #[derive(Debug, PartialEq)]
-pub(crate) enum Error {
+pub enum Error {
     ParseEdnError(String),
 }
 
