@@ -72,5 +72,6 @@ pub fn json_to_edn(json: String) -> String {
 }
 
 pub use deserialize::parse_edn;
+pub use edn::Error as EdnError;
 pub use edn::{Double, Edn, List, Map, Set, Vector};
 pub use serialize::Serialize;

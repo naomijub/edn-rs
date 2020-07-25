@@ -378,7 +378,7 @@ impl Edn {
 }
 
 impl std::str::FromStr for Edn {
-    type Err = String;
+    type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         crate::deserialize::parse_edn(s)
@@ -434,4 +434,35 @@ fn to_vec() {
     let v = vec![String::from("5"), String::from("6"), String::from("7")];
 
     assert_eq!(edn.to_vec().unwrap(), v);
+}
+
+#[derive(Debug, PartialEq)]
+pub(crate) enum Error {
+    ParseEdnError(String),
+}
+
+impl From<String> for Error {
+    fn from(s: String) -> Self {
+        Error::ParseEdnError(s)
+    }
+}
+
+impl std::error::Error for Error {
+    fn description(&self) -> &str {
+        match self {
+            Error::ParseEdnError(s) => &s,
+        }
+    }
+
+    fn cause(&self) -> Option<&dyn std::error::Error> {
+        Some(self)
+    }
+}
+
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Error::ParseEdnError(s) => write!(f, "{}", &s),
+        }
+    }
 }

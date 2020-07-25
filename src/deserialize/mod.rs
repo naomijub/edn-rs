@@ -1,7 +1,8 @@
+use crate::edn::Error;
 use crate::edn::{Edn, List, Map, Set, Vector};
 
 /// `parse_edn` parses a EDN String into [`Edn`](../edn_rs/edn/enum.Edn.html)
-pub fn parse_edn(edn: &str) -> Result<Edn, String> {
+pub fn parse_edn(edn: &str) -> Result<Edn, Error> {
     let tokens = tokenize(edn);
 
     Ok(parse(&tokens[..])?.0)
@@ -27,25 +28,25 @@ fn tokenize(edn: &str) -> Vec<String> {
         .collect()
 }
 
-fn parse<'a>(tokens: &'a [String]) -> Result<(Edn, &'a [String]), String> {
+fn parse<'a>(tokens: &'a [String]) -> Result<(Edn, &'a [String]), Error> {
     let (token, rest) = tokens
         .split_first()
-        .ok_or("Could not get token".to_string())?;
+        .ok_or(Error::from("Could not get token".to_string()))?;
 
     match &token[..] {
         "[" => read_vec(rest),
-        "]" => Err("Unexpected Token `]`".to_string()),
+        "]" => Err("Unexpected Token `]`".to_string().into()),
         "(" => read_list(rest),
-        ")" => Err("Unexpected Token `)`".to_string()),
+        ")" => Err("Unexpected Token `)`".to_string().into()),
         "@" => read_set(rest),
         "{" => read_map(rest),
-        "}" => Err("Unexpected Token `}`".to_string()),
+        "}" => Err("Unexpected Token `}`".to_string().into()),
         "\"" => read_str(rest),
         _ => Ok((Edn::parse_word(token.to_string()), rest)),
     }
 }
 
-fn read_vec<'a>(tokens: &'a [String]) -> Result<(Edn, &'a [String]), String> {
+fn read_vec<'a>(tokens: &'a [String]) -> Result<(Edn, &'a [String]), Error> {
     let mut res: Vec<Edn> = vec![];
     let mut xs = tokens;
     loop {
@@ -61,7 +62,7 @@ fn read_vec<'a>(tokens: &'a [String]) -> Result<(Edn, &'a [String]), String> {
     }
 }
 
-fn read_list<'a>(tokens: &'a [String]) -> Result<(Edn, &'a [String]), String> {
+fn read_list<'a>(tokens: &'a [String]) -> Result<(Edn, &'a [String]), Error> {
     let mut res: Vec<Edn> = vec![];
     let mut xs = tokens;
     loop {
@@ -77,7 +78,7 @@ fn read_list<'a>(tokens: &'a [String]) -> Result<(Edn, &'a [String]), String> {
     }
 }
 
-fn read_set<'a>(tokens: &'a [String]) -> Result<(Edn, &'a [String]), String> {
+fn read_set<'a>(tokens: &'a [String]) -> Result<(Edn, &'a [String]), Error> {
     use std::collections::BTreeSet;
     let mut res: BTreeSet<Edn> = BTreeSet::new();
     let mut xs = tokens;
@@ -94,7 +95,7 @@ fn read_set<'a>(tokens: &'a [String]) -> Result<(Edn, &'a [String]), String> {
     }
 }
 
-fn read_map<'a>(tokens: &'a [String]) -> Result<(Edn, &'a [String]), String> {
+fn read_map<'a>(tokens: &'a [String]) -> Result<(Edn, &'a [String]), Error> {
     use std::collections::BTreeMap;
     let mut res = BTreeMap::new();
     let mut xs = tokens;
@@ -114,7 +115,7 @@ fn read_map<'a>(tokens: &'a [String]) -> Result<(Edn, &'a [String]), String> {
     }
 }
 
-fn read_str<'a>(tokens: &'a [String]) -> Result<(Edn, &'a [String]), String> {
+fn read_str<'a>(tokens: &'a [String]) -> Result<(Edn, &'a [String]), Error> {
     let mut res = String::new();
     let mut xs = tokens;
     let mut counter = 0;

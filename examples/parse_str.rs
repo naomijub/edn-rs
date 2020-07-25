@@ -1,7 +1,7 @@
-use edn_rs::{map, parse_edn, set, Edn, Map, Set, Vector};
+use edn_rs::{map, parse_edn, set, Edn, EdnError, Map, Set, Vector};
 use std::str::FromStr;
 
-fn main() -> Result<(), String> {
+fn main() -> Result<(), EdnError> {
     let edn_str = "{:a \"2\" :b [true false] :c #{:A {:a :b} nil}}";
     let edn = Edn::from_str(edn_str);
 
