@@ -3,6 +3,7 @@ name = "edn-rs"
 version = "0.9.4"
 authors = ["Julia Naomi <jnboeira@outlook.com>",  "Otavio Pace <otaviopp8@gmail.com>"]
 description = "Crate to parse and emit EDN"
+readme = "README.md"
 documentation = "https://docs.rs/edn-rs/"
 repository = "https://github.com/naomijub/edn-rs"
 keywords = ["EDN"]
