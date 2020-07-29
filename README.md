@@ -10,7 +10,7 @@ Crate to parse and emit EDN [![Build Status](https://travis-ci.org/naomijub/edn-
 `Cargo.toml`
 ```toml
 [dependencies]
-edn-rs = "0.9.4"
+edn-rs = "0.9.5"
 ```
 
 **Parse an EDN token** into a `Edn` with `edn!` macro:
@@ -163,7 +163,7 @@ fn main() {
 - [x] Define `struct` to map EDN info `EdnNode`
 - [x] Define EDN types, `EdnType`
  - [ ] Edn Type into primitive: `Edn::Bool(true).into() -> true`
-- [x] Parse EDN data [`parse_edn`](https://docs.rs/edn-rs/0.9.4/edn_rs/deserialize/fn.parse_edn.html):
+- [x] Parse EDN data [`parse_edn`](https://docs.rs/edn-rs/0.9.5/edn_rs/deserialize/fn.parse_edn.html):
     - [x] nil `""`
     - [x] String `"\"string\""`
     - [x] Numbers `"324352"`, `"3442.234"`, `"3/4"`
@@ -174,7 +174,7 @@ fn main() {
     - [x] Set `"#{1 2 3}"`
     - [x] Map `"{:a 1 :b 2 }"`
     - [x] Nested structures `"{:a \"2\" :b [true false] :c #{:A {:a :b} nil}}"`
-- [ ] Simple data structures in one another [`edn!`](https://docs.rs/edn-rs/0.9.4/edn_rs/macro.edn.html):
+- [ ] Simple data structures in one another [`edn!`](https://docs.rs/edn-rs/0.9.5/edn_rs/macro.edn.html):
     - [x] Vec in Vec `"[1 2 [:3 \"4\"]]"`
     - [ ] Set in _Vec_ `"[1 2 #{:3 \"4\"}]"`
     - [x] List in List `"(1 2 (:3 \"4\"))"`
