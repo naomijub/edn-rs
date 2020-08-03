@@ -31,7 +31,7 @@ fn tokenize(edn: &str) -> Vec<String> {
 fn parse<'a>(tokens: &'a [String]) -> Result<(Edn, &'a [String]), Error> {
     let (token, rest) = tokens
         .split_first()
-        .ok_or(Error::from("Could not get token".to_string()))?;
+        .ok_or(Error::from("Could not understand tokens".to_string()))?;
 
     match &token[..] {
         "[" => read_vec(rest),
