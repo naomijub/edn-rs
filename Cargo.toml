@@ -1,6 +1,6 @@
 [package]
 name = "edn-rs"
-version = "0.10.1"
+version = "0.10.2"
 authors = ["Julia Naomi <jnboeira@outlook.com>",  "Otavio Pace <otaviopp8@gmail.com>"]
 description = "Crate to parse and emit EDN"
 readme = "README.md"
@@ -14,7 +14,6 @@ edition = "2018"
 
 [dependencies]
 regex = "1"
-ordered-float = "1.1"
 
 [dev-dependencies.cargo-husky]
 version = "1"

@@ -1,4 +1,3 @@
-use ordered_float::OrderedFloat;
 use std::cmp::{Ord, PartialOrd};
 use std::collections::{BTreeMap, BTreeSet};
 use utils::index::Index;
@@ -75,7 +74,29 @@ impl Map {
     }
 }
 
-pub type Double = OrderedFloat<f64>;
+#[derive(Clone, Ord, Debug, Eq, PartialEq, PartialOrd, Hash)]
+pub struct Double(i64,u32);
+
+impl From<f64> for Double {
+    fn from(f: f64) -> Double {
+        let f_as_str = format!("{}", f);
+        let f_split = f_as_str.split(".").collect::<Vec<&str>>();
+        Double(f_split[0].parse::<i64>().unwrap(), f_split.get(1).unwrap_or(&"0").parse::<u32>().unwrap())
+
+    }
+}
+
+impl std::fmt::Display for Double {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}.{}", self.0, self.1)
+    }
+}
+
+impl Double {
+    fn to_float(&self) -> f64{
+        format!("{}.{}", self.0, self.1).parse::<f64>().unwrap()
+    }
+}
 
 impl core::fmt::Display for Vector {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
@@ -184,7 +205,7 @@ impl Edn {
             Edn::Str(s) => s.parse::<f64>().ok(),
             Edn::Int(i) => to_double(i).ok(),
             Edn::UInt(u) => to_double(u).ok(),
-            Edn::Double(d) => Some(d.into_inner()),
+            Edn::Double(d) => Some(d.to_float()),
             Edn::Rational(r) => rational_to_double(&r),
             _ => None,
         }
@@ -208,7 +229,7 @@ impl Edn {
             Edn::Key(k) => k.parse::<isize>().ok(),
             Edn::Str(s) => s.parse::<isize>().ok(),
             Edn::Int(i) => Some(i.to_owned() as isize),
-            Edn::Double(d) => Some(d.to_owned().round() as isize),
+            Edn::Double(d) => Some(d.to_owned().to_float().round() as isize),
             Edn::Rational(r) => Some(rational_to_double(&r).unwrap_or(0f64).round() as isize),
             _ => None,
         }
@@ -220,7 +241,7 @@ impl Edn {
             Edn::Str(s) => s.parse::<usize>().ok(),
             Edn::Int(i) => Some(i.to_owned() as usize),
             Edn::UInt(i) => Some(i.to_owned()),
-            Edn::Double(d) => Some(d.to_owned().round() as usize),
+            Edn::Double(d) => Some(d.to_owned().to_float().round() as usize),
             Edn::Rational(r) => Some(rational_to_double(&r).unwrap_or(0f64).round() as usize),
             _ => None,
         }
@@ -371,7 +392,7 @@ impl Edn {
             }
             w if w.parse::<usize>().is_ok() => Edn::UInt(w.parse::<usize>().unwrap()),
             w if w.parse::<isize>().is_ok() => Edn::Int(w.parse::<isize>().unwrap()),
-            w if w.parse::<f64>().is_ok() => Edn::Double(OrderedFloat(w.parse::<f64>().unwrap())),
+            w if w.parse::<f64>().is_ok() => Edn::Double(w.parse::<f64>().unwrap().into()),
             w => Edn::Symbol(w),
         }
     }
