@@ -75,14 +75,16 @@ impl Map {
 }
 
 #[derive(Clone, Ord, Debug, Eq, PartialEq, PartialOrd, Hash)]
-pub struct Double(i64,u32);
+pub struct Double(i64, u32);
 
 impl From<f64> for Double {
     fn from(f: f64) -> Double {
         let f_as_str = format!("{}", f);
         let f_split = f_as_str.split(".").collect::<Vec<&str>>();
-        Double(f_split[0].parse::<i64>().unwrap(), f_split.get(1).unwrap_or(&"0").parse::<u32>().unwrap())
-
+        Double(
+            f_split[0].parse::<i64>().unwrap(),
+            f_split.get(1).unwrap_or(&"0").parse::<u32>().unwrap(),
+        )
     }
 }
 
@@ -93,7 +95,7 @@ impl std::fmt::Display for Double {
 }
 
 impl Double {
-    fn to_float(&self) -> f64{
+    fn to_float(&self) -> f64 {
         format!("{}.{}", self.0, self.1).parse::<f64>().unwrap()
     }
 }
