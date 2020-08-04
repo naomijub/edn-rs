@@ -75,7 +75,7 @@ impl Map {
 }
 
 #[derive(Clone, Ord, Debug, Eq, PartialEq, PartialOrd, Hash)]
-pub struct Double(i64, u32);
+pub struct Double(i64, u64);
 
 impl From<f64> for Double {
     fn from(f: f64) -> Double {
@@ -83,20 +83,38 @@ impl From<f64> for Double {
         let f_split = f_as_str.split(".").collect::<Vec<&str>>();
         Double(
             f_split[0].parse::<i64>().unwrap(),
-            f_split.get(1).unwrap_or(&"0").parse::<u32>().unwrap(),
+            f_split
+                .get(1)
+                .unwrap_or(&"0")
+                .chars()
+                .rev()
+                .collect::<String>()
+                .parse::<u64>()
+                .unwrap(),
         )
     }
 }
 
 impl std::fmt::Display for Double {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}.{}", self.0, self.1)
+        write!(
+            f,
+            "{}.{}",
+            self.0,
+            self.1.to_string().chars().rev().collect::<String>()
+        )
     }
 }
 
 impl Double {
     fn to_float(&self) -> f64 {
-        format!("{}.{}", self.0, self.1).parse::<f64>().unwrap()
+        format!(
+            "{}.{}",
+            self.0,
+            self.1.to_string().chars().rev().collect::<String>()
+        )
+        .parse::<f64>()
+        .unwrap()
     }
 }
 
@@ -428,37 +446,6 @@ fn rational_to_double(r: &str) -> Option<f64> {
     None
 }
 
-#[test]
-fn parses_rationals() {
-    assert_eq!(rational_to_double("3/4").unwrap(), 0.75f64);
-    assert_eq!(rational_to_double("25/5").unwrap(), 5f64);
-    assert_eq!(rational_to_double("15/4").unwrap(), 3.75f64);
-    assert_eq!(rational_to_double("3 4"), None);
-    assert_eq!(rational_to_double("3/4/5"), None);
-    assert_eq!(rational_to_double("text/moretext"), None);
-}
-
-#[test]
-fn iterator() {
-    let v = Edn::Vector(Vector::new(vec![Edn::Int(5), Edn::Int(6), Edn::Int(7)]));
-    let sum = v
-        .iter()
-        .unwrap()
-        .filter(|e| e.to_int().is_some())
-        .map(|e| e.to_int().unwrap())
-        .sum();
-
-    assert_eq!(18isize, sum);
-}
-
-#[test]
-fn to_vec() {
-    let edn = Edn::Vector(Vector::new(vec![Edn::Int(5), Edn::Int(6), Edn::Int(7)]));
-    let v = vec![String::from("5"), String::from("6"), String::from("7")];
-
-    assert_eq!(edn.to_vec().unwrap(), v);
-}
-
 #[derive(Debug, PartialEq)]
 pub enum Error {
     ParseEdnError(String),
@@ -487,5 +474,54 @@ impl std::fmt::Display for Error {
         match self {
             Error::ParseEdnError(s) => write!(f, "{}", &s),
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    fn parses_rationals() {
+        assert_eq!(rational_to_double("3/4").unwrap(), 0.75f64);
+        assert_eq!(rational_to_double("25/5").unwrap(), 5f64);
+        assert_eq!(rational_to_double("15/4").unwrap(), 3.75f64);
+        assert_eq!(rational_to_double("3 4"), None);
+        assert_eq!(rational_to_double("3/4/5"), None);
+        assert_eq!(rational_to_double("text/moretext"), None);
+    }
+
+    #[test]
+    fn iterator() {
+        let v = Edn::Vector(Vector::new(vec![Edn::Int(5), Edn::Int(6), Edn::Int(7)]));
+        let sum = v
+            .iter()
+            .unwrap()
+            .filter(|e| e.to_int().is_some())
+            .map(|e| e.to_int().unwrap())
+            .sum();
+
+        assert_eq!(18isize, sum);
+    }
+
+    #[test]
+    fn to_vec() {
+        let edn = Edn::Vector(Vector::new(vec![Edn::Int(5), Edn::Int(6), Edn::Int(7)]));
+        let v = vec![String::from("5"), String::from("6"), String::from("7")];
+
+        assert_eq!(edn.to_vec().unwrap(), v);
+    }
+
+    #[test]
+    fn double_deals_with_decimal_zeros() {
+        let double = Double::from(-3.0000564f64);
+
+        assert_eq!(double.to_float(), -3.0000564f64);
+    }
+
+    #[test]
+    fn double_deals_without_decimal_zeros() {
+        let double = Double::from(45843.835832564f64);
+
+        assert_eq!(double.to_float(), 45843.835832564f64);
     }
 }
