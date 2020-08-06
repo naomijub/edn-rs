@@ -1,5 +1,11 @@
 use crate::edn::Error;
 use crate::edn::{Edn, List, Map, Set, Vector};
+use std::marker::Sized;
+/// public trait to be used to `Deserialize` structs
+/// A possible solution can be found [here](https://github.com/naomijub/transistor/blob/master/src/types/response.rs#L152)
+pub trait Deserialize: Sized {
+    fn deserialize<S>(self) -> Result<Self, Error>;
+}
 
 /// `parse_edn` parses a EDN String into [`Edn`](../edn_rs/edn/enum.Edn.html)
 pub fn parse_edn(edn: &str) -> Result<Edn, Error> {
