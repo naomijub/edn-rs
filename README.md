@@ -162,7 +162,7 @@ fn main() {
 ## Current Features
 - [x] Define `struct` to map EDN info `EdnNode`
 - [x] Define EDN types, `EdnType`
- - [ ] Edn Type into primitive: `Edn::Bool(true).into() -> true`
+ - [x] Edn Type into primitive: `Edn::Bool(true).into() -> true`. This was done by `to_float`, `to_bool`, `to_int`, `to_vec`.
 - [x] Parse EDN data [`parse_edn`](https://docs.rs/edn-rs/0.10.2/edn_rs/deserialize/fn.parse_edn.html):
     - [x] nil `""`
     - [x] String `"\"string\""`
@@ -183,7 +183,7 @@ fn main() {
 - [x] Multiple simple data structures in one another (Map and Set in a vector)
 - [x] Multi deepen data structures (Map in a Set in a List in a  Vec in a Vec)
 - [x] Navigate through Edn Data 
-    - [ ] Navigate through Sets
+    - [x] Navigate through Sets. DOne by `set_iter`
 - [x] Json to Edn
     - [x] Json String to EDN String
     - [x] macro to process Structs and Enums to EDN
