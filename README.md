@@ -187,7 +187,7 @@ fn main() {
 - [x] Json to Edn
     - [x] Json String to EDN String
     - [x] macro to process Structs and Enums to EDN
-- [ ] trait Deserialize EDN to Struct
+- [x] trait Deserialize EDN to Struct
 - [x] trait Serialize struct to EDN
 
 ## Could be done in another project `edn-derive`
