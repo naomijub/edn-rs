@@ -6,38 +6,14 @@
 /// #[derive(Debug)]
 /// struct YourType;
 ///
-/// impl Serialize for  YourType {
+/// impl Serialize for YourType {
 ///     fn serialize(self) -> String {
 ///         format!("{:?}", self)
 ///     }
 /// }
 /// ```
 ///
-/// Implemented types:
-/// `String, &str, char` and `Options`
-/// `ser_primitives![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool];` and `Options`
-/// `ser_vec![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];`
-/// `ser_vec![Vec<i8>, Vec<i16>, Vec<i32>, Vec<i64>, Vec<isize>, Vec<u8>, Vec<u16>, Vec<u32>, Vec<u64>, Vec<usize>, Vec<f32>, Vec<f64>, Vec<bool>, Vec<String>, Vec<&str>];`
-/// `ser_hashset![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];`
-/// `ser_set![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];`
-/// `ser_list![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];`
-/// `ser_hashmap![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];`
-/// `ser_hashmap_str![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];`
-/// `ser_hashmap![Vec<i8>, Vec<i16>, Vec<i32>, Vec<i64>, Vec<isize>, Vec<u8>, Vec<u16>, Vec<u32>, Vec<u64>, Vec<usize>, Vec<f32>, Vec<f64>, Vec<bool>, Vec<String>, Vec<&str>];`
-/// `ser_hashmap_str![Vec<i8>, Vec<i16>, Vec<i32>, Vec<i64>, Vec<isize>, Vec<u8>, Vec<u16>, Vec<u32>, Vec<u64>, Vec<usize>, Vec<f32>, Vec<f64>, Vec<bool>, Vec<String>, Vec<&str>];`
-/// `ser_vec![HashMap<String, i8>, HashMap<String, i16>, HashMap<String, i32>, HashMap<String, i64>, HashMap<String, isize>, HashMap<String, u8>, HashMap<String, u16>, HashMap<String, u32>, HashMap<String, u64>, HashMap<String, usize>, HashMap<String, f32>, HashMap<String, f64>, HashMap<String, bool>, HashMap<String, String>, HashMap<String, &str>];`
-/// `ser_vec![HashMap<&str, i8>, HashMap<&str, i16>, HashMap<&str, i32>, HashMap<&str, i64>, HashMap<&str, isize>, HashMap<&str, u8>, HashMap<&str, u16>, HashMap<&str, u32>, HashMap<&str, u64>, HashMap<&str, usize>, HashMap<&str, f32>, HashMap<&str, f64>, HashMap<&str, bool>, HashMap<&str, String>, HashMap<&str, &str>];`
-/// `ser_vec![HashMap<String, Vec<i8>>, HashMap<String, Vec<i16>>, HashMap<String, Vec<i32>>, HashMap<String, Vec<i64>>, HashMap<String, Vec<isize>>, HashMap<String, Vec<u8>>, HashMap<String, Vec<u16>>, HashMap<String, Vec<u32>>, HashMap<String, Vec<u64>>, HashMap<String, Vec<usize>>, HashMap<String, Vec<f32>>, HashMap<String, Vec<f64>>, HashMap<String, Vec<bool>>, HashMap<String, Vec<String>>, HashMap<String, Vec<&str>>];`
-/// `ser_vec![HashMap<&str, Vec<i8>>, HashMap<&str, Vec<i16>>, HashMap<&str, Vec<i32>>, HashMap<&str, Vec<i64>>, HashMap<&str, Vec<isize>>, HashMap<&str, Vec<u8>>, HashMap<&str, Vec<u16>>, HashMap<&str, Vec<u32>>, HashMap<&str, Vec<u64>>, HashMap<&str, Vec<usize>>, HashMap<&str, Vec<f32>>, HashMap<&str, Vec<f64>>, HashMap<&str, Vec<bool>>, HashMap<&str, Vec<String>>, HashMap<&str, Vec<&str>>];`
-/// `ser_hashmap![Vec<HashMap<String, i8>>, Vec<HashMap<String, i16>>, Vec<HashMap<String, i32>>, Vec<HashMap<String, i64>>, Vec<HashMap<String, isize>>, Vec<HashMap<String, u8>>, Vec<HashMap<String, u16>>, Vec<HashMap<String, u32>>, Vec<HashMap<String, u64>>, Vec<HashMap<String, usize>>, Vec<HashMap<String, f32>>, Vec<HashMap<String, f64>>, Vec<HashMap<String, bool>>, Vec<HashMap<String, String>>, Vec<HashMap<String, &str>>];`
-/// `ser_hashmap_str![Vec<HashMap<&str, i8>>, Vec<HashMap<&str, i16>>, Vec<HashMap<&str, i32>>, Vec<HashMap<&str, i64>>, Vec<HashMap<&str, isize>>, Vec<HashMap<&str, u8>>, Vec<HashMap<&str, u16>>, Vec<HashMap<&str, u32>>, Vec<HashMap<&str, u64>>, Vec<HashMap<&str, usize>>, Vec<HashMap<&str, f32>>, Vec<HashMap<&str, f64>>, Vec<HashMap<&str, bool>>, Vec<HashMap<&str, String>>, Vec<HashMap<&str, &str>>];`
-/// `ser_hashmap![HashMap<String, Vec<i8>>, HashMap<String, Vec<i16>>, HashMap<String, Vec<i32>>, HashMap<String, Vec<i64>>, HashMap<String, Vec<isize>>, HashMap<String, Vec<u8>>, HashMap<String, Vec<u16>>, HashMap<String, Vec<u32>>, HashMap<String, Vec<u64>>, HashMap<String, Vec<usize>>, HashMap<String, Vec<f32>>, HashMap<String, Vec<f64>>, HashMap<String, Vec<bool>>, HashMap<String, Vec<String>>, HashMap<String, Vec<&str>>];`
-/// `ser_hashmap_str![HashMap<String, Vec<i8>>, HashMap<String, Vec<i16>>, HashMap<String, Vec<i32>>, HashMap<String, Vec<i64>>, HashMap<String, Vec<isize>>, HashMap<String, Vec<u8>>, HashMap<String, Vec<u16>>, HashMap<String, Vec<u32>>, HashMap<String, Vec<u64>>, HashMap<String, Vec<usize>>, HashMap<String, Vec<f32>>, HashMap<String, Vec<f64>>, HashMap<String, Vec<bool>>, HashMap<String, Vec<String>>, HashMap<String, Vec<&str>>];`
-/// `ser_hashmap![HashSet<i8>, HashSet<i16>, HashSet<i32>, HashSet<i64>, HashSet<isize>, HashSet<u8>, HashSet<u16>, HashSet<u32>, HashSet<u64>, HashSet<usize>, HashSet<f32>, HashSet<f64>, HashSet<bool>, HashSet<String>, HashSet<&str>];`
-/// `ser_hashmap_str![HashSet<i8>, HashSet<i16>, HashSet<i32>, HashSet<i64>, HashSet<isize>, HashSet<u8>, HashSet<u16>, HashSet<u32>, HashSet<u64>, HashSet<usize>, HashSet<f32>, HashSet<f64>, HashSet<bool>, HashSet<String>, HashSet<&str>];`
-/// `ser_hashmap![BTreeSet<i8>, BTreeSet<i16>, BTreeSet<i32>, BTreeSet<i64>, BTreeSet<isize>, BTreeSet<u8>, BTreeSet<u16>, BTreeSet<u32>, BTreeSet<u64>, BTreeSet<usize>, BTreeSet<f32>, BTreeSet<f64>, BTreeSet<bool>, BTreeSet<String>, BTreeSet<&str>];`
-/// `ser_hashmap_str![BTreeSet<i8>, BTreeSet<i16>, BTreeSet<i32>, BTreeSet<i64>, BTreeSet<isize>, BTreeSet<u8>, BTreeSet<u16>, BTreeSet<u32>, BTreeSet<u64>, BTreeSet<usize>, BTreeSet<f32>, BTreeSet<f64>, BTreeSet<bool>, BTreeSet<String>, BTreeSet<&str>];`
-///
+/// Implemented for all generic types.
 pub trait Serialize {
     fn serialize(self) -> String;
 }
@@ -86,172 +62,164 @@ macro_rules! ser_option_primitives {
     };
 }
 
-macro_rules! ser_vec {
-    ( $( $name:ty ),+ ) => {
-        $(
-            impl Serialize for Vec<$name>
-            {
-                fn serialize(self) -> String {
-                    let aux_vec = self.iter().map(|i| i.to_owned().serialize()).collect::<Vec<String>>();
-                    let mut s = String::new();
-                    s.push_str("[");
-                    s.push_str(&aux_vec.join(", "));
-                    s.push_str("]");
-                    s
-                }
-            }
-        )+
-    };
+impl<T> Serialize for Vec<T>
+where
+    T: Serialize,
+{
+    fn serialize(self) -> String {
+        let aux_vec = self
+            .into_iter()
+            .map(|i| i.serialize())
+            .collect::<Vec<String>>();
+        let mut s = String::new();
+        s.push_str("[");
+        s.push_str(&aux_vec.join(", "));
+        s.push_str("]");
+        s
+    }
 }
 
-macro_rules! ser_hashset {
-    ( $( $name:ty ),+ ) => {
-        $(
-            impl Serialize for std::collections::HashSet<$name>
-            {
-                fn serialize(self) -> String {
-                    let aux_vec = self.iter().map(|i| i.to_owned().serialize()).collect::<Vec<String>>();
-                    let mut s = String::new();
-                    s.push_str("#{");
-                    s.push_str(&aux_vec.join(", "));
-                    s.push_str("}");
-                    s
-                }
-            }
-        )+
-    };
+impl<T> Serialize for std::collections::HashSet<T>
+where
+    T: Serialize,
+{
+    fn serialize(self) -> String {
+        let aux_vec = self
+            .into_iter()
+            .map(|i| i.serialize())
+            .collect::<Vec<String>>();
+        let mut s = String::new();
+        s.push_str("#{");
+        s.push_str(&aux_vec.join(", "));
+        s.push_str("}");
+        s
+    }
 }
 
-macro_rules! ser_set {
-    ( $( $name:ty ),+ ) => {
-        $(
-            impl Serialize for std::collections::BTreeSet<$name>
-            {
-                fn serialize(self) -> String {
-                    let aux_vec = self.iter().map(|i| i.to_owned().serialize()).collect::<Vec<String>>();
-                    let mut s = String::new();
-                    s.push_str("#{");
-                    s.push_str(&aux_vec.join(", "));
-                    s.push_str("}");
-                    s
-                }
-            }
-        )+
-    };
+impl<T> Serialize for std::collections::BTreeSet<T>
+where
+    T: Serialize,
+{
+    fn serialize(self) -> String {
+        let aux_vec = self
+            .into_iter()
+            .map(|i| i.serialize())
+            .collect::<Vec<String>>();
+        let mut s = String::new();
+        s.push_str("#{");
+        s.push_str(&aux_vec.join(", "));
+        s.push_str("}");
+        s
+    }
 }
 
-macro_rules! ser_list {
-    ( $( $name:ty ),+ ) => {
-        $(
-            impl Serialize for std::collections::LinkedList<$name>
-            {
-                fn serialize(self) -> String {
-                    let aux_vec = self.iter().map(|i| i.to_owned().serialize()).collect::<Vec<String>>();
-                    let mut s = String::new();
-                    s.push_str("(");
-                    s.push_str(&aux_vec.join(", "));
-                    s.push_str(")");
-                    s
-                }
-            }
-        )+
-    };
+impl<T> Serialize for std::collections::LinkedList<T>
+where
+    T: Serialize,
+{
+    fn serialize(self) -> String {
+        let aux_vec = self
+            .into_iter()
+            .map(|i| i.serialize())
+            .collect::<Vec<String>>();
+        let mut s = String::new();
+        s.push_str("(");
+        s.push_str(&aux_vec.join(", "));
+        s.push_str(")");
+        s
+    }
 }
 
-macro_rules! ser_hashmap {
-    ( $( $name:ty ),+ ) => {
-        $(
-            impl Serialize for std::collections::HashMap<String, $name>
-            {
-                fn serialize(self) -> String {
-                    let aux_vec = self.iter()
-                        .map(|(k, v)|
-                            format!(":{} {}",
-                            k.to_string().replace(" ", "-").replace("_", "-"),
-                            v.to_owned().serialize())
-                        )
-                        .collect::<Vec<String>>();
-                    let mut s = String::new();
-                    s.push_str("{");
-                    s.push_str(&aux_vec.join(", "));
-                    s.push_str("}");
-                    s
-                }
-            }
-        )+
-    };
+impl<T> Serialize for std::collections::HashMap<String, T>
+where
+    T: Serialize,
+{
+    fn serialize(self) -> String {
+        let aux_vec = self
+            .into_iter()
+            .map(|(k, v)| {
+                format!(
+                    ":{} {}",
+                    k.to_string().replace(" ", "-").replace("_", "-"),
+                    v.serialize()
+                )
+            })
+            .collect::<Vec<String>>();
+        let mut s = String::new();
+        s.push_str("{");
+        s.push_str(&aux_vec.join(", "));
+        s.push_str("}");
+        s
+    }
 }
 
-macro_rules! ser_hashmap_str {
-    ( $( $name:ty ),+ ) => {
-        $(
-            impl Serialize for std::collections::HashMap<&str, $name>
-            {
-                fn serialize(self) -> String {
-                    let aux_vec = self.iter()
-                        .map(|(k, v)|
-                            format!(":{} {}",
-                            k.to_string().replace(" ", "-").replace("_", "-"),
-                            v.to_owned().serialize())
-                        )
-                        .collect::<Vec<String>>();
-                    let mut s = String::new();
-                    s.push_str("{");
-                    s.push_str(&aux_vec.join(", "));
-                    s.push_str("}");
-                    s
-                }
-            }
-        )+
-    };
+impl<T> Serialize for std::collections::HashMap<&str, T>
+where
+    T: Serialize,
+{
+    fn serialize(self) -> String {
+        let aux_vec = self
+            .into_iter()
+            .map(|(k, v)| {
+                format!(
+                    ":{} {}",
+                    k.to_string().replace(" ", "-").replace("_", "-"),
+                    v.serialize()
+                )
+            })
+            .collect::<Vec<String>>();
+        let mut s = String::new();
+        s.push_str("{");
+        s.push_str(&aux_vec.join(", "));
+        s.push_str("}");
+        s
+    }
 }
 
-macro_rules! ser_btreemap {
-    ( $( $name:ty ),+ ) => {
-        $(
-            impl Serialize for std::collections::BTreeMap<String, $name>
-            {
-                fn serialize(self) -> String {
-                    let aux_vec = self.iter()
-                        .map(|(k, v)|
-                            format!(":{} {}",
-                            k.to_string().replace(" ", "-").replace("_", "-"),
-                            v.to_owned().serialize())
-                        )
-                        .collect::<Vec<String>>();
-                    let mut s = String::new();
-                    s.push_str("{");
-                    s.push_str(&aux_vec.join(", "));
-                    s.push_str("}");
-                    s
-                }
-            }
-        )+
-    };
+impl<T> Serialize for std::collections::BTreeMap<String, T>
+where
+    T: Serialize,
+{
+    fn serialize(self) -> String {
+        let aux_vec = self
+            .into_iter()
+            .map(|(k, v)| {
+                format!(
+                    ":{} {}",
+                    k.to_string().replace(" ", "-").replace("_", "-"),
+                    v.serialize()
+                )
+            })
+            .collect::<Vec<String>>();
+        let mut s = String::new();
+        s.push_str("{");
+        s.push_str(&aux_vec.join(", "));
+        s.push_str("}");
+        s
+    }
 }
 
-macro_rules! ser_btreemap_str {
-    ( $( $name:ty ),+ ) => {
-        $(
-            impl Serialize for std::collections::BTreeMap<&str, $name>
-            {
-                fn serialize(self) -> String {
-                    let aux_vec = self.iter()
-                        .map(|(k, v)|
-                            format!(":{} {}",
-                            k.to_string().replace(" ", "-").replace("_", "-"),
-                            v.to_owned().serialize())
-                        )
-                        .collect::<Vec<String>>();
-                    let mut s = String::new();
-                    s.push_str("{");
-                    s.push_str(&aux_vec.join(", "));
-                    s.push_str("}");
-                    s
-                }
-            }
-        )+
-    };
+impl<T> Serialize for std::collections::BTreeMap<&str, T>
+where
+    T: Serialize,
+{
+    fn serialize(self) -> String {
+        let aux_vec = self
+            .into_iter()
+            .map(|(k, v)| {
+                format!(
+                    ":{} {}",
+                    k.to_string().replace(" ", "-").replace("_", "-"),
+                    v.serialize()
+                )
+            })
+            .collect::<Vec<String>>();
+        let mut s = String::new();
+        s.push_str("{");
+        s.push_str(&aux_vec.join(", "));
+        s.push_str("}");
+        s
+    }
 }
 
 // Primitive Types
@@ -292,8 +260,8 @@ impl Serialize for char {
 
 impl Serialize for Option<String> {
     fn serialize(self) -> String {
-        if let Some(v) = self {
-            format!("{:?}", v)
+        if let Some(s) = self {
+            s.serialize()
         } else {
             String::from("nil")
         }
@@ -302,8 +270,8 @@ impl Serialize for Option<String> {
 
 impl Serialize for Option<&str> {
     fn serialize(self) -> String {
-        if let Some(v) = self {
-            format!("{:?}", v)
+        if let Some(s) = self {
+            s.serialize()
         } else {
             String::from("nil")
         }
@@ -312,8 +280,8 @@ impl Serialize for Option<&str> {
 
 impl Serialize for Option<char> {
     fn serialize(self) -> String {
-        if let Some(v) = self {
-            format!("{:?}", v)
+        if let Some(c) = self {
+            c.serialize()
         } else {
             String::from("nil")
         }
@@ -321,6 +289,12 @@ impl Serialize for Option<char> {
 }
 
 // Complex types
+impl<A: Serialize> Serialize for (A,) {
+    fn serialize(self) -> String {
+        format!("({})", self.0.serialize())
+    }
+}
+
 impl<A: Serialize, B: Serialize> Serialize for (A, B) {
     fn serialize(self) -> String {
         format!("({}, {})", self.0.serialize(), self.1.serialize())
@@ -380,505 +354,6 @@ impl<A: Serialize, B: Serialize, C: Serialize, D: Serialize, E: Serialize, F: Se
         )
     }
 }
-
-ser_vec![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];
-ser_vec![
-    Option<i8>,
-    Option<i16>,
-    Option<i32>,
-    Option<i64>,
-    Option<isize>,
-    Option<u8>,
-    Option<u16>,
-    Option<u32>,
-    Option<u64>,
-    Option<usize>,
-    Option<f32>,
-    Option<f64>,
-    Option<bool>,
-    Option<String>,
-    Option<&str>
-];
-ser_vec![
-    Vec<i8>,
-    Vec<i16>,
-    Vec<i32>,
-    Vec<i64>,
-    Vec<isize>,
-    Vec<u8>,
-    Vec<u16>,
-    Vec<u32>,
-    Vec<u64>,
-    Vec<usize>,
-    Vec<f32>,
-    Vec<f64>,
-    Vec<bool>,
-    Vec<String>,
-    Vec<&str>
-];
-ser_vec![
-    Vec<Option<i8>>,
-    Vec<Option<i16>>,
-    Vec<Option<i32>>,
-    Vec<Option<i64>>,
-    Vec<Option<isize>>,
-    Vec<Option<u8>>,
-    Vec<Option<u16>>,
-    Vec<Option<u32>>,
-    Vec<Option<u64>>,
-    Vec<Option<usize>>,
-    Vec<Option<f32>>,
-    Vec<Option<f64>>,
-    Vec<Option<bool>>,
-    Vec<Option<String>>,
-    Vec<Option<&str>>
-];
-ser_hashset![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];
-ser_hashset![
-    Option<i8>,
-    Option<i16>,
-    Option<i32>,
-    Option<i64>,
-    Option<isize>,
-    Option<u8>,
-    Option<u16>,
-    Option<u32>,
-    Option<u64>,
-    Option<usize>,
-    Option<f32>,
-    Option<f64>,
-    Option<bool>,
-    Option<String>,
-    Option<&str>
-];
-ser_set![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];
-ser_set![
-    Option<i8>,
-    Option<i16>,
-    Option<i32>,
-    Option<i64>,
-    Option<isize>,
-    Option<u8>,
-    Option<u16>,
-    Option<u32>,
-    Option<u64>,
-    Option<usize>,
-    Option<f32>,
-    Option<f64>,
-    Option<bool>,
-    Option<String>,
-    Option<&str>
-];
-ser_list![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];
-ser_list![
-    Option<i8>,
-    Option<i16>,
-    Option<i32>,
-    Option<i64>,
-    Option<isize>,
-    Option<u8>,
-    Option<u16>,
-    Option<u32>,
-    Option<u64>,
-    Option<usize>,
-    Option<f32>,
-    Option<f64>,
-    Option<bool>,
-    Option<String>,
-    Option<&str>
-];
-ser_hashmap![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];
-ser_hashmap![
-    Option<i8>,
-    Option<i16>,
-    Option<i32>,
-    Option<i64>,
-    Option<isize>,
-    Option<u8>,
-    Option<u16>,
-    Option<u32>,
-    Option<u64>,
-    Option<usize>,
-    Option<f32>,
-    Option<f64>,
-    Option<bool>,
-    Option<String>,
-    Option<&str>
-];
-ser_hashmap_str![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];
-ser_hashmap_str![
-    Option<i8>,
-    Option<i16>,
-    Option<i32>,
-    Option<i64>,
-    Option<isize>,
-    Option<u8>,
-    Option<u16>,
-    Option<u32>,
-    Option<u64>,
-    Option<usize>,
-    Option<f32>,
-    Option<f64>,
-    Option<bool>,
-    Option<String>,
-    Option<&str>
-];
-ser_hashmap![
-    Vec<i8>,
-    Vec<i16>,
-    Vec<i32>,
-    Vec<i64>,
-    Vec<isize>,
-    Vec<u8>,
-    Vec<u16>,
-    Vec<u32>,
-    Vec<u64>,
-    Vec<usize>,
-    Vec<f32>,
-    Vec<f64>,
-    Vec<bool>,
-    Vec<String>,
-    Vec<&str>
-];
-ser_hashmap![
-    Vec<Option<i8>>,
-    Vec<Option<i16>>,
-    Vec<Option<i32>>,
-    Vec<Option<i64>>,
-    Vec<Option<isize>>,
-    Vec<Option<u8>>,
-    Vec<Option<u16>>,
-    Vec<Option<u32>>,
-    Vec<Option<u64>>,
-    Vec<Option<usize>>,
-    Vec<Option<f32>>,
-    Vec<Option<f64>>,
-    Vec<Option<bool>>,
-    Vec<Option<String>>,
-    Vec<Option<&str>>
-];
-ser_hashmap_str![
-    Vec<i8>,
-    Vec<i16>,
-    Vec<i32>,
-    Vec<i64>,
-    Vec<isize>,
-    Vec<u8>,
-    Vec<u16>,
-    Vec<u32>,
-    Vec<u64>,
-    Vec<usize>,
-    Vec<f32>,
-    Vec<f64>,
-    Vec<bool>,
-    Vec<String>,
-    Vec<&str>
-];
-ser_hashmap_str![
-    Vec<Option<i8>>,
-    Vec<Option<i16>>,
-    Vec<Option<i32>>,
-    Vec<Option<i64>>,
-    Vec<Option<isize>>,
-    Vec<Option<u8>>,
-    Vec<Option<u16>>,
-    Vec<Option<u32>>,
-    Vec<Option<u64>>,
-    Vec<Option<usize>>,
-    Vec<Option<f32>>,
-    Vec<Option<f64>>,
-    Vec<Option<bool>>,
-    Vec<Option<String>>,
-    Vec<Option<&str>>
-];
-ser_btreemap![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];
-ser_btreemap![
-    Option<i8>,
-    Option<i16>,
-    Option<i32>,
-    Option<i64>,
-    Option<isize>,
-    Option<u8>,
-    Option<u16>,
-    Option<u32>,
-    Option<u64>,
-    Option<usize>,
-    Option<f32>,
-    Option<f64>,
-    Option<bool>,
-    Option<String>,
-    Option<&str>
-];
-ser_btreemap_str![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, String, &str];
-ser_btreemap_str![
-    Option<i8>,
-    Option<i16>,
-    Option<i32>,
-    Option<i64>,
-    Option<isize>,
-    Option<u8>,
-    Option<u16>,
-    Option<u32>,
-    Option<u64>,
-    Option<usize>,
-    Option<f32>,
-    Option<f64>,
-    Option<bool>,
-    Option<String>,
-    Option<&str>
-];
-ser_btreemap![
-    Vec<i8>,
-    Vec<i16>,
-    Vec<i32>,
-    Vec<i64>,
-    Vec<isize>,
-    Vec<u8>,
-    Vec<u16>,
-    Vec<u32>,
-    Vec<u64>,
-    Vec<usize>,
-    Vec<f32>,
-    Vec<f64>,
-    Vec<bool>,
-    Vec<String>,
-    Vec<&str>
-];
-ser_btreemap![
-    Vec<Option<i8>>,
-    Vec<Option<i16>>,
-    Vec<Option<i32>>,
-    Vec<Option<i64>>,
-    Vec<Option<isize>>,
-    Vec<Option<u8>>,
-    Vec<Option<u16>>,
-    Vec<Option<u32>>,
-    Vec<Option<u64>>,
-    Vec<Option<usize>>,
-    Vec<Option<f32>>,
-    Vec<Option<f64>>,
-    Vec<Option<bool>>,
-    Vec<Option<String>>,
-    Vec<Option<&str>>
-];
-ser_btreemap_str![
-    Vec<i8>,
-    Vec<i16>,
-    Vec<i32>,
-    Vec<i64>,
-    Vec<isize>,
-    Vec<u8>,
-    Vec<u16>,
-    Vec<u32>,
-    Vec<u64>,
-    Vec<usize>,
-    Vec<f32>,
-    Vec<f64>,
-    Vec<bool>,
-    Vec<String>,
-    Vec<&str>
-];
-ser_btreemap_str![
-    Vec<Option<i8>>,
-    Vec<Option<i16>>,
-    Vec<Option<i32>>,
-    Vec<Option<i64>>,
-    Vec<Option<isize>>,
-    Vec<Option<u8>>,
-    Vec<Option<u16>>,
-    Vec<Option<u32>>,
-    Vec<Option<u64>>,
-    Vec<Option<usize>>,
-    Vec<Option<f32>>,
-    Vec<Option<f64>>,
-    Vec<Option<bool>>,
-    Vec<Option<String>>,
-    Vec<Option<&str>>
-];
-
-use std::collections::HashMap;
-ser_vec![HashMap<String, i8>, HashMap<String, i16>, HashMap<String, i32>, HashMap<String, i64>, HashMap<String, isize>, HashMap<String, u8>, HashMap<String, u16>, HashMap<String, u32>, HashMap<String, u64>, HashMap<String, usize>, HashMap<String, f32>, HashMap<String, f64>, HashMap<String, bool>, HashMap<String, String>, HashMap<String, &str>];
-ser_vec![HashMap<&str, i8>, HashMap<&str, i16>, HashMap<&str, i32>, HashMap<&str, i64>, HashMap<&str, isize>, HashMap<&str, u8>, HashMap<&str, u16>, HashMap<&str, u32>, HashMap<&str, u64>, HashMap<&str, usize>, HashMap<&str, f32>, HashMap<&str, f64>, HashMap<&str, bool>, HashMap<&str, String>, HashMap<&str, &str>];
-ser_vec![HashMap<String, Vec<i8>>, HashMap<String, Vec<i16>>, HashMap<String, Vec<i32>>, HashMap<String, Vec<i64>>, HashMap<String, Vec<isize>>, HashMap<String, Vec<u8>>, HashMap<String, Vec<u16>>, HashMap<String, Vec<u32>>, HashMap<String, Vec<u64>>, HashMap<String, Vec<usize>>, HashMap<String, Vec<f32>>, HashMap<String, Vec<f64>>, HashMap<String, Vec<bool>>, HashMap<String, Vec<String>>, HashMap<String, Vec<&str>>];
-
-ser_hashmap![
-    Vec<HashMap<String, i8>>,
-    Vec<HashMap<String, i16>>,
-    Vec<HashMap<String, i32>>,
-    Vec<HashMap<String, i64>>,
-    Vec<HashMap<String, isize>>,
-    Vec<HashMap<String, u8>>,
-    Vec<HashMap<String, u16>>,
-    Vec<HashMap<String, u32>>,
-    Vec<HashMap<String, u64>>,
-    Vec<HashMap<String, usize>>,
-    Vec<HashMap<String, f32>>,
-    Vec<HashMap<String, f64>>,
-    Vec<HashMap<String, bool>>,
-    Vec<HashMap<String, String>>,
-    Vec<HashMap<String, &str>>
-];
-ser_hashmap_str![
-    Vec<HashMap<&str, i8>>,
-    Vec<HashMap<&str, i16>>,
-    Vec<HashMap<&str, i32>>,
-    Vec<HashMap<&str, i64>>,
-    Vec<HashMap<&str, isize>>,
-    Vec<HashMap<&str, u8>>,
-    Vec<HashMap<&str, u16>>,
-    Vec<HashMap<&str, u32>>,
-    Vec<HashMap<&str, u64>>,
-    Vec<HashMap<&str, usize>>,
-    Vec<HashMap<&str, f32>>,
-    Vec<HashMap<&str, f64>>,
-    Vec<HashMap<&str, bool>>,
-    Vec<HashMap<&str, String>>,
-    Vec<HashMap<&str, &str>>
-];
-ser_hashmap![HashMap<String, Vec<i8>>, HashMap<String, Vec<i16>>, HashMap<String, Vec<i32>>, HashMap<String, Vec<i64>>, HashMap<String, Vec<isize>>, HashMap<String, Vec<u8>>, HashMap<String, Vec<u16>>, HashMap<String, Vec<u32>>, HashMap<String, Vec<u64>>, HashMap<String, Vec<usize>>, HashMap<String, Vec<f32>>, HashMap<String, Vec<f64>>, HashMap<String, Vec<bool>>, HashMap<String, Vec<String>>, HashMap<String, Vec<&str>>];
-ser_hashmap_str![HashMap<String, Vec<i8>>, HashMap<String, Vec<i16>>, HashMap<String, Vec<i32>>, HashMap<String, Vec<i64>>, HashMap<String, Vec<isize>>, HashMap<String, Vec<u8>>, HashMap<String, Vec<u16>>, HashMap<String, Vec<u32>>, HashMap<String, Vec<u64>>, HashMap<String, Vec<usize>>, HashMap<String, Vec<f32>>, HashMap<String, Vec<f64>>, HashMap<String, Vec<bool>>, HashMap<String, Vec<String>>, HashMap<String, Vec<&str>>];
-
-use std::collections::HashSet;
-ser_hashmap![
-    HashSet<i8>,
-    HashSet<i16>,
-    HashSet<i32>,
-    HashSet<i64>,
-    HashSet<isize>,
-    HashSet<u8>,
-    HashSet<u16>,
-    HashSet<u32>,
-    HashSet<u64>,
-    HashSet<usize>,
-    HashSet<f32>,
-    HashSet<f64>,
-    HashSet<bool>,
-    HashSet<String>,
-    HashSet<&str>
-];
-
-ser_hashmap![
-    HashSet<Option<i8>>,
-    HashSet<Option<i16>>,
-    HashSet<Option<i32>>,
-    HashSet<Option<i64>>,
-    HashSet<Option<isize>>,
-    HashSet<Option<u8>>,
-    HashSet<Option<u16>>,
-    HashSet<Option<u32>>,
-    HashSet<Option<u64>>,
-    HashSet<Option<usize>>,
-    HashSet<Option<f32>>,
-    HashSet<Option<f64>>,
-    HashSet<Option<bool>>,
-    HashSet<Option<String>>,
-    HashSet<Option<&str>>
-];
-ser_hashmap_str![
-    HashSet<i8>,
-    HashSet<i16>,
-    HashSet<i32>,
-    HashSet<i64>,
-    HashSet<isize>,
-    HashSet<u8>,
-    HashSet<u16>,
-    HashSet<u32>,
-    HashSet<u64>,
-    HashSet<usize>,
-    HashSet<f32>,
-    HashSet<f64>,
-    HashSet<bool>,
-    HashSet<String>,
-    HashSet<&str>
-];
-
-ser_hashmap_str![
-    HashSet<Option<i8>>,
-    HashSet<Option<i16>>,
-    HashSet<Option<i32>>,
-    HashSet<Option<i64>>,
-    HashSet<Option<isize>>,
-    HashSet<Option<u8>>,
-    HashSet<Option<u16>>,
-    HashSet<Option<u32>>,
-    HashSet<Option<u64>>,
-    HashSet<Option<usize>>,
-    HashSet<Option<f32>>,
-    HashSet<Option<f64>>,
-    HashSet<Option<bool>>,
-    HashSet<Option<String>>,
-    HashSet<Option<&str>>
-];
-
-use std::collections::BTreeSet;
-ser_hashmap![
-    BTreeSet<i8>,
-    BTreeSet<i16>,
-    BTreeSet<i32>,
-    BTreeSet<i64>,
-    BTreeSet<isize>,
-    BTreeSet<u8>,
-    BTreeSet<u16>,
-    BTreeSet<u32>,
-    BTreeSet<u64>,
-    BTreeSet<usize>,
-    BTreeSet<f32>,
-    BTreeSet<f64>,
-    BTreeSet<bool>,
-    BTreeSet<String>,
-    BTreeSet<&str>
-];
-ser_hashmap![
-    BTreeSet<Option<i8>>,
-    BTreeSet<Option<i16>>,
-    BTreeSet<Option<i32>>,
-    BTreeSet<Option<i64>>,
-    BTreeSet<Option<isize>>,
-    BTreeSet<Option<u8>>,
-    BTreeSet<Option<u16>>,
-    BTreeSet<Option<u32>>,
-    BTreeSet<Option<u64>>,
-    BTreeSet<Option<usize>>,
-    BTreeSet<Option<f32>>,
-    BTreeSet<Option<f64>>,
-    BTreeSet<Option<bool>>,
-    BTreeSet<Option<String>>,
-    BTreeSet<Option<&str>>
-];
-ser_hashmap_str![
-    BTreeSet<i8>,
-    BTreeSet<i16>,
-    BTreeSet<i32>,
-    BTreeSet<i64>,
-    BTreeSet<isize>,
-    BTreeSet<u8>,
-    BTreeSet<u16>,
-    BTreeSet<u32>,
-    BTreeSet<u64>,
-    BTreeSet<usize>,
-    BTreeSet<f32>,
-    BTreeSet<f64>,
-    BTreeSet<bool>,
-    BTreeSet<String>,
-    BTreeSet<&str>
-];
-ser_hashmap_str![
-    BTreeSet<Option<i8>>,
-    BTreeSet<Option<i16>>,
-    BTreeSet<Option<i32>>,
-    BTreeSet<Option<i64>>,
-    BTreeSet<Option<isize>>,
-    BTreeSet<Option<u8>>,
-    BTreeSet<Option<u16>>,
-    BTreeSet<Option<u32>>,
-    BTreeSet<Option<u64>>,
-    BTreeSet<Option<usize>>,
-    BTreeSet<Option<f32>>,
-    BTreeSet<Option<f64>>,
-    BTreeSet<Option<bool>>,
-    BTreeSet<Option<String>>,
-    BTreeSet<Option<&str>>
-];
 
 /// `ser_struct!` creates a struct with the serialization trait already implemented:
 ///
@@ -1327,5 +802,20 @@ mod test {
 
         let foobar = Foo { foo__bar___boz: 3 };
         assert_eq!(foobar.serialize(), "{ :foo.bar/boz 3, }")
+    }
+
+    #[test]
+    fn multi_sized_tuples() {
+        assert_eq!((1,).serialize(), "(1)");
+        assert_eq!((1, "cool").serialize(), "(1, \"cool\")");
+        assert_eq!((1, "cool", false).serialize(), "(1, \"cool\", false)");
+        assert_eq!(
+            (1, "cool", false, 'z').serialize(),
+            "(1, \"cool\", false, \\z)"
+        );
+        assert_eq!(
+            (1, "cool", false, 'z', None::<String>).serialize(),
+            "(1, \"cool\", false, \\z, nil)"
+        );
     }
 }

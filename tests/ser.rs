@@ -12,7 +12,7 @@ mod tests {
     fn serializes_a_complex_structure() {
         ser_struct! {
             #[derive(Debug, Clone)]
-            struct Edn {
+            struct Example {
                 btreemap: BTreeMap<String, Vec<String>>,
                 btreeset: BTreeSet<i64>,
                 hashmap: HashMap<String, Vec<String>>,
@@ -20,7 +20,7 @@ mod tests {
                 tuples: (i32, bool, char),
             }
         };
-        let edn = Edn {
+        let edn = Example {
             btreemap: map! {"this is a key".to_string() => vec!["with".to_string(), "many".to_string(), "keys".to_string()]},
             btreeset: set! {3i64, 4i64, 5i64},
             hashmap: hmap! {"this is a key".to_string() => vec!["with".to_string(), "many".to_string(), "keys".to_string()]},
@@ -29,6 +29,42 @@ mod tests {
         };
 
         assert_eq!(edn.serialize(), "{ :btreemap {:this-is-a-key [\"with\", \"many\", \"keys\"]}, :btreeset #{3, 4, 5}, :hashmap {:this-is-a-key [\"with\", \"many\", \"keys\"]}, :hashset #{3}, :tuples (3, true, \\d), }");
+    }
+
+    #[test]
+    fn serializes_nested_structures() {
+        ser_struct! {
+        #[derive(Debug, Clone)]
+        struct Foo {
+            value: bool,
+        }
+        }
+
+        ser_struct! {
+        #[derive(Debug, Clone)]
+        struct Bar {
+            value: String,
+            foo_vec: Vec<Foo>,
+        }
+        }
+
+        ser_struct! {
+        #[derive(Debug, Clone)]
+        struct FooBar {
+            value: f64,
+            bar: Bar,
+        }
+        }
+
+        let edn = FooBar {
+            value: 3.4,
+            bar: Bar {
+                value: "data".to_string(),
+                foo_vec: vec![Foo { value: false }, Foo { value: true }],
+            },
+        };
+
+        assert_eq!(edn.serialize(), "{ :value 3.4, :bar { :value \"data\", :foo-vec [{ :value false, }, { :value true, }], }, }");
     }
 }
 
