@@ -45,23 +45,6 @@ macro_rules! ser_primitives {
     };
 }
 
-macro_rules! ser_option_primitives {
-    ( $( $name:ty ),+ ) => {
-        $(
-            impl Serialize for $name
-            {
-                fn serialize(self) -> String {
-                    if let Some(v) = self {
-                        format!("{:?}", v)
-                    } else {
-                        String::from("nil")
-                    }
-                }
-            }
-        )+
-    };
-}
-
 impl<T> Serialize for Vec<T>
 where
     T: Serialize,
@@ -224,21 +207,6 @@ where
 
 // Primitive Types
 ser_primitives![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool];
-ser_option_primitives![
-    Option<i8>,
-    Option<i16>,
-    Option<i32>,
-    Option<i64>,
-    Option<isize>,
-    Option<u8>,
-    Option<u16>,
-    Option<u32>,
-    Option<u64>,
-    Option<usize>,
-    Option<f32>,
-    Option<f64>,
-    Option<bool>
-];
 
 impl Serialize for String {
     fn serialize(self) -> String {
@@ -258,30 +226,13 @@ impl Serialize for char {
     }
 }
 
-impl Serialize for Option<String> {
+impl<T> Serialize for Option<T>
+where
+    T: Serialize,
+{
     fn serialize(self) -> String {
-        if let Some(s) = self {
-            s.serialize()
-        } else {
-            String::from("nil")
-        }
-    }
-}
-
-impl Serialize for Option<&str> {
-    fn serialize(self) -> String {
-        if let Some(s) = self {
-            s.serialize()
-        } else {
-            String::from("nil")
-        }
-    }
-}
-
-impl Serialize for Option<char> {
-    fn serialize(self) -> String {
-        if let Some(c) = self {
-            c.serialize()
+        if let Some(t) = self {
+            t.serialize()
         } else {
             String::from("nil")
         }
