@@ -422,7 +422,7 @@ impl std::str::FromStr for Edn {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        crate::deserialize::parse_edn(s)
+        crate::deserialize::from_str(s)
     }
 }
 

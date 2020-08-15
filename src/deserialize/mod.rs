@@ -7,8 +7,8 @@ pub trait Deserialize: Sized {
     fn deserialize<S>(self) -> Result<Self, Error>;
 }
 
-/// `parse_edn` parses a EDN String into [`Edn`](../edn_rs/edn/enum.Edn.html)
-pub fn parse_edn(edn: &str) -> Result<Edn, Error> {
+/// `from_str` parses a EDN String into [`Edn`](../edn_rs/edn/enum.Edn.html)
+pub fn from_str(edn: &str) -> Result<Edn, Error> {
     let tokens = tokenize(edn);
 
     Ok(parse(&tokens[..])?.0)
@@ -178,7 +178,7 @@ mod test {
         let edn = "[1 \"2\" 3.3 :b true \\c]";
 
         assert_eq!(
-            parse_edn(edn),
+            from_str(edn),
             Ok(Edn::Vector(Vector::new(vec![
                 Edn::UInt(1),
                 Edn::Str("2".to_string()),
@@ -195,7 +195,7 @@ mod test {
         let edn = "(1 \"2\" 3.3 :b [true \\c])";
 
         assert_eq!(
-            parse_edn(edn),
+            from_str(edn),
             Ok(Edn::List(List::new(vec![
                 Edn::UInt(1),
                 Edn::Str("2".to_string()),
@@ -211,7 +211,7 @@ mod test {
         let edn = "(1 \"2\" 3.3 :b #{true \\c})";
 
         assert_eq!(
-            parse_edn(edn),
+            from_str(edn),
             Ok(Edn::List(List::new(vec![
                 Edn::UInt(1),
                 Edn::Str("2".to_string()),
@@ -227,7 +227,7 @@ mod test {
         let edn = "{:a \"2\" :b true :c nil}";
 
         assert_eq!(
-            parse_edn(edn),
+            from_str(edn),
             Ok(Edn::Map(Map::new(
                 map! {":a".to_string() => Edn::Str("2".to_string()),
                 ":b".to_string() => Edn::Bool(true), ":c".to_string() => Edn::Nil}
@@ -240,7 +240,7 @@ mod test {
         let edn = "{:a \"2\" :b [true false] :c #{:A {:a :b} nil}}";
 
         assert_eq!(
-            parse_edn(edn),
+            from_str(edn),
             Ok(Edn::Map(Map::new(map! {
             ":a".to_string() =>Edn::Str("2".to_string()),
             ":b".to_string() => Edn::Vector(Vector::new(vec![Edn::Bool(true), Edn::Bool(false)])),
@@ -257,7 +257,7 @@ mod test {
         let edn = "[\"hello brave new world\"]";
 
         assert_eq!(
-            parse_edn(edn).unwrap(),
+            from_str(edn).unwrap(),
             Edn::Vector(Vector::new(vec![Edn::Str(
                 "hello brave new world".to_string()
             )]))

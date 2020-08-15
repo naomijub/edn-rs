@@ -40,12 +40,11 @@ fn main() {
 }
 ```
 
-**Parse an EDN String** with `parse_edn`:
+**Parse an EDN String** with `from_str`:
 ```rust
 use edn_rs::{
     set, map,
     Edn, Map, Vector, Set,
-    parse_edn
 };
 use std::str::FromStr;
 
@@ -69,7 +68,7 @@ fn main() -> Result<(), String> {
 
     // OR 
 
-    let edn_resp = parse_edn(edn_str)?;
+    let edn_resp = edn_rs::from_str(edn_str)?;
     assert_eq!(edn_resp[":b"][0], Edn::Bool(true));
     Ok(())
 }
@@ -163,7 +162,7 @@ fn main() {
 - [x] Define `struct` to map EDN info `EdnNode`
 - [x] Define EDN types, `EdnType`
  - [x] Edn Type into primitive: `Edn::Bool(true).into() -> true`. This was done by `to_float`, `to_bool`, `to_int`, `to_vec`.
-- [x] Parse EDN data [`parse_edn`](https://docs.rs/edn-rs/0.10.2/edn_rs/deserialize/fn.parse_edn.html):
+- [x] Parse EDN data [`from_str`](https://docs.rs/edn-rs/0.10.2/edn_rs/deserialize/fn.from_str.html):
     - [x] nil `""`
     - [x] String `"\"string\""`
     - [x] Numbers `"324352"`, `"3442.234"`, `"3/4"`
