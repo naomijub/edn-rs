@@ -159,6 +159,31 @@ fn main() {
 }
  ```
 
+## using `async/await` with Edn type
+
+Edn supports `futures` by using the feature `async`. To enable this feature add to your `Cargo.toml`  dependencies the following line `edn-rs = { version = "0.11.0", features = ["async"] }` and you can use futures as in the following example.
+
+```rust
+use edn_rs::{edn, Double, Edn, Vector};
+use futures::prelude::*;
+use futures::Future;
+use tokio::prelude::*;
+
+async fn foo() -> impl Future<Output = Edn> + Send {
+    edn!([1 1.5 "hello" :key])
+}
+
+#[tokio::main]
+async fn main() {
+    let edn = foo().await.await;
+
+    println!("{}", edn.to_string());
+    assert_eq!(edn, edn!([1 1.5 "hello" :key]));
+
+    assert_eq!(edn[1].to_float(), Some(1.5f64));
+}
+```
+
 ## Current Features
 - [x] Define `struct` to map EDN info `EdnNode`
 - [x] Define EDN types, `EdnType`
