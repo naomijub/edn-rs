@@ -3,14 +3,17 @@
 
 Crate to parse and emit EDN [![Build Status](https://travis-ci.org/naomijub/edn-rs.svg?branch=master)](https://travis-ci.org/naomijub/edn-rs)
 * **This lib does not make effort to conform the EDN received to EDN Spec.** The lib that generated this EDN should be responsible for this. For more information on Edn Spec please visit: https://github.com/edn-format/edn.
-* Current example usage in crate [transistor](https://github.com/naomijub/transistor)
+
+Current example usage in:
+* [crate `transistor`](https://github.com/naomijub/transistor);
+* [`atm-crux`](https://github.com/naomijub/atm-crux);
 
 ## Usage
 
 `Cargo.toml`
 ```toml
 [dependencies]
-edn-rs = "0.11.0"
+edn-rs = "0.11.1"
 ```
 
 **Parse an EDN token** into a `Edn` with `edn!` macro:
@@ -50,6 +53,7 @@ use std::str::FromStr;
 
 fn main() -> Result<(), String> {
     let edn_str = "{:a \"2\" :b [true false] :c #{:A {:a :b} nil}}";
+    // std::str::FromStr
     let edn = Edn::from_str(edn_str);
 
     assert_eq!(
@@ -93,7 +97,7 @@ fn main() {
 }
 ```
 
-**Serializes Rust Types into EDN**
+**Serializes Rust Types into EDN with `ser_struct!`**
  ```rust
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use edn_rs::{
@@ -125,7 +129,7 @@ fn main() {
 }
 ```
 
-**Emits EDN** format from a Json file
+**Emits EDN** format from a Json
  ```rust
 use edn_rs::json_to_edn;
 
@@ -160,7 +164,7 @@ fn main() {
 
 ## Using `async/await` with Edn type
 
-Edn supports `futures` by using the feature `async`. To enable this feature add to your `Cargo.toml`  dependencies the following line `edn-rs = { version = "0.11.0", features = ["async"] }` and you can use futures as in the following example.
+Edn supports `futures` by using the feature `async`. To enable this feature add to your `Cargo.toml`  dependencies the following line `edn-rs = { version = 0.11.1", features = ["async"] }` and you can use futures as in the following example.
 
 ```rust
 use edn_rs::{edn, Double, Edn, Vector};
@@ -183,7 +187,7 @@ async fn main() {
 }
 ```
 
-## Current Features
+## Edn-rs Current Features
 - [x] Define `struct` to map EDN info `EdnNode`
 - [x] Define EDN types, `EdnType`
  - [x] Edn Type into primitive: `Edn::Bool(true).into() -> true`. This was done by `to_float`, `to_bool`, `to_int`, `to_vec`.
@@ -215,6 +219,42 @@ async fn main() {
 - [x] trait Deserialize EDN to Struct
 - [x] trait Serialize struct to EDN
 
-## Could be done in another project `edn-derive`
-- [ ] `derive Serialize`
+## `edn-derive`
+`edn-derive` is a proc-macro crate to (De)serialize Edn values, currently it is **pre-alpha** and it can be found at [`crates.io`](https://crates.io/crates/edn-derive) or at [`github`](https://github.com/otaviopace/edn-derive).
+
+### Usage
+Just add to your `Cargo.toml` the following:
+
+```toml
+[dependencies]
+edn-derive = "<version>"
+edn-rs = 0.11.1"
+```
+
+### Examples
+
+**Serialize**
+```rust
+use edn_derive::Serialize as SerializeEdn;
+use edn_rs::Serialize;
+
+#[derive(SerializeEdn)]
+pub struct Person {
+    name: String,
+    age: usize,
+}
+
+fn main() {
+    let person = Person {
+        name: "joana".to_string(),
+        age: 290000,
+    };
+    assert_eq!(person.serialize(), "{ :name \"joana\", :age 290000, }");
+}
+```
+
+### Current Features
+- [x] `derive Serialize`
+- [ ] `to_string` or `to_edn`
 - [ ] `derive Deserialize`
+- [ ] `let val: YourStruct = edn_rs::from_str(&str)`
