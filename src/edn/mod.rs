@@ -45,7 +45,6 @@ impl futures::future::Future for Edn {
             let pinned = self.to_owned();
             Poll::Ready(pinned)
         } else {
-            println!("not ready yet --> {:?}", self);
             Poll::Pending
         }
     }
@@ -72,7 +71,6 @@ impl futures::future::Future for Vector {
             let pinned = self.to_owned();
             Poll::Ready(pinned)
         } else {
-            println!("not ready yet --> {:?}", self);
             Poll::Pending
         }
     }
@@ -99,7 +97,6 @@ impl futures::future::Future for List {
             let pinned = self.to_owned();
             Poll::Ready(pinned)
         } else {
-            println!("not ready yet --> {:?}", self);
             Poll::Pending
         }
     }
@@ -126,7 +123,6 @@ impl futures::future::Future for Set {
             let pinned = self.to_owned();
             Poll::Ready(pinned)
         } else {
-            println!("not ready yet --> {:?}", self);
             Poll::Pending
         }
     }
@@ -153,7 +149,6 @@ impl futures::future::Future for Map {
             let pinned = self.to_owned();
             Poll::Ready(pinned)
         } else {
-            println!("not ready yet --> {:?}", self);
             Poll::Pending
         }
     }
@@ -189,7 +184,6 @@ impl futures::future::Future for Double {
             let pinned = self.to_owned();
             Poll::Ready(pinned)
         } else {
-            println!("not ready yet --> {:?}", self);
             Poll::Pending
         }
     }
