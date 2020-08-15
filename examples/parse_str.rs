@@ -1,4 +1,4 @@
-use edn_rs::{map, parse_edn, set, Edn, EdnError, Map, Set, Vector};
+use edn_rs::{map, set, Edn, EdnError, Map, Set, Vector};
 use std::str::FromStr;
 
 fn main() -> Result<(), EdnError> {
@@ -21,7 +21,7 @@ fn main() -> Result<(), EdnError> {
 
     // OR
 
-    let edn_resp = parse_edn(edn_str)?;
+    let edn_resp = edn_rs::from_str(edn_str)?;
     assert_eq!(edn_resp[":b"][0], Edn::Bool(true));
     Ok(())
 }

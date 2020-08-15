@@ -40,12 +40,11 @@ fn main() {
 }
 ```
 
-**Parse an EDN String** with `parse_edn`:
+**Parse an EDN String** with `from_str`:
 ```rust
 use edn_rs::{
     set, map,
     Edn, Map, Vector, Set,
-    parse_edn
 };
 use std::str::FromStr;
 
@@ -69,7 +68,7 @@ fn main() -> Result<(), String> {
 
     // OR 
 
-    let edn_resp = parse_edn(edn_str)?;
+    let edn_resp = edn_rs::from_str(edn_str)?;
     assert_eq!(edn_resp[":b"][0], Edn::Bool(true));
     Ok(())
 }
