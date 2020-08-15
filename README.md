@@ -159,7 +159,7 @@ fn main() {
 }
  ```
 
-## using `async/await` with Edn type
+## Using `async/await` with Edn type
 
 Edn supports `futures` by using the feature `async`. To enable this feature add to your `Cargo.toml`  dependencies the following line `edn-rs = { version = "0.11.0", features = ["async"] }` and you can use futures as in the following example.
 
