@@ -10,7 +10,7 @@ Crate to parse and emit EDN [![Build Status](https://travis-ci.org/naomijub/edn-
 `Cargo.toml`
 ```toml
 [dependencies]
-edn-rs = "0.10.5"
+edn-rs = "0.11.0"
 ```
 
 **Parse an EDN token** into a `Edn` with `edn!` macro:
@@ -159,10 +159,36 @@ fn main() {
 }
  ```
 
+## using `async/await` with Edn type
+
+Edn supports `futures` by using the feature `async`. To enable this feature add to your `Cargo.toml`  dependencies the following line `edn-rs = { version = "0.11.0", features = ["async"] }` and you can use futures as in the following example.
+
+```rust
+use edn_rs::{edn, Double, Edn, Vector};
+use futures::prelude::*;
+use futures::Future;
+use tokio::prelude::*;
+
+async fn foo() -> impl Future<Output = Edn> + Send {
+    edn!([1 1.5 "hello" :key])
+}
+
+#[tokio::main]
+async fn main() {
+    let edn = foo().await.await;
+
+    println!("{}", edn.to_string());
+    assert_eq!(edn, edn!([1 1.5 "hello" :key]));
+
+    assert_eq!(edn[1].to_float(), Some(1.5f64));
+}
+```
+
 ## Current Features
 - [x] Define `struct` to map EDN info `EdnNode`
 - [x] Define EDN types, `EdnType`
  - [x] Edn Type into primitive: `Edn::Bool(true).into() -> true`. This was done by `to_float`, `to_bool`, `to_int`, `to_vec`.
+ - [x] implement `futures::Future` trait to `Edn`
 - [x] Parse EDN data [`parse_edn`](https://docs.rs/edn-rs/0.10.2/edn_rs/deserialize/fn.parse_edn.html):
     - [x] nil `""`
     - [x] String `"\"string\""`
@@ -174,7 +200,7 @@ fn main() {
     - [x] Set `"#{1 2 3}"`
     - [x] Map `"{:a 1 :b 2 }"`
     - [x] Nested structures `"{:a \"2\" :b [true false] :c #{:A {:a :b} nil}}"`
-- [ ] Simple data structures in one another [`edn!`](https://docs.rs/edn-rs/0.10.5/edn_rs/macro.edn.html):
+- [ ] Simple data structures in one another [`edn!`](https://docs.rs/edn-rs/0.11.0/edn_rs/macro.edn.html):
     - [x] Vec in Vec `"[1 2 [:3 \"4\"]]"`
     - [ ] Set in _Vec_ `"[1 2 #{:3 \"4\"}]"`
     - [x] List in List `"(1 2 (:3 \"4\"))"`

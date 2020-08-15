@@ -17,3 +17,4 @@ script:
     - cargo run --example tokenize_edn
     - cargo run --example iterator
     - cargo run --example to_vec
+    - cargo run --example async --features "async"
