@@ -1,6 +1,16 @@
 use std::cmp::{Ord, PartialOrd};
 use std::collections::{BTreeMap, BTreeSet};
 use utils::index::Index;
+
+#[cfg(feature = "async")]
+use core::pin::Pin;
+#[cfg(feature = "async")]
+use futures::prelude::*;
+#[cfg(feature = "async")]
+use futures::task;
+#[cfg(feature = "async")]
+use futures::task::Poll;
+
 #[doc(hidden)]
 pub mod utils;
 
@@ -26,6 +36,20 @@ pub enum Edn {
     Empty,
 }
 
+#[cfg(feature = "async")]
+impl futures::future::Future for Edn {
+    type Output = Edn;
+
+    fn poll(self: Pin<&mut Self>, cx: &mut task::Context) -> Poll<Self::Output> {
+        if !self.to_string().is_empty() {
+            let pinned = self.to_owned();
+            Poll::Ready(pinned)
+        } else {
+            Poll::Pending
+        }
+    }
+}
+
 #[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub struct Vector(Vec<Edn>);
 impl Vector {
@@ -35,6 +59,20 @@ impl Vector {
 
     pub fn empty() -> Vector {
         Vector(Vec::new())
+    }
+}
+
+#[cfg(feature = "async")]
+impl futures::future::Future for Vector {
+    type Output = Vector;
+
+    fn poll(self: Pin<&mut Self>, cx: &mut task::Context) -> Poll<Self::Output> {
+        if self.0.len() >= 0 {
+            let pinned = self.to_owned();
+            Poll::Ready(pinned)
+        } else {
+            Poll::Pending
+        }
     }
 }
 
@@ -50,6 +88,20 @@ impl List {
     }
 }
 
+#[cfg(feature = "async")]
+impl futures::future::Future for List {
+    type Output = List;
+
+    fn poll(self: Pin<&mut Self>, cx: &mut task::Context) -> Poll<Self::Output> {
+        if self.0.len() >= 0 {
+            let pinned = self.to_owned();
+            Poll::Ready(pinned)
+        } else {
+            Poll::Pending
+        }
+    }
+}
+
 #[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub struct Set(BTreeSet<Edn>);
 impl Set {
@@ -62,6 +114,20 @@ impl Set {
     }
 }
 
+#[cfg(feature = "async")]
+impl futures::future::Future for Set {
+    type Output = Set;
+
+    fn poll(self: Pin<&mut Self>, cx: &mut task::Context) -> Poll<Self::Output> {
+        if self.0.len() >= 0 {
+            let pinned = self.to_owned();
+            Poll::Ready(pinned)
+        } else {
+            Poll::Pending
+        }
+    }
+}
+
 #[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub struct Map(BTreeMap<String, Edn>);
 impl Map {
@@ -71,6 +137,20 @@ impl Map {
 
     pub fn empty() -> Map {
         Map(BTreeMap::new())
+    }
+}
+
+#[cfg(feature = "async")]
+impl futures::future::Future for Map {
+    type Output = Map;
+
+    fn poll(self: Pin<&mut Self>, cx: &mut task::Context) -> Poll<Self::Output> {
+        if self.0.len() >= 0 {
+            let pinned = self.to_owned();
+            Poll::Ready(pinned)
+        } else {
+            Poll::Pending
+        }
     }
 }
 
@@ -92,6 +172,20 @@ impl From<f64> for Double {
                 .parse::<u64>()
                 .unwrap(),
         )
+    }
+}
+
+#[cfg(feature = "async")]
+impl futures::future::Future for Double {
+    type Output = Double;
+
+    fn poll(self: Pin<&mut Self>, cx: &mut task::Context) -> Poll<Self::Output> {
+        if !self.to_string().is_empty() {
+            let pinned = self.to_owned();
+            Poll::Ready(pinned)
+        } else {
+            Poll::Pending
+        }
     }
 }
 
