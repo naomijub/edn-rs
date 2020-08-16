@@ -13,7 +13,7 @@ Current example usage in:
 `Cargo.toml`
 ```toml
 [dependencies]
-edn-rs = "0.11.2"
+edn-rs = "0.11.3"
 ```
 
 **Parse an EDN token** into a `Edn` with `edn!` macro:
@@ -129,7 +129,7 @@ fn main() {
 ```
 
 **Emits EDN** format from a Json:
-* This function requires feature `json` to be activated. To enable this feature add to your `Cargo.toml`  dependencies the following line `edn-rs = { version = 0.11.2", features = ["json"] }`.
+* This function requires feature `json` to be activated. To enable this feature add to your `Cargo.toml`  dependencies the following line `edn-rs = { version = 0.11.3", features = ["json"] }`.
 
  ```rust
 use edn_rs::json_to_edn;
@@ -165,7 +165,7 @@ fn main() {
 
 ## Using `async/await` with Edn type
 
-Edn supports `futures` by using the feature `async`. To enable this feature add to your `Cargo.toml`  dependencies the following line `edn-rs = { version = 0.11.2", features = ["async"] }` and you can use futures as in the following example.
+Edn supports `futures` by using the feature `async`. To enable this feature add to your `Cargo.toml`  dependencies the following line `edn-rs = { version = 0.11.3", features = ["async"] }` and you can use futures as in the following example.
 
 ```rust
 use edn_rs::{edn, Double, Edn, Vector};
@@ -229,7 +229,7 @@ Just add to your `Cargo.toml` the following:
 ```toml
 [dependencies]
 edn-derive = "<version>"
-edn-rs = "0.11.2"
+edn-rs = "0.11.3"
 ```
 
 ### Examples
