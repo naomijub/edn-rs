@@ -39,7 +39,6 @@ pub mod edn;
 ///```
 pub mod serialize;
 
-use edn::utils::{replace_char, replace_keywords};
 mod deserialize;
 /// `json_to_edn` receives a json string and parses its common key-values to a regular EDN format.
 /// tested examples are:
@@ -65,7 +64,9 @@ mod deserialize;
 ///     assert_eq!(edn, json_to_edn(json));
 /// }
 /// ```
+#[cfg(feature = "json")]
 pub fn json_to_edn(json: String) -> String {
+    use edn::utils::{replace_char, replace_keywords};
     let edn_aux = replace_keywords(json);
     let edn = replace_char(edn_aux);
     edn.replace("null", "nil")

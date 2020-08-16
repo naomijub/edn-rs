@@ -1,12 +1,8 @@
-#![recursion_limit = "512"]
-#[macro_use]
-extern crate edn_rs;
-
 #[cfg(test)]
 mod tests {
     use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 
-    use crate::edn_rs::serialize::Serialize;
+    use edn_rs::{hmap, hset, map, ser_struct, serialize::Serialize, set};
 
     #[test]
     fn serializes_a_complex_structure() {
@@ -80,7 +76,7 @@ fn pub_struct() {
 }
 
 mod helper {
-    use crate::edn_rs::serialize::Serialize;
+    use edn_rs::{ser_struct, serialize::Serialize};
 
     ser_struct! {
         #[derive(Debug, Clone)]
