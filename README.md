@@ -130,7 +130,7 @@ fn main() {
 ```
 
 **Emits EDN** format from a Json:
-* This function requires feature `json` to be activated.
+* This function requires feature `json` to be activated. To enable this feature add to your `Cargo.toml`  dependencies the following line `edn-rs = { version = 0.11.2", features = ["json"] }`.
 
  ```rust
 use edn_rs::json_to_edn;
