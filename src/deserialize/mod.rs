@@ -1,5 +1,6 @@
 use crate::edn::Error;
 use crate::edn::{Edn, List, Map, Set, Vector};
+use std::convert::{TryFrom, TryInto};
 use std::marker::Sized;
 use std::str::FromStr;
 /// public trait to be used to `Deserialize` structs
@@ -8,9 +9,10 @@ pub trait Deserialize: Sized {
     fn deserialize<S>(self) -> Result<Self, Error>;
 }
 
-/// `from_str` parses a EDN String into [`Edn`](../edn_rs/edn/enum.Edn.html)
-pub fn from_str<T: From<Edn>>(edn: &str) -> Result<T, Error> {
-    Ok(Edn::from_str(edn)?.into())
+/// `from_str` parses a EDN String into something that implements `TryFrom<Edn, Error = EdnError>`
+pub fn from_str<T: TryFrom<Edn, Error = Error>>(s: &str) -> Result<T, Error> {
+    let edn = Edn::from_str(s)?;
+    edn.try_into()
 }
 
 pub(crate) fn tokenize(edn: &str) -> Vec<String> {
