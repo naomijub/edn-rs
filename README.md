@@ -258,6 +258,6 @@ fn main() {
 
 ### Current Features
 - [x] `derive Serialize`
-- [ ] `to_string` or `to_edn`
+- [x] `edn_rs::to_string`
 - [ ] `derive Deserialize`
 - [ ] `let val: YourStruct = edn_rs::from_str(&str)`
