@@ -29,6 +29,6 @@ fn main() {
         foo_vec: vec![Foo { value: 2 }, Foo { value: 3 }],
     };
 
-    println!("{}", edn.serialize());
+    println!("{}", edn_rs::to_string(edn));
     // { :btreemap {:this-is-a-key [\"with\", \"many\", \"keys\"]}, :btreeset #{3, 4, 5}, :hashmap {:this-is-a-key [\"with\", \"many\", \"keys\"]}, :hashset #{3}, :tuples (3, true, \\d), :foo-vec [{ :value 2, }, { :value 3, }], }
 }
