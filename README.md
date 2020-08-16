@@ -129,7 +129,9 @@ fn main() {
 }
 ```
 
-**Emits EDN** format from a Json
+**Emits EDN** format from a Json:
+* This function requires feature `json` to be activated.
+
  ```rust
 use edn_rs::json_to_edn;
 
