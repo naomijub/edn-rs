@@ -5,7 +5,7 @@ Crate to parse and emit EDN [![Build Status](https://travis-ci.org/naomijub/edn-
 * **This lib does not make effort to conform the EDN received to EDN Spec.** The lib that generated this EDN should be responsible for this. For more information on Edn Spec please visit: https://github.com/edn-format/edn.
 
 Current example usage in:
-* [crate `transistor`](https://github.com/naomijub/transistor);
+* [`transistor`](https://github.com/naomijub/transistor);
 * [`atm-crux`](https://github.com/naomijub/atm-crux);
 
 ## Usage
@@ -192,7 +192,7 @@ async fn main() {
 - [x] Define EDN types, `EdnType`
  - [x] Edn Type into primitive: `Edn::Bool(true).into() -> true`. This was done by `to_float`, `to_bool`, `to_int`, `to_vec`.
  - [x] implement `futures::Future` trait to `Edn`
-- [x] Parse EDN data [`parse_edn`](https://docs.rs/edn-rs/0.10.2/edn_rs/deserialize/fn.parse_edn.html):
+- [x] Parse EDN data [`from_str`](https://docs.rs/edn-rs/0.10.2/edn_rs/deserialize/fn.from_str.html):
     - [x] nil `""`
     - [x] String `"\"string\""`
     - [x] Numbers `"324352"`, `"3442.234"`, `"3/4"`
@@ -228,7 +228,7 @@ Just add to your `Cargo.toml` the following:
 ```toml
 [dependencies]
 edn-derive = "<version>"
-edn-rs = 0.11.1"
+edn-rs = "0.11.1"
 ```
 
 ### Examples
