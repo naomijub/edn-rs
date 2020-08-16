@@ -101,7 +101,6 @@ fn main() {
  ```rust
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use edn_rs::{
-    Serialize,
     ser_struct, map, set, hmap, hset
 };
 
@@ -124,7 +123,7 @@ fn main() {
         tuples: (3i32, true, 'd')
     };
 
-    println!("{}",edn.serialize());
+    println!("{}", edn_rs::to_string(edn));
     // { :btreemap {:this-is-a-key [\"with\", \"many\", \"keys\"]}, :btreeset #{3, 4, 5}, :hashmap {:this-is-a-key [\"with\", \"many\", \"keys\"]}, :hashset #{3}, :tuples (3, true, \\d), }
 }
 ```
@@ -235,10 +234,9 @@ edn-rs = 0.11.1"
 
 **Serialize**
 ```rust
-use edn_derive::Serialize as SerializeEdn;
-use edn_rs::Serialize;
+use edn_derive::Serialize;
 
-#[derive(SerializeEdn)]
+#[derive(Serialize)]
 pub struct Person {
     name: String,
     age: usize,
@@ -249,7 +247,10 @@ fn main() {
         name: "joana".to_string(),
         age: 290000,
     };
-    assert_eq!(person.serialize(), "{ :name \"joana\", :age 290000, }");
+    assert_eq!(
+        edn_rs::to_string(person),
+        "{ :name \"joana\", :age 290000, }"
+    );
 }
 ```
 

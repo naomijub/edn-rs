@@ -33,7 +33,7 @@ pub mod edn;
 ///         set: set!{3i64, 4i64, 5i64},
 ///         tuples: (3i32, true, 'd')
 ///     };
-///     println!("{}",edn.serialize());
+///     println!("{}", edn_rs::to_string(edn));
 ///     // { :map {:this-is-a-key ["with", "many", "keys"]}, :set #{3, 4, 5}, :tuples (3, true, \d), }
 /// }
 ///```
@@ -75,3 +75,37 @@ pub use deserialize::from_str;
 pub use edn::Error as EdnError;
 pub use edn::{Double, Edn, List, Map, Set, Vector};
 pub use serialize::Serialize;
+
+/// Function for converting Rust types into EDN Strings.
+/// For it to work, the type must implement the Serialize trait.
+/// For now you can do it via `ser_struct!` macro, in the future
+/// it will be via `#[derive(Serialize)]` from `edn-derive` crate.
+///
+/// Example:
+/// ```rust
+/// #[macro_use] extern crate edn_rs;
+///
+/// use std::collections::{BTreeMap, BTreeSet};
+/// use crate::edn_rs::Serialize;
+///
+/// fn main() {
+///     ser_struct!{
+///         #[derive(Debug)]
+///         struct Edn {
+///             map: BTreeMap<String, Vec<String>>,
+///             set: BTreeSet<i64>,
+///             tuples: (i32, bool, char),
+///         }
+///     };
+///     let edn = Edn {
+///         map: map!{"this is a key".to_string() => vec!["with".to_string(), "many".to_string(), "keys".to_string()]},
+///         set: set!{3i64, 4i64, 5i64},
+///         tuples: (3i32, true, 'd')
+///     };
+///     println!("{}", edn_rs::to_string(edn));
+///     // { :map {:this-is-a-key ["with", "many", "keys"]}, :set #{3, 4, 5}, :tuples (3, true, \d), }
+/// }
+///```
+pub fn to_string<T: Serialize>(t: T) -> String {
+    t.serialize()
+}
