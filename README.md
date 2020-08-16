@@ -228,7 +228,7 @@ Just add to your `Cargo.toml` the following:
 ```toml
 [dependencies]
 edn-derive = "<version>"
-edn-rs = 0.11.2"
+edn-rs = "0.11.2"
 ```
 
 ### Examples
