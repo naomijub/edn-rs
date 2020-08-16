@@ -40,7 +40,7 @@ pub mod edn;
 pub mod serialize;
 
 mod deserialize;
-/// `json_to_edn` receives a json string and parses its common key-values to a regular EDN format.
+/// `json_to_edn` receives a json string and parses its common key-values to a regular EDN format. It requires feature `json`
 /// tested examples are:
 /// 1. `"{\"hello world\": \"julia\"}"` becomes `"{:hello-world \"julia\"}"`
 /// 2. `"{\"hello\": null}"` becomes `"{:hello nil}"`
