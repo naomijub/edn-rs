@@ -1,6 +1,6 @@
 [package]
 name = "edn-rs"
-version = "0.11.1"
+version = "0.11.2"
 authors = ["Julia Naomi <jnboeira@outlook.com>",  "Otavio Pace <otaviopp8@gmail.com>"]
 description = "Crate to parse and emit EDN"
 readme = "README.md"
@@ -14,9 +14,10 @@ edition = "2018"
 
 [features]
 async = ["futures"]
+json = ["regex"]
 
 [dependencies]
-regex = "1"
+regex = {version = "1", optional = true }
 futures = {version = "0.3.5", optional = true }
 
 [dev-dependencies]
@@ -31,3 +32,7 @@ features = ["user-hooks"]
 [[example]]
 name = "async"
 required-features = ["async"]
+
+[[example]]
+name = "json_to_edn"
+required-features = ["json"]

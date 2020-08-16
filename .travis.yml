@@ -9,8 +9,9 @@ matrix:
     - rust: nightly
 script:
     - cargo build --verbose
-    - cargo test --verbose
-    - cargo run --example json_to_edn
+    - cargo test --test lib --no-fail-fast --features "json"
+    - cargo test --locked  --no-fail-fast --lib
+    - cargo run --example json_to_edn --features "json"
     - cargo run --example navigate_edn
     - cargo run --example parse_str
     - cargo run --example serialize

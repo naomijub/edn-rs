@@ -1,7 +1,9 @@
+#[cfg(feature = "json")]
 use regex::{Captures, Regex};
 
 pub mod index;
 
+#[cfg(feature = "json")]
 pub fn replace_keywords(json: String) -> String {
     let re = Regex::new(r#""\w*(\s\w*)*":"#).unwrap();
 
@@ -17,17 +19,7 @@ pub fn replace_keywords(json: String) -> String {
     edn.to_string()
 }
 
-pub fn replace_inner_keywords(json: String) -> String {
-    let re = Regex::new(r#"\w*:"#).unwrap();
-
-    let edn = re.replace_all(&json[..], |caps: &Captures| {
-        let mut rcap = caps[0].replace("\"", "").replace(":", "").replace("_", "-");
-        rcap.insert(0, ':');
-        format!("{}", rcap)
-    });
-    edn.to_string()
-}
-
+#[cfg(feature = "json")]
 pub fn replace_char(json: String) -> String {
     let c_re = Regex::new(r#"'.'"#).unwrap();
 

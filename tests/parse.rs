@@ -1,13 +1,8 @@
-#![recursion_limit = "512"]
-
-#[macro_use]
-extern crate edn_rs;
-
 #[cfg(test)]
 mod tests {
     use std::collections::{BTreeMap, BTreeSet};
 
-    use crate::edn_rs::{Edn, List, Map, Set, Vector};
+    use edn_rs::{edn, map, set, Edn, List, Map, Set, Vector};
 
     #[test]
     fn parse_primitive_types() {

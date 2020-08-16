@@ -13,7 +13,7 @@ Current example usage in:
 `Cargo.toml`
 ```toml
 [dependencies]
-edn-rs = "0.11.1"
+edn-rs = "0.11.2"
 ```
 
 **Parse an EDN token** into a `Edn` with `edn!` macro:
@@ -128,7 +128,9 @@ fn main() {
 }
 ```
 
-**Emits EDN** format from a Json
+**Emits EDN** format from a Json:
+* This function requires feature `json` to be activated. To enable this feature add to your `Cargo.toml`  dependencies the following line `edn-rs = { version = 0.11.2", features = ["json"] }`.
+
  ```rust
 use edn_rs::json_to_edn;
 
@@ -163,7 +165,7 @@ fn main() {
 
 ## Using `async/await` with Edn type
 
-Edn supports `futures` by using the feature `async`. To enable this feature add to your `Cargo.toml`  dependencies the following line `edn-rs = { version = 0.11.1", features = ["async"] }` and you can use futures as in the following example.
+Edn supports `futures` by using the feature `async`. To enable this feature add to your `Cargo.toml`  dependencies the following line `edn-rs = { version = 0.11.2", features = ["async"] }` and you can use futures as in the following example.
 
 ```rust
 use edn_rs::{edn, Double, Edn, Vector};
@@ -191,7 +193,7 @@ async fn main() {
 - [x] Define EDN types, `EdnType`
  - [x] Edn Type into primitive: `Edn::Bool(true).into() -> true`. This was done by `to_float`, `to_bool`, `to_int`, `to_vec`.
  - [x] implement `futures::Future` trait to `Edn`
-- [x] Parse EDN data [`parse_edn`](https://docs.rs/edn-rs/0.10.2/edn_rs/deserialize/fn.parse_edn.html):
+- [x] Parse EDN data [`from_str`](https://docs.rs/edn-rs/0.10.2/edn_rs/deserialize/fn.from_str.html):
     - [x] nil `""`
     - [x] String `"\"string\""`
     - [x] Numbers `"324352"`, `"3442.234"`, `"3/4"`
@@ -227,7 +229,7 @@ Just add to your `Cargo.toml` the following:
 ```toml
 [dependencies]
 edn-derive = "<version>"
-edn-rs = 0.11.1"
+edn-rs = "0.11.2"
 ```
 
 ### Examples
