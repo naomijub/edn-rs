@@ -1,5 +1,4 @@
-use edn_rs::{Edn, EdnError};
-use std::convert::TryFrom;
+use edn_rs::{Deserialize, Edn, EdnError};
 
 #[derive(Debug, PartialEq)]
 struct Person {
@@ -7,10 +6,8 @@ struct Person {
     age: usize,
 }
 
-impl TryFrom<Edn> for Person {
-    type Error = EdnError;
-
-    fn try_from(edn: Edn) -> Result<Self, Self::Error> {
+impl Deserialize for Person {
+    fn deserialize(edn: Edn) -> Result<Self, EdnError> {
         Ok(Self {
             name: edn[":name"].to_string(),
             age: edn[":age"].to_uint().ok_or_else(|| {

@@ -1,18 +1,61 @@
 use crate::edn::Error;
 use crate::edn::{Edn, List, Map, Set, Vector};
-use std::convert::{TryFrom, TryInto};
-use std::marker::Sized;
 use std::str::FromStr;
 /// public trait to be used to `Deserialize` structs
-/// A possible solution can be found [here](https://github.com/naomijub/transistor/blob/master/src/types/response.rs#L152)
+///
+/// Example:
+/// ```
+/// use crate::edn_rs::{Edn, EdnError, Deserialize};
+///
+/// #[derive(Debug, PartialEq)]
+/// struct Person {
+///     name: String,
+///     age: usize,
+/// }
+///
+/// impl Deserialize for Person {
+///     fn deserialize(edn: Edn) -> Result<Self, EdnError> {
+///         Ok(Self {
+///             name: edn[":name"].to_string(),
+///             age: edn[":age"].to_uint().ok_or_else(|| {
+///                 EdnError::Deserialize("couldn't convert `:age` into `uint`".to_string())
+///             })?,
+///         })
+///     }
+/// }
+///
+/// let edn_str = "{:name \"rose\" :age 66}";
+/// let person: Person = edn_rs::from_str(edn_str).unwrap();
+///
+/// assert_eq!(
+///     person,
+///     Person {
+///         name: "rose".to_string(),
+///         age: 66,
+///     }
+/// );
+///
+/// println!("{:?}", person);
+/// // Person { name: "rose", age: 66 }
+///
+/// let bad_edn_str = "{:name \"rose\" :age \"not an uint\"}";
+/// let person: Result<Person, EdnError> = edn_rs::from_str(bad_edn_str);
+///
+/// assert_eq!(
+///     person,
+///     Err(EdnError::Deserialize(
+///         "couldn't convert `:age` into `uint`".to_string()
+///     ))
+/// );
+/// ```
 pub trait Deserialize: Sized {
-    fn deserialize<S>(self) -> Result<Self, Error>;
+    fn deserialize(edn: Edn) -> Result<Self, Error>;
 }
 
 /// `from_str` parses a EDN String into something that implements `TryFrom<Edn, Error = EdnError>`
-pub fn from_str<T: TryFrom<Edn, Error = Error>>(s: &str) -> Result<T, Error> {
+pub fn from_str<T: Deserialize>(s: &str) -> Result<T, Error> {
     let edn = Edn::from_str(s)?;
-    edn.try_into()
+    T::deserialize(edn)
 }
 
 pub(crate) fn tokenize(edn: &str) -> Vec<String> {
