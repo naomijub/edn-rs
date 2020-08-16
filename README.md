@@ -43,7 +43,7 @@ fn main() {
 }
 ```
 
-**Parse an EDN String** with `from_str`:
+**Parse an EDN String** with `Edn::from_str`:
 ```rust
 use edn_rs::{
     set, map,
@@ -58,7 +58,7 @@ fn main() -> Result<(), String> {
 
     assert_eq!(
         edn,
-        Ok(Edn::Map(Map::new(
+        Edn::Map(Map::new(
             map!{
                 ":a".to_string() => Edn::Str("2".to_string()),
                 ":b".to_string() => Edn::Vector(Vector::new(vec![Edn::Bool(true), Edn::Bool(false)])),
@@ -67,13 +67,9 @@ fn main() -> Result<(), String> {
                         Edn::Map(Map::new(map!{":a".to_string() => Edn::Key(":b".to_string())})),
                         Edn::Key(":A".to_string()),
                         Edn::Nil}))}
-        )))
+        ))
     );
 
-    // OR 
-
-    let edn_resp = edn_rs::from_str(edn_str)?;
-    assert_eq!(edn_resp[":b"][0], Edn::Bool(true));
     Ok(())
 }
 ```
