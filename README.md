@@ -70,6 +70,8 @@ fn main() -> Result<(), String> {
         ))
     );
 
+    assert_eq!(edn[":b"][0], Edn::Bool(true));
+
     Ok(())
 }
 ```

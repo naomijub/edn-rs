@@ -19,8 +19,8 @@ jobs:
       run: |
         cargo run --example json_to_edn --features "json"
         cargo run --example navigate_edn
-        cargo run --example from_str_edn
-        cargo run --example from_str_type
+        cargo run --example edn_from_str
+        cargo run --example struct_from_str
         cargo run --example serialize
         cargo run --example tokenize_edn
         cargo run --example iterator

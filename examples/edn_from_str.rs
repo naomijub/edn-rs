@@ -19,5 +19,7 @@ fn main() -> Result<(), EdnError> {
 
     println!("{:?}", edn);
 
+    assert_eq!(edn[":b"][0], Edn::Bool(true));
+
     Ok(())
 }
