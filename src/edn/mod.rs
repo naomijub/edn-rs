@@ -1,3 +1,4 @@
+use crate::deserialize;
 use std::cmp::{Ord, PartialOrd};
 use std::collections::{BTreeMap, BTreeSet};
 use utils::index::Index;
@@ -516,7 +517,9 @@ impl std::str::FromStr for Edn {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        crate::deserialize::from_str(s)
+        let tokens = deserialize::tokenize(s);
+
+        Ok(deserialize::parse(&tokens[..])?.0)
     }
 }
 
@@ -542,19 +545,21 @@ fn rational_to_double(r: &str) -> Option<f64> {
 
 #[derive(Debug, PartialEq)]
 pub enum Error {
-    ParseEdnError(String),
+    ParseEdn(String),
+    Deserialize(String),
 }
 
 impl From<String> for Error {
     fn from(s: String) -> Self {
-        Error::ParseEdnError(s)
+        Error::ParseEdn(s)
     }
 }
 
 impl std::error::Error for Error {
     fn description(&self) -> &str {
         match self {
-            Error::ParseEdnError(s) => &s,
+            Error::ParseEdn(s) => &s,
+            Error::Deserialize(s) => &s,
         }
     }
 
@@ -566,7 +571,8 @@ impl std::error::Error for Error {
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Error::ParseEdnError(s) => write!(f, "{}", &s),
+            Error::ParseEdn(s) => write!(f, "{}", &s),
+            Error::Deserialize(s) => write!(f, "{}", &s),
         }
     }
 }

@@ -43,7 +43,7 @@ fn main() {
 }
 ```
 
-**Parse an EDN String** with `from_str`:
+**Parse an EDN String** with `Edn::from_str`:
 ```rust
 use edn_rs::{
     set, map,
@@ -58,7 +58,7 @@ fn main() -> Result<(), String> {
 
     assert_eq!(
         edn,
-        Ok(Edn::Map(Map::new(
+        Edn::Map(Map::new(
             map!{
                 ":a".to_string() => Edn::Str("2".to_string()),
                 ":b".to_string() => Edn::Vector(Vector::new(vec![Edn::Bool(true), Edn::Bool(false)])),
@@ -67,13 +67,11 @@ fn main() -> Result<(), String> {
                         Edn::Map(Map::new(map!{":a".to_string() => Edn::Key(":b".to_string())})),
                         Edn::Key(":A".to_string()),
                         Edn::Nil}))}
-        )))
+        ))
     );
 
-    // OR 
+    assert_eq!(edn[":b"][0], Edn::Bool(true));
 
-    let edn_resp = edn_rs::from_str(edn_str)?;
-    assert_eq!(edn_resp[":b"][0], Edn::Bool(true));
     Ok(())
 }
 ```
@@ -125,6 +123,58 @@ fn main() {
 
     println!("{}", edn_rs::to_string(edn));
     // { :btreemap {:this-is-a-key [\"with\", \"many\", \"keys\"]}, :btreeset #{3, 4, 5}, :hashmap {:this-is-a-key [\"with\", \"many\", \"keys\"]}, :hashset #{3}, :tuples (3, true, \\d), }
+}
+```
+
+**Deserializes Strings into Rust Types**:
+
+> For now you have to implement the conversion yourself with the `Deserialize` trait. Soon you'll be able to have that implemented for you via `edn-derive` crate.
+ ```rust
+use edn_rs::{Deserialize, Edn, EdnError};
+
+#[derive(Debug, PartialEq)]
+struct Person {
+    name: String,
+    age: usize,
+}
+
+impl Deserialize for Person {
+    fn deserialize(edn: Edn) -> Result<Self, EdnError> {
+        Ok(Self {
+            name: edn[":name"].to_string(),
+            age: edn[":age"].to_uint().ok_or_else(|| {
+                EdnError::Deserialize("couldn't convert `:age` into `uint`".to_string())
+            })?,
+        })
+    }
+}
+
+fn main() -> Result<(), EdnError> {
+    let edn_str = "{:name \"rose\" :age 66}";
+    let person: Person = edn_rs::from_str(edn_str)?;
+
+    assert_eq!(
+        person,
+        Person {
+            name: "rose".to_string(),
+            age: 66,
+        }
+    );
+
+    println!("{:?}", person);
+    // Person { name: "rose", age: 66 }
+
+    let bad_edn_str = "{:name \"rose\" :age \"not an uint\"}";
+    let person: Result<Person, EdnError> = edn_rs::from_str(bad_edn_str);
+
+    assert_eq!(
+        person,
+        Err(EdnError::Deserialize(
+            "couldn't convert `:age` into `uint`".to_string()
+        ))
+    );
+
+    Ok(())
 }
 ```
 

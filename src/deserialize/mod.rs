@@ -1,20 +1,64 @@
 use crate::edn::Error;
 use crate::edn::{Edn, List, Map, Set, Vector};
-use std::marker::Sized;
+use std::str::FromStr;
 /// public trait to be used to `Deserialize` structs
-/// A possible solution can be found [here](https://github.com/naomijub/transistor/blob/master/src/types/response.rs#L152)
+///
+/// Example:
+/// ```
+/// use crate::edn_rs::{Edn, EdnError, Deserialize};
+///
+/// #[derive(Debug, PartialEq)]
+/// struct Person {
+///     name: String,
+///     age: usize,
+/// }
+///
+/// impl Deserialize for Person {
+///     fn deserialize(edn: Edn) -> Result<Self, EdnError> {
+///         Ok(Self {
+///             name: edn[":name"].to_string(),
+///             age: edn[":age"].to_uint().ok_or_else(|| {
+///                 EdnError::Deserialize("couldn't convert `:age` into `uint`".to_string())
+///             })?,
+///         })
+///     }
+/// }
+///
+/// let edn_str = "{:name \"rose\" :age 66}";
+/// let person: Person = edn_rs::from_str(edn_str).unwrap();
+///
+/// assert_eq!(
+///     person,
+///     Person {
+///         name: "rose".to_string(),
+///         age: 66,
+///     }
+/// );
+///
+/// println!("{:?}", person);
+/// // Person { name: "rose", age: 66 }
+///
+/// let bad_edn_str = "{:name \"rose\" :age \"not an uint\"}";
+/// let person: Result<Person, EdnError> = edn_rs::from_str(bad_edn_str);
+///
+/// assert_eq!(
+///     person,
+///     Err(EdnError::Deserialize(
+///         "couldn't convert `:age` into `uint`".to_string()
+///     ))
+/// );
+/// ```
 pub trait Deserialize: Sized {
-    fn deserialize<S>(self) -> Result<Self, Error>;
+    fn deserialize(edn: Edn) -> Result<Self, Error>;
 }
 
-/// `from_str` parses a EDN String into [`Edn`](../edn_rs/edn/enum.Edn.html)
-pub fn from_str(edn: &str) -> Result<Edn, Error> {
-    let tokens = tokenize(edn);
-
-    Ok(parse(&tokens[..])?.0)
+/// `from_str` parses a EDN String into something that implements `TryFrom<Edn, Error = EdnError>`
+pub fn from_str<T: Deserialize>(s: &str) -> Result<T, Error> {
+    let edn = Edn::from_str(s)?;
+    T::deserialize(edn)
 }
 
-fn tokenize(edn: &str) -> Vec<String> {
+pub(crate) fn tokenize(edn: &str) -> Vec<String> {
     edn.replace("}", " } ")
         .replace("#{", " @ ")
         .replace("{", " { ")
@@ -34,7 +78,7 @@ fn tokenize(edn: &str) -> Vec<String> {
         .collect()
 }
 
-fn parse<'a>(tokens: &'a [String]) -> Result<(Edn, &'a [String]), Error> {
+pub(crate) fn parse<'a>(tokens: &'a [String]) -> Result<(Edn, &'a [String]), Error> {
     let (token, rest) = tokens
         .split_first()
         .ok_or(Error::from("Could not understand tokens".to_string()))?;
@@ -178,7 +222,7 @@ mod test {
         let edn = "[1 \"2\" 3.3 :b true \\c]";
 
         assert_eq!(
-            from_str(edn),
+            Edn::from_str(edn),
             Ok(Edn::Vector(Vector::new(vec![
                 Edn::UInt(1),
                 Edn::Str("2".to_string()),
@@ -195,7 +239,7 @@ mod test {
         let edn = "(1 \"2\" 3.3 :b [true \\c])";
 
         assert_eq!(
-            from_str(edn),
+            Edn::from_str(edn),
             Ok(Edn::List(List::new(vec![
                 Edn::UInt(1),
                 Edn::Str("2".to_string()),
@@ -211,7 +255,7 @@ mod test {
         let edn = "(1 \"2\" 3.3 :b #{true \\c})";
 
         assert_eq!(
-            from_str(edn),
+            Edn::from_str(edn),
             Ok(Edn::List(List::new(vec![
                 Edn::UInt(1),
                 Edn::Str("2".to_string()),
@@ -227,7 +271,7 @@ mod test {
         let edn = "{:a \"2\" :b true :c nil}";
 
         assert_eq!(
-            from_str(edn),
+            Edn::from_str(edn),
             Ok(Edn::Map(Map::new(
                 map! {":a".to_string() => Edn::Str("2".to_string()),
                 ":b".to_string() => Edn::Bool(true), ":c".to_string() => Edn::Nil}
@@ -240,7 +284,7 @@ mod test {
         let edn = "{:a \"2\" :b [true false] :c #{:A {:a :b} nil}}";
 
         assert_eq!(
-            from_str(edn),
+            Edn::from_str(edn),
             Ok(Edn::Map(Map::new(map! {
             ":a".to_string() =>Edn::Str("2".to_string()),
             ":b".to_string() => Edn::Vector(Vector::new(vec![Edn::Bool(true), Edn::Bool(false)])),
@@ -257,7 +301,7 @@ mod test {
         let edn = "[\"hello brave new world\"]";
 
         assert_eq!(
-            from_str(edn).unwrap(),
+            Edn::from_str(edn).unwrap(),
             Edn::Vector(Vector::new(vec![Edn::Str(
                 "hello brave new world".to_string()
             )]))
