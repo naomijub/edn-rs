@@ -149,7 +149,10 @@ where
                 .unwrap()
                 .map(|e| Deserialize::deserialize(e))
                 .collect::<Result<Vec<T>, Error>>()?),
-            _ => Err(build_deserialize_error(edn.clone(), "Vec<T>")),
+            _ => Err(build_deserialize_error(
+                edn.clone(),
+                std::any::type_name::<Vec<T>>(),
+            )),
         }
     }
 }
