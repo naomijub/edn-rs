@@ -42,7 +42,7 @@ use std::str::FromStr;
 /// assert_eq!(
 ///     person,
 ///     Err(EdnError::Deserialize(
-///         "couldn't convert `some text` to `uint`".to_string()
+///         "couldn't convert `some text` into `uint`".to_string()
 ///     ))
 /// );
 /// ```
@@ -51,7 +51,7 @@ pub trait Deserialize: Sized {
 }
 
 fn build_deserialize_error(edn: Edn, type_: &str) -> Error {
-    Error::Deserialize(format!("couldn't convert `{}` to `{}`", edn, type_))
+    Error::Deserialize(format!("couldn't convert `{}` into `{}`", edn, type_))
 }
 
 macro_rules! impl_deserialize_float {

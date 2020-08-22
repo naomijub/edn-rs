@@ -66,7 +66,7 @@ fn main() -> Result<(), EdnError> {
     assert_eq!(
         complex,
         Err(EdnError::Deserialize(
-            "couldn't convert `some text` to `uint`".to_string()
+            "couldn't convert `some text` into `uint`".to_string()
         ))
     );
 
