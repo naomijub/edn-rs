@@ -400,7 +400,7 @@ impl Edn {
         }
     }
 
-    /// `to_vec` converts `Edn` types `Vector` and `List` into an `Option<Vec<String>>`.
+    /// `to_vec` converts `Edn` types `Vector`, `List` and `Set` into an `Option<Vec<String>>`.
     /// Type String was selected because it is the current way to mix floats, integers and Strings.
     pub fn to_vec(&self) -> Option<Vec<String>> {
         match self {
@@ -415,6 +415,116 @@ impl Edn {
                     .unwrap()
                     .map(|e| e.to_string())
                     .collect::<Vec<String>>(),
+            ),
+            Edn::Set(_) => Some(
+                self.iter()
+                    .unwrap()
+                    .map(|e| e.to_string())
+                    .collect::<Vec<String>>(),
+            ),
+            _ => None,
+        }
+    }
+
+    /// `to_int_vec` converts `Edn` types `Vector` `List` and `Set` into an `Option<Vec<isize>>`.
+    /// All elements of this Edn structure should be of the same type
+    pub fn to_int_vec(&self) -> Option<Vec<isize>> {
+        match self {
+            Edn::Vector(_) if !self.iter().unwrap().any(|e| e.to_int().is_none()) => Some(
+                self.iter()
+                    .unwrap()
+                    .map(|e| e.to_int().unwrap())
+                    .collect::<Vec<isize>>(),
+            ),
+            Edn::List(_) if !self.iter().unwrap().any(|e| e.to_int().is_none()) => Some(
+                self.iter()
+                    .unwrap()
+                    .map(|e| e.to_int().unwrap())
+                    .collect::<Vec<isize>>(),
+            ),
+            Edn::Set(_) if !self.iter().unwrap().any(|e| e.to_int().is_none()) => Some(
+                self.iter()
+                    .unwrap()
+                    .map(|e| e.to_int().unwrap())
+                    .collect::<Vec<isize>>(),
+            ),
+            _ => None,
+        }
+    }
+
+    /// `to_uint_vec` converts `Edn` types `Vector` `List` and `Set` into an `Option<Vec<usize>>`.
+    /// All elements of this Edn structure should be of the same type
+    pub fn to_uint_vec(&self) -> Option<Vec<usize>> {
+        match self {
+            Edn::Vector(_) if !self.iter().unwrap().any(|e| e.to_uint().is_none()) => Some(
+                self.iter()
+                    .unwrap()
+                    .map(|e| e.to_uint().unwrap())
+                    .collect::<Vec<usize>>(),
+            ),
+            Edn::List(_) if !self.iter().unwrap().any(|e| e.to_uint().is_none()) => Some(
+                self.iter()
+                    .unwrap()
+                    .map(|e| e.to_uint().unwrap())
+                    .collect::<Vec<usize>>(),
+            ),
+            Edn::Set(_) if !self.iter().unwrap().any(|e| e.to_uint().is_none()) => Some(
+                self.iter()
+                    .unwrap()
+                    .map(|e| e.to_uint().unwrap())
+                    .collect::<Vec<usize>>(),
+            ),
+            _ => None,
+        }
+    }
+
+    /// `to_float_vec` converts `Edn` types `Vector` `List` and `Set` into an `Option<Vec<f64>>`.
+    /// All elements of this Edn structure should be of the same type
+    pub fn to_float_vec(&self) -> Option<Vec<f64>> {
+        match self {
+            Edn::Vector(_) if !self.iter().unwrap().any(|e| e.to_float().is_none()) => Some(
+                self.iter()
+                    .unwrap()
+                    .map(|e| e.to_float().unwrap())
+                    .collect::<Vec<f64>>(),
+            ),
+            Edn::List(_) if !self.iter().unwrap().any(|e| e.to_float().is_none()) => Some(
+                self.iter()
+                    .unwrap()
+                    .map(|e| e.to_float().unwrap())
+                    .collect::<Vec<f64>>(),
+            ),
+            Edn::Set(_) if !self.iter().unwrap().any(|e| e.to_float().is_none()) => Some(
+                self.iter()
+                    .unwrap()
+                    .map(|e| e.to_float().unwrap())
+                    .collect::<Vec<f64>>(),
+            ),
+            _ => None,
+        }
+    }
+
+    /// `to_bool_vec` converts `Edn` types `Vector` `List` and `Set` into an `Option<Vec<bool>>`.
+    /// All elements of this Edn structure should be of the same type
+    pub fn to_bool_vec(&self) -> Option<Vec<bool>> {
+        match self {
+            Edn::Vector(_) if !self.iter().unwrap().any(|e| e.to_bool().is_none()) => Some(
+                self.iter()
+                    .unwrap()
+                    .map(|e| e.to_bool().unwrap())
+                    .collect::<Vec<bool>>(),
+            ),
+            Edn::List(_) if !self.iter().unwrap().any(|e| e.to_bool().is_none()) => Some(
+                self.iter()
+                    .unwrap()
+                    .map(|e| e.to_bool().unwrap())
+                    .collect::<Vec<bool>>(),
+            ),
+            Edn::Set(_) if !self.iter().unwrap().any(|e| e.to_bool().is_none()) => Some(
+                self.iter()
+                    .unwrap()
+                    .map(|e| e.to_bool().unwrap())
+                    .collect::<Vec<bool>>(),
             ),
             _ => None,
         }
@@ -649,5 +759,56 @@ mod test {
 
         assert_eq!(c.to_char().unwrap(), 'c');
         assert_eq!(symbol.to_char(), None);
+    }
+
+    #[test]
+    fn to_int_vec() {
+        let edn = Edn::Vector(Vector::new(vec![Edn::Int(5), Edn::Int(6), Edn::Int(7)]));
+        let v = vec![5isize, 6isize, 7isize];
+
+        assert_eq!(edn.to_int_vec().unwrap(), v);
+    }
+
+    #[test]
+    fn to_uint_vec() {
+        let edn = Edn::Vector(Vector::new(vec![Edn::UInt(5), Edn::UInt(6), Edn::UInt(7)]));
+        let v = vec![5usize, 6usize, 7usize];
+
+        assert_eq!(edn.to_uint_vec().unwrap(), v);
+    }
+
+    #[test]
+    fn to_float_vec() {
+        let edn = Edn::Vector(Vector::new(vec![
+            Edn::Double(5.5.into()),
+            Edn::Double(6.6.into()),
+            Edn::Double(7.7.into()),
+        ]));
+        let v = vec![5.5f64, 6.6f64, 7.7f64];
+
+        assert_eq!(edn.to_float_vec().unwrap(), v);
+    }
+
+    #[test]
+    fn to_bool_vec() {
+        let edn = Edn::Vector(Vector::new(vec![
+            Edn::Bool(true),
+            Edn::Bool(true),
+            Edn::Bool(false),
+        ]));
+        let v = vec![true, true, false];
+
+        assert_eq!(edn.to_bool_vec().unwrap(), v);
+    }
+
+    #[test]
+    fn to_bool_vec_with_non_bool_is_none() {
+        let edn = Edn::Vector(Vector::new(vec![
+            Edn::Bool(true),
+            Edn::Int(5),
+            Edn::Bool(false),
+        ]));
+
+        assert_eq!(edn.to_bool_vec(), None);
     }
 }
