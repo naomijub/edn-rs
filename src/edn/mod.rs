@@ -430,24 +430,21 @@ impl Edn {
     /// All elements of this Edn structure should be of the same type
     pub fn to_int_vec(&self) -> Option<Vec<isize>> {
         match self {
-            Edn::Vector(_) => Some(
+            Edn::Vector(_) if self.iter().unwrap().all(|e| e.to_int().is_some()) => Some(
                 self.iter()
                     .unwrap()
-                    .filter(|e| e.to_int().is_some())
                     .map(|e| e.to_int().unwrap())
                     .collect::<Vec<isize>>(),
             ),
-            Edn::List(_) => Some(
+            Edn::List(_) if self.iter().unwrap().all(|e| e.to_int().is_some()) => Some(
                 self.iter()
                     .unwrap()
-                    .filter(|e| e.to_int().is_some())
                     .map(|e| e.to_int().unwrap())
                     .collect::<Vec<isize>>(),
             ),
-            Edn::Set(_) => Some(
+            Edn::Set(_) if self.iter().unwrap().all(|e| e.to_int().is_some()) => Some(
                 self.iter()
                     .unwrap()
-                    .filter(|e| e.to_int().is_some())
                     .map(|e| e.to_int().unwrap())
                     .collect::<Vec<isize>>(),
             ),
@@ -459,24 +456,21 @@ impl Edn {
     /// All elements of this Edn structure should be of the same type
     pub fn to_uint_vec(&self) -> Option<Vec<usize>> {
         match self {
-            Edn::Vector(_) => Some(
+            Edn::Vector(_) if self.iter().unwrap().all(|e| e.to_uint().is_some()) => Some(
                 self.iter()
                     .unwrap()
-                    .filter(|e| e.to_uint().is_some())
                     .map(|e| e.to_uint().unwrap())
                     .collect::<Vec<usize>>(),
             ),
-            Edn::List(_) => Some(
+            Edn::List(_) if self.iter().unwrap().all(|e| e.to_uint().is_some()) => Some(
                 self.iter()
                     .unwrap()
-                    .filter(|e| e.to_uint().is_some())
                     .map(|e| e.to_uint().unwrap())
                     .collect::<Vec<usize>>(),
             ),
-            Edn::Set(_) => Some(
+            Edn::Set(_) if self.iter().unwrap().all(|e| e.to_uint().is_some()) => Some(
                 self.iter()
                     .unwrap()
-                    .filter(|e| e.to_uint().is_some())
                     .map(|e| e.to_uint().unwrap())
                     .collect::<Vec<usize>>(),
             ),
@@ -488,24 +482,21 @@ impl Edn {
     /// All elements of this Edn structure should be of the same type
     pub fn to_float_vec(&self) -> Option<Vec<f64>> {
         match self {
-            Edn::Vector(_) => Some(
+            Edn::Vector(_) if self.iter().unwrap().all(|e| e.to_float().is_some()) => Some(
                 self.iter()
                     .unwrap()
-                    .filter(|e| e.to_float().is_some())
                     .map(|e| e.to_float().unwrap())
                     .collect::<Vec<f64>>(),
             ),
-            Edn::List(_) => Some(
+            Edn::List(_) if self.iter().unwrap().all(|e| e.to_float().is_some()) => Some(
                 self.iter()
                     .unwrap()
-                    .filter(|e| e.to_float().is_some())
                     .map(|e| e.to_float().unwrap())
                     .collect::<Vec<f64>>(),
             ),
-            Edn::Set(_) => Some(
+            Edn::Set(_) if self.iter().unwrap().all(|e| e.to_float().is_some()) => Some(
                 self.iter()
                     .unwrap()
-                    .filter(|e| e.to_float().is_some())
                     .map(|e| e.to_float().unwrap())
                     .collect::<Vec<f64>>(),
             ),
@@ -517,24 +508,21 @@ impl Edn {
     /// All elements of this Edn structure should be of the same type
     pub fn to_bool_vec(&self) -> Option<Vec<bool>> {
         match self {
-            Edn::Vector(_) => Some(
+            Edn::Vector(_) if self.iter().unwrap().all(|e| e.to_bool().is_some()) => Some(
                 self.iter()
                     .unwrap()
-                    .filter(|e| e.to_bool().is_some())
                     .map(|e| e.to_bool().unwrap())
                     .collect::<Vec<bool>>(),
             ),
-            Edn::List(_) => Some(
+            Edn::List(_) if self.iter().unwrap().all(|e| e.to_bool().is_some()) => Some(
                 self.iter()
                     .unwrap()
-                    .filter(|e| e.to_bool().is_some())
                     .map(|e| e.to_bool().unwrap())
                     .collect::<Vec<bool>>(),
             ),
-            Edn::Set(_) => Some(
+            Edn::Set(_) if self.iter().unwrap().all(|e| e.to_bool().is_some()) => Some(
                 self.iter()
                     .unwrap()
-                    .filter(|e| e.to_bool().is_some())
                     .map(|e| e.to_bool().unwrap())
                     .collect::<Vec<bool>>(),
             ),
@@ -814,14 +802,13 @@ mod test {
     }
 
     #[test]
-    fn to_bool_vec_filter_non_bool() {
+    fn to_bool_vec_with_non_bool_is_none() {
         let edn = Edn::Vector(Vector::new(vec![
             Edn::Bool(true),
             Edn::Int(5),
             Edn::Bool(false),
         ]));
-        let v = vec![true, false];
 
-        assert_eq!(edn.to_bool_vec().unwrap(), v);
+        assert_eq!(edn.to_bool_vec(), None);
     }
 }
