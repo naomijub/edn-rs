@@ -14,12 +14,10 @@ use std::str::FromStr;
 /// }
 ///
 /// impl Deserialize for Person {
-///     fn deserialize(edn: Edn) -> Result<Self, EdnError> {
+///     fn deserialize(edn: &Edn) -> Result<Self, EdnError> {
 ///         Ok(Self {
-///             name: edn[":name"].to_string(),
-///             age: edn[":age"].to_uint().ok_or_else(|| {
-///                 EdnError::Deserialize("couldn't convert `:age` into `uint`".to_string())
-///             })?,
+///             name: Deserialize::deserialize(&edn[":name"])?,
+///             age: Deserialize::deserialize(&edn[":age"])?,
 ///         })
 ///     }
 /// }
@@ -38,24 +36,137 @@ use std::str::FromStr;
 /// println!("{:?}", person);
 /// // Person { name: "rose", age: 66 }
 ///
-/// let bad_edn_str = "{:name \"rose\" :age \"not an uint\"}";
+/// let bad_edn_str = "{:name \"rose\" :age \"some text\"}";
 /// let person: Result<Person, EdnError> = edn_rs::from_str(bad_edn_str);
 ///
 /// assert_eq!(
 ///     person,
 ///     Err(EdnError::Deserialize(
-///         "couldn't convert `:age` into `uint`".to_string()
+///         "couldn't convert `some text` to `uint`".to_string()
 ///     ))
 /// );
 /// ```
 pub trait Deserialize: Sized {
-    fn deserialize(edn: Edn) -> Result<Self, Error>;
+    fn deserialize(edn: &Edn) -> Result<Self, Error>;
+}
+
+fn build_deserialize_error(edn: Edn, type_: &str) -> Error {
+    Error::Deserialize(format!("couldn't convert `{}` to `{}`", edn, type_))
+}
+
+macro_rules! impl_deserialize_float {
+    ( $( $name:ty ),+ ) => {
+        $(
+            impl Deserialize for $name
+            {
+                fn deserialize(edn: &Edn) -> Result<Self, Error> {
+                    edn
+                        .to_float()
+                        .ok_or_else(|| build_deserialize_error(edn.clone(), "float"))
+                        .map(|u| u as $name)
+                }
+            }
+        )+
+    };
+}
+
+impl_deserialize_float!(f32, f64);
+
+macro_rules! impl_deserialize_int {
+    ( $( $name:ty ),+ ) => {
+        $(
+            impl Deserialize for $name
+            {
+                fn deserialize(edn: &Edn) -> Result<Self, Error> {
+                    edn
+                        .to_int()
+                        .ok_or_else(|| build_deserialize_error(edn.clone(), "int"))
+                        .map(|u| u as $name)
+                }
+            }
+        )+
+    };
+}
+
+impl_deserialize_int!(isize, i8, i16, i32, i64);
+
+macro_rules! impl_deserialize_uint {
+    ( $( $name:ty ),+ ) => {
+        $(
+            impl Deserialize for $name
+            {
+                fn deserialize(edn: &Edn) -> Result<Self, Error> {
+                    edn
+                        .to_uint()
+                        .ok_or_else(|| build_deserialize_error(edn.clone(), "uint"))
+                        .map(|u| u as $name)
+                }
+            }
+        )+
+    };
+}
+
+impl_deserialize_uint!(usize, u8, u16, u32, u64);
+
+impl Deserialize for bool {
+    fn deserialize(edn: &Edn) -> Result<Self, Error> {
+        edn.to_bool()
+            .ok_or_else(|| build_deserialize_error(edn.clone(), "bool"))
+    }
+}
+
+impl Deserialize for String {
+    fn deserialize(edn: &Edn) -> Result<Self, Error> {
+        Ok(edn.to_string())
+    }
+}
+
+impl Deserialize for char {
+    fn deserialize(edn: &Edn) -> Result<Self, Error> {
+        edn.to_char()
+            .ok_or_else(|| build_deserialize_error(edn.clone(), "char"))
+    }
+}
+
+impl Deserialize for Vec<String> {
+    fn deserialize(edn: &Edn) -> Result<Self, Error> {
+        edn.to_vec()
+            .ok_or_else(|| build_deserialize_error(edn.clone(), "Vec<String>"))
+    }
+}
+
+impl Deserialize for Vec<isize> {
+    fn deserialize(edn: &Edn) -> Result<Self, Error> {
+        edn.to_int_vec()
+            .ok_or_else(|| build_deserialize_error(edn.clone(), "Vec<isize>"))
+    }
+}
+
+impl Deserialize for Vec<usize> {
+    fn deserialize(edn: &Edn) -> Result<Self, Error> {
+        edn.to_uint_vec()
+            .ok_or_else(|| build_deserialize_error(edn.clone(), "Vec<usize>"))
+    }
+}
+
+impl Deserialize for Vec<f64> {
+    fn deserialize(edn: &Edn) -> Result<Self, Error> {
+        edn.to_float_vec()
+            .ok_or_else(|| build_deserialize_error(edn.clone(), "Vec<f64>"))
+    }
+}
+
+impl Deserialize for Vec<bool> {
+    fn deserialize(edn: &Edn) -> Result<Self, Error> {
+        edn.to_bool_vec()
+            .ok_or_else(|| build_deserialize_error(edn.clone(), "Vec<bool>"))
+    }
 }
 
 /// `from_str` parses a EDN String into something that implements `TryFrom<Edn, Error = EdnError>`
 pub fn from_str<T: Deserialize>(s: &str) -> Result<T, Error> {
     let edn = Edn::from_str(s)?;
-    T::deserialize(edn)
+    T::deserialize(&edn)
 }
 
 pub(crate) fn tokenize(edn: &str) -> Vec<String> {

@@ -7,12 +7,10 @@ struct Person {
 }
 
 impl Deserialize for Person {
-    fn deserialize(edn: Edn) -> Result<Self, EdnError> {
+    fn deserialize(edn: &Edn) -> Result<Self, EdnError> {
         Ok(Self {
-            name: edn[":name"].to_string(),
-            age: edn[":age"].to_uint().ok_or_else(|| {
-                EdnError::Deserialize("couldn't convert `:age` into `uint`".to_string())
-            })?,
+            name: Deserialize::deserialize(&edn[":name"])?,
+            age: Deserialize::deserialize(&edn[":age"])?,
         })
     }
 }
@@ -32,13 +30,13 @@ fn main() -> Result<(), EdnError> {
     println!("{:?}", person);
     // Person { name: "rose", age: 66 }
 
-    let bad_edn_str = "{:name \"rose\" :age \"not an uint\"}";
+    let bad_edn_str = "{:name \"rose\" :age \"some text\"}";
     let person: Result<Person, EdnError> = edn_rs::from_str(bad_edn_str);
 
     assert_eq!(
         person,
         Err(EdnError::Deserialize(
-            "couldn't convert `:age` into `uint`".to_string()
+            "couldn't convert `some text` to `uint`".to_string()
         ))
     );
 
