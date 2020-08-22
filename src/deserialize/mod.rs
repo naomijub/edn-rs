@@ -128,38 +128,29 @@ impl Deserialize for char {
     }
 }
 
-impl Deserialize for Vec<String> {
+impl<T> Deserialize for Vec<T>
+where
+    T: Deserialize,
+{
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
-        edn.to_vec()
-            .ok_or_else(|| build_deserialize_error(edn.clone(), "Vec<String>"))
-    }
-}
-
-impl Deserialize for Vec<isize> {
-    fn deserialize(edn: &Edn) -> Result<Self, Error> {
-        edn.to_int_vec()
-            .ok_or_else(|| build_deserialize_error(edn.clone(), "Vec<isize>"))
-    }
-}
-
-impl Deserialize for Vec<usize> {
-    fn deserialize(edn: &Edn) -> Result<Self, Error> {
-        edn.to_uint_vec()
-            .ok_or_else(|| build_deserialize_error(edn.clone(), "Vec<usize>"))
-    }
-}
-
-impl Deserialize for Vec<f64> {
-    fn deserialize(edn: &Edn) -> Result<Self, Error> {
-        edn.to_float_vec()
-            .ok_or_else(|| build_deserialize_error(edn.clone(), "Vec<f64>"))
-    }
-}
-
-impl Deserialize for Vec<bool> {
-    fn deserialize(edn: &Edn) -> Result<Self, Error> {
-        edn.to_bool_vec()
-            .ok_or_else(|| build_deserialize_error(edn.clone(), "Vec<bool>"))
+        match edn {
+            Edn::Vector(_) => Ok(edn
+                .iter()
+                .unwrap()
+                .map(|e| Deserialize::deserialize(e))
+                .collect::<Result<Vec<T>, Error>>()?),
+            Edn::List(_) => Ok(edn
+                .iter()
+                .unwrap()
+                .map(|e| Deserialize::deserialize(e))
+                .collect::<Result<Vec<T>, Error>>()?),
+            Edn::Set(_) => Ok(edn
+                .iter()
+                .unwrap()
+                .map(|e| Deserialize::deserialize(e))
+                .collect::<Result<Vec<T>, Error>>()?),
+            _ => Err(build_deserialize_error(edn.clone(), "Vec<T>")),
+        }
     }
 }
 
