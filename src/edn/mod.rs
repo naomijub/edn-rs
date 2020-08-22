@@ -383,6 +383,23 @@ impl Edn {
         }
     }
 
+    /// `to_char` takes an `Edn` and returns an `Option<char>` with its value. Most types return None
+    /// ```rust
+    /// use edn_rs::edn::{Edn};
+    ///
+    /// let c = Edn::Char('c');
+    /// let symbol = Edn::Symbol("false".to_string());
+    ///
+    /// assert_eq!(c.to_char().unwrap(),'c');
+    /// assert_eq!(symbol.to_char(), None);
+    /// ```
+    pub fn to_char(&self) -> Option<char> {
+        match self {
+            Edn::Char(c) => Some(*c),
+            _ => None,
+        }
+    }
+
     /// `to_vec` converts `Edn` types `Vector` and `List` into an `Option<Vec<String>>`.
     /// Type String was selected because it is the current way to mix floats, integers and Strings.
     pub fn to_vec(&self) -> Option<Vec<String>> {
@@ -623,5 +640,14 @@ mod test {
         let double = Double::from(45843.835832564f64);
 
         assert_eq!(double.to_float(), 45843.835832564f64);
+    }
+
+    #[test]
+    fn to_char() {
+        let c = Edn::Char('c');
+        let symbol = Edn::Symbol("d".to_string());
+
+        assert_eq!(c.to_char().unwrap(), 'c');
+        assert_eq!(symbol.to_char(), None);
     }
 }
