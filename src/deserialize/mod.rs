@@ -157,6 +157,18 @@ where
     }
 }
 
+impl<T> Deserialize for Option<T>
+where
+    T: Deserialize,
+{
+    fn deserialize(edn: &Edn) -> Result<Self, Error> {
+        match edn {
+            Edn::Nil => Ok(None),
+            _ => Ok(Some(Deserialize::deserialize(&edn)?)),
+        }
+    }
+}
+
 /// `from_str` parses a EDN String into something that implements `TryFrom<Edn, Error = EdnError>`
 pub fn from_str<T: Deserialize>(s: &str) -> Result<T, Error> {
     let edn = Edn::from_str(s)?;
