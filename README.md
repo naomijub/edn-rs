@@ -7,6 +7,7 @@ Crate to parse and emit EDN [![Build Status](https://travis-ci.org/naomijub/edn-
 Current example usage in:
 * [crate `transistor`](https://github.com/naomijub/transistor);
 * [`atm-crux`](https://github.com/naomijub/atm-crux);
+* [Rust/Clojure FFI. Deserialize Clojure Edn into Rust Struct](https://github.com/naomijub/JVM-rust-ffi/tree/master/clj-rs);
 
 ## Usage
 
