@@ -643,6 +643,7 @@ impl Edn {
 impl std::str::FromStr for Edn {
     type Err = Error;
 
+    /// Parses an Edn `&str` into `Result<Edn, EdnError>`
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let tokens = deserialize::tokenize(s);
 
