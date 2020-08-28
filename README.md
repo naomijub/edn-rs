@@ -18,7 +18,7 @@ edn-rs = "0.13.1"
 ```
 
 ## Simple time-only benchmarks of `edn-rs` agains Clojure Edn
-* Link to benchmarks implementarion [here](https://github.com/naomijub/edn-duration-benchmark/blob/master/README.md)
+* Link to benchmarks implementation [here](https://github.com/naomijub/edn-duration-benchmark/blob/master/README.md)
 
 | Method\Lang 	| Rust --release 	| Rust --debug 	| Clojure 	|
 |-	|-	|-	|-	|
