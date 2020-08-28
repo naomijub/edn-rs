@@ -66,7 +66,7 @@ use std::str::FromStr;
 fn main() -> Result<(), String> {
     let edn_str = "{:a \"2\" :b [true false] :c #{:A {:a :b} nil}}";
     // std::str::FromStr
-    let edn :Edn = Edn::from_str(edn_str);
+    let edn: Edn = Edn::from_str(edn_str);
 
     assert_eq!(
         edn,
