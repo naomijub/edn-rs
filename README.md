@@ -17,6 +17,17 @@ Current example usage in:
 edn-rs = "0.13.1"
 ```
 
+## Simple time-only benchmarks of `edn-rs` agains Clojure Edn
+* Link to benchmarks implementation [here](https://github.com/naomijub/edn-duration-benchmark/blob/master/README.md)
+
+| Method\Lang 	| Rust --release 	| Rust --debug 	| Clojure 	|
+|-	|-	|-	|-	|
+| parse string 	| 110.932µs 	| 487.179µs 	| 4.712235 milis 	|
+| get-in/navigate 	| 6.972µs 	| 24.294µs 	| 39.914 µs 	|
+| Deserialize to struct 	| 142.983µs 	| 556.568µs 	| 4.712235 milis 	|
+
+## Quick reference
+
 **Parse an EDN token** into a `Edn` with `edn!` macro:
 ```rust
 use edn_rs::{
@@ -55,7 +66,7 @@ use std::str::FromStr;
 fn main() -> Result<(), String> {
     let edn_str = "{:a \"2\" :b [true false] :c #{:A {:a :b} nil}}";
     // std::str::FromStr
-    let edn = Edn::from_str(edn_str);
+    let edn :Edn = Edn::from_str(edn_str);
 
     assert_eq!(
         edn,
@@ -96,7 +107,7 @@ fn main() {
 }
 ```
 
-**Serializes Rust Types into EDN with `ser_struct!`**
+**Serializes Rust Types into EDN with `ser_struct!`** or use `edn-derive::Serialize`
  ```rust
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use edn_rs::{

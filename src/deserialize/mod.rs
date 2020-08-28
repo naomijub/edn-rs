@@ -169,7 +169,7 @@ where
     }
 }
 
-/// `from_str` parses a EDN String into something that implements `TryFrom<Edn, Error = EdnError>`
+/// `from_str` deserializes an EDN String into type `T` that implements `Deserialize`. Response is `Result<T, EdnError>`
 pub fn from_str<T: Deserialize>(s: &str) -> Result<T, Error> {
     let edn = Edn::from_str(s)?;
     T::deserialize(&edn)
