@@ -184,9 +184,9 @@ pub(crate) fn parse(c: Option<char>, chars: &mut std::str::Chars) -> Edn {
         Some('[') => read_vec(chars),
         Some('(') => read_list(chars),
         Some('#') => read_set(chars),
+        Some('{') => read_map(chars),
         // Some(']') => Err("Unexpected Token `]`".to_string().into()),
         // Some(')') => Err("Unexpected Token `)`".to_string().into()),
-        // Some('{') => read_map(chars),
         // Some('}') => Err("Unexpected Token `}`".to_string().into()),
         edn => parse_edn(edn, chars),
     }
@@ -322,6 +322,23 @@ fn read_set(chars: &mut std::str::Chars) -> Edn {
     }
 }
 
+fn read_map(chars: &mut std::str::Chars) -> Edn {
+    use std::collections::BTreeMap;
+    let mut res: BTreeMap<String, Edn> = BTreeMap::new();
+    loop {
+        match chars.next() {
+            Some('}') => return Edn::Map(Map::new(res)),
+            Some(c) if !c.is_whitespace() && c != ',' => {
+                res.insert(
+                    parse(Some(c), chars).to_string(),
+                    parse(chars.next(), chars),
+                );
+            }
+            _ => (),
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -450,28 +467,18 @@ mod test {
         )
     }
 
-    // #[test]
-    // fn tokenize_edn() {
-    //     let edn = "[1 \"2\" 3.3 :b [true \\c]]";
+    #[test]
+    fn parse_simple_map() {
+        let mut edn = "{:a \"2\" :b false :c nil }".chars();
 
-    //     assert_eq!(
-    //         tokenize(edn),
-    //         vec![
-    //             "[".to_string(),
-    //             "1".to_string(),
-    //             "\"".to_string(),
-    //             "2".to_string(),
-    //             "\"".to_string(),
-    //             "3.3".to_string(),
-    //             ":b".to_string(),
-    //             "[".to_string(),
-    //             "true".to_string(),
-    //             "\\c".to_string(),
-    //             "]".to_string(),
-    //             "]".to_string()
-    //         ]
-    //     );
-    // }
+        assert_eq!(
+            parse(edn.next(), &mut edn),
+            Edn::Map(Map::new(
+                map! {":a".to_string() => Edn::Str("2".to_string()),
+                ":b".to_string() => Edn::Bool(false), ":c".to_string() => Edn::Nil}
+            ))
+        );
+    }
 
     // #[test]
     // fn parse_simple_vec() {
@@ -564,79 +571,3 @@ mod test {
     //     )
     // }
 }
-
-// fn read_list<'a>(tokens: &'a [String]) -> Result<(Edn, &'a [String]), Error> {
-//     let mut res: Vec<Edn> = vec![];
-//     let mut xs = tokens;
-//     loop {
-//         let (next_token, rest) = xs
-//             .split_first()
-//             .ok_or("Could not find closing `)` for List".to_string())?;
-//         if next_token == ")" {
-//             return Ok((Edn::List(List::new(res)), rest));
-//         }
-//         let (exp, new_xs) = parse(&xs)?;
-//         res.push(exp);
-//         xs = new_xs;
-//     }
-// }
-
-// fn read_set<'a>(tokens: &'a [String]) -> Result<(Edn, &'a [String]), Error> {
-//     use std::collections::BTreeSet;
-//     let mut res: BTreeSet<Edn> = BTreeSet::new();
-//     let mut xs = tokens;
-//     loop {
-//         let (next_token, rest) = xs
-//             .split_first()
-//             .ok_or("Could not find closing `}` for Set".to_string())?;
-//         if next_token == "}" {
-//             return Ok((Edn::Set(Set::new(res)), rest));
-//         }
-//         let (exp, new_xs) = parse(&xs)?;
-//         res.insert(exp);
-//         xs = new_xs;
-//     }
-// }
-
-// fn read_map<'a>(tokens: &'a [String]) -> Result<(Edn, &'a [String]), Error> {
-//     use std::collections::BTreeMap;
-//     let mut res = BTreeMap::new();
-//     let mut xs = tokens;
-//     loop {
-//         let (first_token, rest) = xs
-//             .split_first()
-//             .ok_or("Could not find closing `}` for Map".to_string())?;
-//         if first_token == "}" {
-//             return Ok((Edn::Map(Map::new(res)), rest));
-//         }
-
-//         let (exp1, new_xs1) = parse(&xs)?;
-//         let (exp2, new_xs2) = parse(&new_xs1)?;
-
-//         res.insert(exp1.to_string(), exp2);
-//         xs = new_xs2;
-//     }
-// }
-
-// fn read_str<'a>(tokens: &'a [String]) -> Result<(Edn, &'a [String]), Error> {
-//     let mut res = String::new();
-//     let mut xs = tokens;
-//     let mut counter = 0;
-//     loop {
-//         let (next_token, rest) = xs
-//             .split_first()
-//             .ok_or("Could not find closing `\"` for Str".to_string())?;
-//         if next_token == "\"" {
-//             return Ok((Edn::Str(res), rest));
-//         }
-//         let (exp, new_xs) = xs
-//             .split_first()
-//             .ok_or("Could not find closing `\"` for Str".to_string())?;
-//         if counter != 0 {
-//             res.push_str(" ");
-//         }
-//         res.push_str(exp);
-//         xs = new_xs;
-//         counter += 1;
-//     }
-// }
