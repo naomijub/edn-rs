@@ -180,7 +180,6 @@ pub(crate) fn tokenize(edn: &str) -> std::str::Chars {
 }
 
 pub(crate) fn parse(c: Option<char>, chars: &mut std::str::Chars) -> Edn {
-    println!("c: {:?}, chars: {:?}", c, chars);
     match c {
         Some('[') => read_vec(chars),
         Some('(') => read_list(chars),
@@ -194,7 +193,6 @@ pub(crate) fn parse(c: Option<char>, chars: &mut std::str::Chars) -> Edn {
 }
 
 pub(crate) fn parse_edn(c: Option<char>, chars: &mut std::str::Chars) -> Edn {
-    println!("{:?}", chars);
     match c {
         Some('\"') => read_str(chars),
         Some(':') => read_key(chars),
@@ -202,14 +200,17 @@ pub(crate) fn parse_edn(c: Option<char>, chars: &mut std::str::Chars) -> Edn {
         Some('-') => read_number('-', chars),
         Some('\\') => read_char(chars),
         Some(b) if b == 't' || b == 'f' || b == 'n' => read_bool_or_nil(b, chars),
-        _ => Edn::Empty,
+        a => {
+            println!("{:?}", a);
+            Edn::Empty
+        }
     }
 }
 
 fn read_key(chars: &mut std::str::Chars) -> Edn {
     let mut key = String::from(":");
     let key_chars = chars
-        .take_while(|c| !c.is_whitespace() || c != &')' || c != &']' || c != &'}')
+        .take_while(|c| !c.is_whitespace() && c != &')' && c != &']' && c != &'}')
         .collect::<String>();
     key.push_str(&key_chars);
     Edn::Key(key)
@@ -287,7 +288,7 @@ fn read_vec(chars: &mut std::str::Chars) -> Edn {
         match chars.next() {
             Some(']') => return Edn::Vector(Vector::new(res)),
             Some(c) if !c.is_whitespace() && c != ',' => {
-                res.push(parse_edn(Some(c), chars));
+                res.push(parse(Some(c), chars));
             }
             _ => (),
         }
@@ -296,12 +297,11 @@ fn read_vec(chars: &mut std::str::Chars) -> Edn {
 
 fn read_list(chars: &mut std::str::Chars) -> Edn {
     let mut res: Vec<Edn> = vec![];
-    println!("{:?}", chars);
     loop {
         match chars.next() {
             Some(')') => return Edn::List(List::new(res)),
-            Some(c) if c != ' ' => {
-                res.push(parse_edn(Some(c), chars));
+            Some(c) if !c.is_whitespace() && c != ',' => {
+                res.push(parse(Some(c), chars));
             }
             _ => (),
         }
@@ -314,8 +314,8 @@ fn read_set(chars: &mut std::str::Chars) -> Edn {
     loop {
         match chars.next() {
             Some('}') => return Edn::Set(Set::new(res)),
-            Some(c) if c != ' ' || c != '{' => {
-                res.insert(parse_edn(Some(c), chars));
+            Some(c) if !c.is_whitespace() && c != ',' && c != '{' => {
+                res.insert(parse(Some(c), chars));
             }
             _ => (),
         }
@@ -402,7 +402,7 @@ mod test {
 
     #[test]
     fn parse_list() {
-        let mut edn = "(1 \"2\" 3.3 :b true)".chars();
+        let mut edn = "(1 \"2\" 3.3 :b )".chars();
 
         assert_eq!(
             parse(edn.next(), &mut edn),
@@ -411,9 +411,43 @@ mod test {
                 Edn::Str("2".to_string()),
                 Edn::Double(3.3.into()),
                 Edn::Key(":b".to_string()),
-                Edn::Bool(true),
             ]))
         );
+    }
+
+    #[test]
+    fn parse_set() {
+        let mut edn = "#{true \\c 3 }".chars();
+
+        assert_eq!(
+            parse(edn.next(), &mut edn),
+            Edn::Set(Set::new(set![
+                Edn::Bool(true),
+                Edn::Char('c'),
+                Edn::UInt(3)
+            ]))
+        )
+    }
+
+    #[test]
+    fn parse_complex() {
+        let mut edn = "[:b ( 5 \\c #{true \\c 3 } ) ]".chars();
+
+        assert_eq!(
+            parse(edn.next(), &mut edn),
+            Edn::Vector(Vector::new(vec![
+                Edn::Key(":b".to_string()),
+                Edn::List(List::new(vec![
+                    Edn::UInt(5),
+                    Edn::Char('c'),
+                    Edn::Set(Set::new(set![
+                        Edn::Bool(true),
+                        Edn::Char('c'),
+                        Edn::UInt(3)
+                    ]))
+                ]))
+            ]))
+        )
     }
 
     // #[test]
