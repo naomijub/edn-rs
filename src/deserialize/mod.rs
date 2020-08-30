@@ -480,71 +480,71 @@ mod test {
         );
     }
 
+    #[test]
+    fn from_str__simple_vec() {
+        let edn = "[1 \"2\" 3.3 :b true \\c]";
+
+        assert_eq!(
+            Edn::from_str(edn),
+            Ok(Edn::Vector(Vector::new(vec![
+                Edn::UInt(1),
+                Edn::Str("2".to_string()),
+                Edn::Double(3.3.into()),
+                Edn::Key(":b".to_string()),
+                Edn::Bool(true),
+                Edn::Char('c')
+            ])))
+        );
+    }
+
+    #[test]
+    fn from_str_list_with_vec() {
+        let edn = "(1 \"2\" 3.3 :b [true \\c])";
+
+        assert_eq!(
+            Edn::from_str(edn),
+            Ok(Edn::List(List::new(vec![
+                Edn::UInt(1),
+                Edn::Str("2".to_string()),
+                Edn::Double(3.3.into()),
+                Edn::Key(":b".to_string()),
+                Edn::Vector(Vector::new(vec![Edn::Bool(true), Edn::Char('c')]))
+            ])))
+        );
+    }
+
+    #[test]
+    fn from_str_list_with_set() {
+        let edn = "(1 \"2\" 3.3 :b #{true \\c})";
+
+        assert_eq!(
+            Edn::from_str(edn),
+            Ok(Edn::List(List::new(vec![
+                Edn::UInt(1),
+                Edn::Str("2".to_string()),
+                Edn::Double(3.3.into()),
+                Edn::Key(":b".to_string()),
+                Edn::Set(Set::new(set![Edn::Bool(true), Edn::Char('c')]))
+            ])))
+        );
+    }
+
+    #[test]
+    fn from_str_simple_map() {
+        let edn = "{:a \"2\" :b true :c nil }";
+
+        assert_eq!(
+            Edn::from_str(edn),
+            Ok(Edn::Map(Map::new(
+                map! {":a".to_string() => Edn::Str("2".to_string()),
+                ":b".to_string() => Edn::Bool(true), ":c".to_string() => Edn::Nil}
+            )))
+        );
+    }
+
     // #[test]
-    // fn parse_simple_vec() {
-    //     let edn = "[1 \"2\" 3.3 :b true \\c]";
-
-    //     assert_eq!(
-    //         Edn::from_str(edn),
-    //         Ok(Edn::Vector(Vector::new(vec![
-    //             Edn::UInt(1),
-    //             Edn::Str("2".to_string()),
-    //             Edn::Double(3.3.into()),
-    //             Edn::Key(":b".to_string()),
-    //             Edn::Bool(true),
-    //             Edn::Char('c')
-    //         ])))
-    //     );
-    // }
-
-    // #[test]
-    // fn parse_list_with_vec() {
-    //     let edn = "(1 \"2\" 3.3 :b [true \\c])";
-
-    //     assert_eq!(
-    //         Edn::from_str(edn),
-    //         Ok(Edn::List(List::new(vec![
-    //             Edn::UInt(1),
-    //             Edn::Str("2".to_string()),
-    //             Edn::Double(3.3.into()),
-    //             Edn::Key(":b".to_string()),
-    //             Edn::Vector(Vector::new(vec![Edn::Bool(true), Edn::Char('c')]))
-    //         ])))
-    //     );
-    // }
-
-    // #[test]
-    // fn parse_list_with_set() {
-    //     let edn = "(1 \"2\" 3.3 :b #{true \\c})";
-
-    //     assert_eq!(
-    //         Edn::from_str(edn),
-    //         Ok(Edn::List(List::new(vec![
-    //             Edn::UInt(1),
-    //             Edn::Str("2".to_string()),
-    //             Edn::Double(3.3.into()),
-    //             Edn::Key(":b".to_string()),
-    //             Edn::Set(Set::new(set![Edn::Bool(true), Edn::Char('c')]))
-    //         ])))
-    //     );
-    // }
-
-    // #[test]
-    // fn parse_simple_map() {
-    //     let edn = "{:a \"2\" :b true :c nil}";
-
-    //     assert_eq!(
-    //         Edn::from_str(edn),
-    //         Ok(Edn::Map(Map::new(
-    //             map! {":a".to_string() => Edn::Str("2".to_string()),
-    //             ":b".to_string() => Edn::Bool(true), ":c".to_string() => Edn::Nil}
-    //         )))
-    //     );
-    // }
-
-    // #[test]
-    // fn parse_complex_map() {
-    //     let edn = "{:a \"2\" :b [true false] :c #{:A {:a :b} nil}}";
+    // fn from_str_complex_map() {
+    //     let edn = "{:a \"2\" :b [true false] :c #{:A {:a :b} nil } }";
 
     //     assert_eq!(
     //         Edn::from_str(edn),
@@ -559,15 +559,15 @@ mod test {
     //     );
     // }
 
-    // #[test]
-    // fn parse_wordy_str() {
-    //     let edn = "[\"hello brave new world\"]";
+    #[test]
+    fn from_str_wordy_str() {
+        let edn = "[\"hello brave new world\"]";
 
-    //     assert_eq!(
-    //         Edn::from_str(edn).unwrap(),
-    //         Edn::Vector(Vector::new(vec![Edn::Str(
-    //             "hello brave new world".to_string()
-    //         )]))
-    //     )
-    // }
+        assert_eq!(
+            Edn::from_str(edn).unwrap(),
+            Edn::Vector(Vector::new(vec![Edn::Str(
+                "hello brave new world".to_string()
+            )]))
+        )
+    }
 }

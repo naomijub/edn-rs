@@ -621,23 +621,6 @@ impl Edn {
             _ => None,
         }
     }
-
-    pub(crate) fn parse_word(word: String) -> Edn {
-        match word {
-            w if w.starts_with(":") => Edn::Key(w),
-            w if w.starts_with("\\") && w.len() == 2 => Edn::Char(w.chars().last().unwrap()),
-            w if w.starts_with("\"") && w.ends_with("\"") => Edn::Str(w.replace("\"", "")),
-            w if w.parse::<bool>().is_ok() => Edn::Bool(w.parse::<bool>().unwrap()),
-            w if w == "nil" || w == "Nil" => Edn::Nil,
-            w if w.contains("/") && w.split("/").all(|d| d.parse::<f64>().is_ok()) => {
-                Edn::Rational(w)
-            }
-            w if w.parse::<usize>().is_ok() => Edn::UInt(w.parse::<usize>().unwrap()),
-            w if w.parse::<isize>().is_ok() => Edn::Int(w.parse::<isize>().unwrap()),
-            w if w.parse::<f64>().is_ok() => Edn::Double(w.parse::<f64>().unwrap().into()),
-            w => Edn::Symbol(w),
-        }
-    }
 }
 
 impl std::str::FromStr for Edn {
@@ -646,9 +629,8 @@ impl std::str::FromStr for Edn {
     /// Parses a `&str` that contains an Edn into `Result<Edn, EdnError>`
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut tokens = deserialize::tokenize(s);
-
-        // Ok(deserialize::parse(&mut tokens))
-        Ok(Edn::Empty)
+        let edn = deserialize::parse(tokens.next(), &mut tokens);
+        Ok(edn)
     }
 }
 
