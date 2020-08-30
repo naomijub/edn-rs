@@ -208,7 +208,9 @@ pub(crate) fn parse_edn(c: Option<char>, chars: &mut std::str::Chars) -> Edn {
 
 fn read_key(chars: &mut std::str::Chars) -> Edn {
     let mut key = String::from(":");
-    let key_chars = chars.take_while(|c| !c.is_whitespace()).collect::<String>();
+    let key_chars = chars
+        .take_while(|c| !c.is_whitespace() || c != &')' || c != &']' || c != &'}')
+        .collect::<String>();
     key.push_str(&key_chars);
     Edn::Key(key)
 }
@@ -284,7 +286,7 @@ fn read_vec(chars: &mut std::str::Chars) -> Edn {
     loop {
         match chars.next() {
             Some(']') => return Edn::Vector(Vector::new(res)),
-            Some(c) if c != ' ' => {
+            Some(c) if !c.is_whitespace() && c != ',' => {
                 res.push(parse_edn(Some(c), chars));
             }
             _ => (),
@@ -294,8 +296,8 @@ fn read_vec(chars: &mut std::str::Chars) -> Edn {
 
 fn read_list(chars: &mut std::str::Chars) -> Edn {
     let mut res: Vec<Edn> = vec![];
+    println!("{:?}", chars);
     loop {
-        println!("{:?}", chars);
         match chars.next() {
             Some(')') => return Edn::List(List::new(res)),
             Some(c) if c != ' ' => {
@@ -400,7 +402,7 @@ mod test {
 
     #[test]
     fn parse_list() {
-        let mut edn = "(1 \"2\" 3.3 :b)".chars();
+        let mut edn = "(1 \"2\" 3.3 :b true)".chars();
 
         assert_eq!(
             parse(edn.next(), &mut edn),
@@ -409,6 +411,7 @@ mod test {
                 Edn::Str("2".to_string()),
                 Edn::Double(3.3.into()),
                 Edn::Key(":b".to_string()),
+                Edn::Bool(true),
             ]))
         );
     }
