@@ -171,13 +171,7 @@ where
 
 /// `from_str` deserializes an EDN String into type `T` that implements `Deserialize`. Response is `Result<T, EdnError>`
 pub fn from_str<T: Deserialize>(s: &str) -> Result<T, Error> {
-    let s_clean = String::from(
-        s.replace("]", " ]")
-            .replace("}", " }")
-            .replace(")", " )")
-            .trim(),
-    );
-    let edn = Edn::from_str(&s_clean)?;
+    let edn = Edn::from_str(&s.trim())?;
     T::deserialize(&edn)
 }
 
@@ -554,7 +548,7 @@ mod test {
 
     // #[test]
     // fn from_str_complex_map() {
-    //     let edn = "{:a \"2\" :b [true false] :c #{:A {:a :b} nil } }";
+    //     let edn = "{:a \"2\" :b [true false] :c #{:A {:a :b} nil}}";
 
     //     assert_eq!(
     //         Edn::from_str(edn),

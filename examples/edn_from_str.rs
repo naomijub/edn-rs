@@ -3,7 +3,7 @@ use std::str::FromStr;
 
 fn main() -> Result<(), EdnError> {
     //TODO: Removes extra spacing
-    let edn_str = "{ :a \"2\" :b [ true false ] :c #{ :A { :a :b } nil } }";
+    let edn_str = "{:a \"2\" :b [ true false] :c #{ :A nil { :a :b}}}";
     let edn = Edn::from_str(edn_str)?;
 
     //TODO: Failing
