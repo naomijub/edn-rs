@@ -681,6 +681,12 @@ impl From<std::num::ParseFloatError> for Error {
     }
 }
 
+impl From<std::str::ParseBoolError> for Error {
+    fn from(s: std::str::ParseBoolError) -> Self {
+        Error::ParseEdn(s.to_string())
+    }
+}
+
 impl std::error::Error for Error {
     fn description(&self) -> &str {
         match self {

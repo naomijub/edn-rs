@@ -196,7 +196,7 @@ pub(crate) fn parse_edn(c: Option<char>, chars: &mut std::str::Chars) -> Result<
         Some(n) if n.is_numeric() => read_number(n, chars)?,
         Some('-') => read_number('-', chars)?,
         Some('\\') => read_char(chars),
-        Some(b) if b == 't' || b == 'f' || b == 'n' => read_bool_or_nil(b, chars),
+        Some(b) if b == 't' || b == 'f' || b == 'n' => read_bool_or_nil(b, chars)?,
         a => {
             println!("{:?}", a);
             Edn::Empty
@@ -243,8 +243,8 @@ fn read_char(chars: &mut std::str::Chars) -> Edn {
     }
 }
 
-fn read_bool_or_nil(c: char, chars: &mut std::str::Chars) -> Edn {
-    match c {
+fn read_bool_or_nil(c: char, chars: &mut std::str::Chars) -> Result<Edn, Error> {
+    Ok(match c {
         't' => {
             let mut string = String::new();
             let t = chars
@@ -252,7 +252,7 @@ fn read_bool_or_nil(c: char, chars: &mut std::str::Chars) -> Edn {
                 .collect::<String>();
             string.push(c);
             string.push_str(&t);
-            Edn::Bool(string.parse::<bool>().unwrap())
+            Edn::Bool(string.parse::<bool>()?)
         }
         'f' => {
             let mut string = String::new();
@@ -261,7 +261,7 @@ fn read_bool_or_nil(c: char, chars: &mut std::str::Chars) -> Edn {
                 .collect::<String>();
             string.push(c);
             string.push_str(&f);
-            Edn::Bool(string.parse::<bool>().unwrap())
+            Edn::Bool(string.parse::<bool>()?)
         }
         'n' => {
             let mut string = String::new();
@@ -276,7 +276,7 @@ fn read_bool_or_nil(c: char, chars: &mut std::str::Chars) -> Edn {
             }
         }
         _ => Edn::Empty,
-    }
+    })
 }
 
 fn read_vec(chars: &mut std::str::Chars) -> Result<Edn, Error> {
