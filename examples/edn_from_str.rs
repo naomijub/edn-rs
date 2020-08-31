@@ -2,7 +2,8 @@ use edn_rs::{map, set, Edn, EdnError, Map, Set, Vector};
 use std::str::FromStr;
 
 fn main() -> Result<(), EdnError> {
-    let edn_str = "{:a \"2\" :b [true false ] :c #{:A {:a :b } nil } }";
+    //TODO: Removes extra spacing
+    let edn_str = "{:a \"2\" :b [true false ] :c #{:A { :a :b } nil } }";
     let edn = Edn::from_str(edn_str)?;
 
     //TODO: Failing
