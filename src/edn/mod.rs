@@ -1,4 +1,4 @@
-use crate::deserialize;
+use crate::deserialize::parse;
 use std::cmp::{Ord, PartialOrd};
 use std::collections::{BTreeMap, BTreeSet};
 use utils::index::Index;
@@ -630,8 +630,8 @@ impl std::str::FromStr for Edn {
 
     /// Parses a `&str` that contains an Edn into `Result<Edn, EdnError>`
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut tokens = deserialize::tokenize(&s.trim());
-        let edn = deserialize::parse(tokens.next(), &mut tokens)?;
+        let mut tokens = parse::tokenize(&s.trim());
+        let edn = parse::parse(tokens.next(), &mut tokens)?;
         Ok(edn)
     }
 }
