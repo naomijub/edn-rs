@@ -22,7 +22,7 @@ use std::str::FromStr;
 ///     }
 /// }
 ///
-/// let edn_str = "{:name \"rose\" :age 66}";
+/// let edn_str = "{:name \"rose\" :age 66 }";
 /// let person: Person = edn_rs::from_str(edn_str).unwrap();
 ///
 /// assert_eq!(
@@ -36,7 +36,7 @@ use std::str::FromStr;
 /// println!("{:?}", person);
 /// // Person { name: "rose", age: 66 }
 ///
-/// let bad_edn_str = "{:name \"rose\" :age \"some text\"}";
+/// let bad_edn_str = "{:name \"rose\" :age \"some text\" }";
 /// let person: Result<Person, EdnError> = edn_rs::from_str(bad_edn_str);
 ///
 /// assert_eq!(
@@ -481,7 +481,7 @@ mod test {
     }
 
     #[test]
-    fn from_str__simple_vec() {
+    fn from_str_simple_vec() {
         let edn = "[1 \"2\" 3.3 :b true \\c]";
 
         assert_eq!(
