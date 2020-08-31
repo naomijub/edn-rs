@@ -630,7 +630,13 @@ impl std::str::FromStr for Edn {
 
     /// Parses a `&str` that contains an Edn into `Result<Edn, EdnError>`
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut tokens = deserialize::tokenize(s);
+        let edn_str = String::from(
+            s.replace("]", " ]")
+                .replace("}", " }")
+                .replace(")", " )")
+                .trim(),
+        );
+        let mut tokens = deserialize::tokenize(&edn_str);
         let edn = deserialize::parse(tokens.next(), &mut tokens)?;
         Ok(edn)
     }
