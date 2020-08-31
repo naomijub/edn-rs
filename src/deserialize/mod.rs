@@ -190,18 +190,18 @@ pub(crate) fn parse(c: Option<char>, chars: &mut std::str::Chars) -> Result<Edn,
 }
 
 pub(crate) fn parse_edn(c: Option<char>, chars: &mut std::str::Chars) -> Result<Edn, Error> {
-    Ok(match c {
-        Some('\"') => read_str(chars),
-        Some(':') => read_key(chars),
-        Some(n) if n.is_numeric() => read_number(n, chars)?,
-        Some('-') => read_number('-', chars)?,
-        Some('\\') => read_char(chars),
-        Some(b) if b == 't' || b == 'f' || b == 'n' => read_bool_or_nil(b, chars)?,
-        a => {
-            println!("{:?}", a);
-            Edn::Empty
-        }
-    })
+    match c {
+        Some('\"') => Ok(read_str(chars)),
+        Some(':') => Ok(read_key(chars)),
+        Some(n) if n.is_numeric() => Ok(read_number(n, chars)?),
+        Some('-') => Ok(read_number('-', chars)?),
+        Some('\\') => Ok(read_char(chars)?),
+        Some(b) if b == 't' || b == 'f' || b == 'n' => Ok(read_bool_or_nil(b, chars)?),
+        a => Err(Error::ParseEdn(format!(
+            "{} could not be parsed",
+            a.unwrap().to_string()
+        ))),
+    }
 }
 
 fn read_key(chars: &mut std::str::Chars) -> Edn {
@@ -226,25 +226,26 @@ fn read_number(n: char, chars: &mut std::str::Chars) -> Result<Edn, Error> {
     number.push(n);
     number.push_str(&string);
 
-    Ok(match number {
-        n if n.parse::<usize>().is_ok() => Edn::UInt(n.parse::<usize>()?),
-        n if n.parse::<isize>().is_ok() => Edn::Int(n.parse::<isize>()?),
-        n if n.parse::<f64>().is_ok() => Edn::Double(n.parse::<f64>()?.into()),
-        n if n.contains("/") && n.split("/").all(|d| d.parse::<f64>().is_ok()) => Edn::Rational(n),
-        _ => Edn::Empty,
-    })
-}
-
-fn read_char(chars: &mut std::str::Chars) -> Edn {
-    let c = chars.next();
-    match c {
-        Some(val) => Edn::Char(val),
-        None => Edn::Empty,
+    match number {
+        n if n.parse::<usize>().is_ok() => Ok(Edn::UInt(n.parse::<usize>()?)),
+        n if n.parse::<isize>().is_ok() => Ok(Edn::Int(n.parse::<isize>()?)),
+        n if n.parse::<f64>().is_ok() => Ok(Edn::Double(n.parse::<f64>()?.into())),
+        n if n.contains("/") && n.split("/").all(|d| d.parse::<f64>().is_ok()) => {
+            Ok(Edn::Rational(n))
+        }
+        _ => Err(Error::ParseEdn(format!("{} could not be parsed", number))),
     }
 }
 
+fn read_char(chars: &mut std::str::Chars) -> Result<Edn, Error> {
+    let c = chars.next();
+    c.ok_or(format!("{:?} could not be parsed", c))
+        .map(|c| Edn::Char(c))
+        .map_err(|e| Error::ParseEdn(e))
+}
+
 fn read_bool_or_nil(c: char, chars: &mut std::str::Chars) -> Result<Edn, Error> {
-    Ok(match c {
+    match c {
         't' => {
             let mut string = String::new();
             let t = chars
@@ -252,7 +253,7 @@ fn read_bool_or_nil(c: char, chars: &mut std::str::Chars) -> Result<Edn, Error> 
                 .collect::<String>();
             string.push(c);
             string.push_str(&t);
-            Edn::Bool(string.parse::<bool>()?)
+            Ok(Edn::Bool(string.parse::<bool>()?))
         }
         'f' => {
             let mut string = String::new();
@@ -261,7 +262,7 @@ fn read_bool_or_nil(c: char, chars: &mut std::str::Chars) -> Result<Edn, Error> 
                 .collect::<String>();
             string.push(c);
             string.push_str(&f);
-            Edn::Bool(string.parse::<bool>()?)
+            Ok(Edn::Bool(string.parse::<bool>()?))
         }
         'n' => {
             let mut string = String::new();
@@ -271,12 +272,14 @@ fn read_bool_or_nil(c: char, chars: &mut std::str::Chars) -> Result<Edn, Error> 
             string.push(c);
             string.push_str(&n);
             match &string[..] {
-                "nil" => Edn::Nil,
-                _ => Edn::Empty,
+                "nil" => Ok(Edn::Nil),
+                _ => Err(Error::ParseEdn(format!("{} cound not be parsed", string))),
             }
         }
-        _ => Edn::Empty,
-    })
+        _ => Err(Error::ParseEdn(
+            "Nullable boolean cound not be parsed".to_string(),
+        )),
+    }
 }
 
 fn read_vec(chars: &mut std::str::Chars) -> Result<Edn, Error> {
@@ -287,7 +290,8 @@ fn read_vec(chars: &mut std::str::Chars) -> Result<Edn, Error> {
             Some(c) if !c.is_whitespace() && c != ',' => {
                 res.push(parse(Some(c), chars)?);
             }
-            _ => (),
+            Some(c) if c.is_whitespace() || c == ',' => (),
+            err => return Err(Error::ParseEdn(format!("{:?} could not be parsed", err))),
         }
     }
 }
@@ -300,7 +304,8 @@ fn read_list(chars: &mut std::str::Chars) -> Result<Edn, Error> {
             Some(c) if !c.is_whitespace() && c != ',' => {
                 res.push(parse(Some(c), chars)?);
             }
-            _ => (),
+            Some(c) if c.is_whitespace() || c == ',' => (),
+            err => return Err(Error::ParseEdn(format!("{:?} could not be parsed", err))),
         }
     }
 }
@@ -314,7 +319,8 @@ fn read_set(chars: &mut std::str::Chars) -> Result<Edn, Error> {
             Some(c) if !c.is_whitespace() && c != ',' && c != '{' => {
                 res.insert(parse(Some(c), chars)?);
             }
-            _ => (),
+            Some(c) if c.is_whitespace() || c == ',' || c == '{' => (),
+            err => return Err(Error::ParseEdn(format!("{:?} could not be parsed", err))),
         }
     }
 }
@@ -331,7 +337,8 @@ fn read_map(chars: &mut std::str::Chars) -> Result<Edn, Error> {
                     parse(chars.next(), chars)?,
                 );
             }
-            _ => (),
+            Some(c) if c.is_whitespace() || c == ',' => (),
+            err => return Err(Error::ParseEdn(format!("{:?} could not be parsed", err))),
         }
     }
 }
