@@ -136,17 +136,17 @@ where
         match edn {
             Edn::Vector(_) => Ok(edn
                 .iter()
-                .unwrap()
+                .ok_or(Error::Iter(format!("Could not create iter from {:?}", edn)))?
                 .map(|e| Deserialize::deserialize(e))
                 .collect::<Result<Vec<T>, Error>>()?),
             Edn::List(_) => Ok(edn
                 .iter()
-                .unwrap()
+                .ok_or(Error::Iter(format!("Could not create iter from {:?}", edn)))?
                 .map(|e| Deserialize::deserialize(e))
                 .collect::<Result<Vec<T>, Error>>()?),
             Edn::Set(_) => Ok(edn
                 .iter()
-                .unwrap()
+                .ok_or(Error::Iter(format!("Could not create iter from {:?}", edn)))?
                 .map(|e| Deserialize::deserialize(e))
                 .collect::<Result<Vec<T>, Error>>()?),
             _ => Err(build_deserialize_error(
@@ -179,32 +179,29 @@ pub(crate) fn tokenize(edn: &str) -> std::str::Chars {
     edn.chars()
 }
 
-pub(crate) fn parse(c: Option<char>, chars: &mut std::str::Chars) -> Edn {
-    match c {
-        Some('[') => read_vec(chars),
-        Some('(') => read_list(chars),
-        Some('#') => read_set(chars),
-        Some('{') => read_map(chars),
-        // Some(']') => Err("Unexpected Token `]`".to_string().into()),
-        // Some(')') => Err("Unexpected Token `)`".to_string().into()),
-        // Some('}') => Err("Unexpected Token `}`".to_string().into()),
-        edn => parse_edn(edn, chars),
-    }
+pub(crate) fn parse(c: Option<char>, chars: &mut std::str::Chars) -> Result<Edn, Error> {
+    Ok(match c {
+        Some('[') => read_vec(chars)?,
+        Some('(') => read_list(chars)?,
+        Some('#') => read_set(chars)?,
+        Some('{') => read_map(chars)?,
+        edn => parse_edn(edn, chars)?,
+    })
 }
 
-pub(crate) fn parse_edn(c: Option<char>, chars: &mut std::str::Chars) -> Edn {
-    match c {
+pub(crate) fn parse_edn(c: Option<char>, chars: &mut std::str::Chars) -> Result<Edn, Error> {
+    Ok(match c {
         Some('\"') => read_str(chars),
         Some(':') => read_key(chars),
-        Some(n) if n.is_numeric() => read_number(n, chars),
-        Some('-') => read_number('-', chars),
+        Some(n) if n.is_numeric() => read_number(n, chars)?,
+        Some('-') => read_number('-', chars)?,
         Some('\\') => read_char(chars),
         Some(b) if b == 't' || b == 'f' || b == 'n' => read_bool_or_nil(b, chars),
         a => {
             println!("{:?}", a);
             Edn::Empty
         }
-    }
+    })
 }
 
 fn read_key(chars: &mut std::str::Chars) -> Edn {
@@ -221,7 +218,7 @@ fn read_str(chars: &mut std::str::Chars) -> Edn {
     Edn::Str(string)
 }
 
-fn read_number(n: char, chars: &mut std::str::Chars) -> Edn {
+fn read_number(n: char, chars: &mut std::str::Chars) -> Result<Edn, Error> {
     let mut number = String::new();
     let string = chars
         .take_while(|c| c.is_numeric() || c == &'.' || c == &'/')
@@ -229,13 +226,13 @@ fn read_number(n: char, chars: &mut std::str::Chars) -> Edn {
     number.push(n);
     number.push_str(&string);
 
-    match number {
-        n if n.parse::<usize>().is_ok() => Edn::UInt(n.parse::<usize>().unwrap()),
-        n if n.parse::<isize>().is_ok() => Edn::Int(n.parse::<isize>().unwrap()),
-        n if n.parse::<f64>().is_ok() => Edn::Double(n.parse::<f64>().unwrap().into()),
+    Ok(match number {
+        n if n.parse::<usize>().is_ok() => Edn::UInt(n.parse::<usize>()?),
+        n if n.parse::<isize>().is_ok() => Edn::Int(n.parse::<isize>()?),
+        n if n.parse::<f64>().is_ok() => Edn::Double(n.parse::<f64>()?.into()),
         n if n.contains("/") && n.split("/").all(|d| d.parse::<f64>().is_ok()) => Edn::Rational(n),
         _ => Edn::Empty,
-    }
+    })
 }
 
 fn read_char(chars: &mut std::str::Chars) -> Edn {
@@ -282,56 +279,56 @@ fn read_bool_or_nil(c: char, chars: &mut std::str::Chars) -> Edn {
     }
 }
 
-fn read_vec(chars: &mut std::str::Chars) -> Edn {
+fn read_vec(chars: &mut std::str::Chars) -> Result<Edn, Error> {
     let mut res: Vec<Edn> = vec![];
     loop {
         match chars.next() {
-            Some(']') => return Edn::Vector(Vector::new(res)),
+            Some(']') => return Ok(Edn::Vector(Vector::new(res))),
             Some(c) if !c.is_whitespace() && c != ',' => {
-                res.push(parse(Some(c), chars));
+                res.push(parse(Some(c), chars)?);
             }
             _ => (),
         }
     }
 }
 
-fn read_list(chars: &mut std::str::Chars) -> Edn {
+fn read_list(chars: &mut std::str::Chars) -> Result<Edn, Error> {
     let mut res: Vec<Edn> = vec![];
     loop {
         match chars.next() {
-            Some(')') => return Edn::List(List::new(res)),
+            Some(')') => return Ok(Edn::List(List::new(res))),
             Some(c) if !c.is_whitespace() && c != ',' => {
-                res.push(parse(Some(c), chars));
+                res.push(parse(Some(c), chars)?);
             }
             _ => (),
         }
     }
 }
 
-fn read_set(chars: &mut std::str::Chars) -> Edn {
+fn read_set(chars: &mut std::str::Chars) -> Result<Edn, Error> {
     use std::collections::BTreeSet;
     let mut res: BTreeSet<Edn> = BTreeSet::new();
     loop {
         match chars.next() {
-            Some('}') => return Edn::Set(Set::new(res)),
+            Some('}') => return Ok(Edn::Set(Set::new(res))),
             Some(c) if !c.is_whitespace() && c != ',' && c != '{' => {
-                res.insert(parse(Some(c), chars));
+                res.insert(parse(Some(c), chars)?);
             }
             _ => (),
         }
     }
 }
 
-fn read_map(chars: &mut std::str::Chars) -> Edn {
+fn read_map(chars: &mut std::str::Chars) -> Result<Edn, Error> {
     use std::collections::BTreeMap;
     let mut res: BTreeMap<String, Edn> = BTreeMap::new();
     loop {
         match chars.next() {
-            Some('}') => return Edn::Map(Map::new(res)),
+            Some('}') => return Ok(Edn::Map(Map::new(res))),
             Some(c) if !c.is_whitespace() && c != ',' => {
                 res.insert(
-                    parse(Some(c), chars).to_string(),
-                    parse(chars.next(), chars),
+                    parse(Some(c), chars)?.to_string(),
+                    parse(chars.next(), chars)?,
                 );
             }
             _ => (),
@@ -350,7 +347,7 @@ mod test {
         let mut key = ":keyword".chars();
 
         assert_eq!(
-            parse_edn(key.next(), &mut key),
+            parse_edn(key.next(), &mut key).unwrap(),
             Edn::Key(":keyword".to_string())
         )
     }
@@ -360,7 +357,7 @@ mod test {
         let mut string = "\"hello world, from      RUST\"".chars();
 
         assert_eq!(
-            parse_edn(string.next(), &mut string),
+            parse_edn(string.next(), &mut string).unwrap(),
             Edn::Str("hello world, from      RUST".to_string())
         )
     }
@@ -371,14 +368,14 @@ mod test {
         let mut int = "-435143".chars();
         let mut f = "-43.5143".chars();
         let mut r = "43/5143".chars();
-        assert_eq!(parse_edn(uint.next(), &mut uint), Edn::UInt(143));
-        assert_eq!(parse_edn(int.next(), &mut int), Edn::Int(-435143));
+        assert_eq!(parse_edn(uint.next(), &mut uint).unwrap(), Edn::UInt(143));
+        assert_eq!(parse_edn(int.next(), &mut int).unwrap(), Edn::Int(-435143));
         assert_eq!(
-            parse_edn(f.next(), &mut f),
+            parse_edn(f.next(), &mut f).unwrap(),
             Edn::Double(Double::from(-43.5143))
         );
         assert_eq!(
-            parse_edn(r.next(), &mut r),
+            parse_edn(r.next(), &mut r).unwrap(),
             Edn::Rational("43/5143".to_string())
         );
     }
@@ -387,7 +384,7 @@ mod test {
     fn parse_char() {
         let mut c = "\\k".chars();
 
-        assert_eq!(parse_edn(c.next(), &mut c), Edn::Char('k'))
+        assert_eq!(parse_edn(c.next(), &mut c).unwrap(), Edn::Char('k'))
     }
 
     #[test]
@@ -395,9 +392,9 @@ mod test {
         let mut t = "true".chars();
         let mut f = "false".chars();
         let mut n = "nil".chars();
-        assert_eq!(parse_edn(t.next(), &mut t), Edn::Bool(true));
-        assert_eq!(parse_edn(f.next(), &mut f), Edn::Bool(false));
-        assert_eq!(parse_edn(n.next(), &mut n), Edn::Nil);
+        assert_eq!(parse_edn(t.next(), &mut t).unwrap(), Edn::Bool(true));
+        assert_eq!(parse_edn(f.next(), &mut f).unwrap(), Edn::Bool(false));
+        assert_eq!(parse_edn(n.next(), &mut n).unwrap(), Edn::Nil);
     }
 
     #[test]
@@ -405,7 +402,7 @@ mod test {
         let mut edn = "[11 \"2\" 3.3 :b true \\c]".chars();
 
         assert_eq!(
-            parse(edn.next(), &mut edn),
+            parse(edn.next(), &mut edn).unwrap(),
             Edn::Vector(Vector::new(vec![
                 Edn::UInt(11),
                 Edn::Str("2".to_string()),
@@ -422,7 +419,7 @@ mod test {
         let mut edn = "(1 \"2\" 3.3 :b )".chars();
 
         assert_eq!(
-            parse(edn.next(), &mut edn),
+            parse(edn.next(), &mut edn).unwrap(),
             Edn::List(List::new(vec![
                 Edn::UInt(1),
                 Edn::Str("2".to_string()),
@@ -437,7 +434,7 @@ mod test {
         let mut edn = "#{true \\c 3 }".chars();
 
         assert_eq!(
-            parse(edn.next(), &mut edn),
+            parse(edn.next(), &mut edn).unwrap(),
             Edn::Set(Set::new(set![
                 Edn::Bool(true),
                 Edn::Char('c'),
@@ -451,7 +448,7 @@ mod test {
         let mut edn = "[:b ( 5 \\c #{true \\c 3 } ) ]".chars();
 
         assert_eq!(
-            parse(edn.next(), &mut edn),
+            parse(edn.next(), &mut edn).unwrap(),
             Edn::Vector(Vector::new(vec![
                 Edn::Key(":b".to_string()),
                 Edn::List(List::new(vec![
@@ -472,7 +469,7 @@ mod test {
         let mut edn = "{:a \"2\" :b false :c nil }".chars();
 
         assert_eq!(
-            parse(edn.next(), &mut edn),
+            parse(edn.next(), &mut edn).unwrap(),
             Edn::Map(Map::new(
                 map! {":a".to_string() => Edn::Str("2".to_string()),
                 ":b".to_string() => Edn::Bool(false), ":c".to_string() => Edn::Nil}

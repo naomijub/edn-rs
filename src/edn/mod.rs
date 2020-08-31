@@ -631,7 +631,7 @@ impl std::str::FromStr for Edn {
     /// Parses a `&str` that contains an Edn into `Result<Edn, EdnError>`
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut tokens = deserialize::tokenize(s);
-        let edn = deserialize::parse(tokens.next(), &mut tokens);
+        let edn = deserialize::parse(tokens.next(), &mut tokens)?;
         Ok(edn)
     }
 }
@@ -660,6 +660,7 @@ fn rational_to_double(r: &str) -> Option<f64> {
 pub enum Error {
     ParseEdn(String),
     Deserialize(String),
+    Iter(String),
 }
 
 impl From<String> for Error {
@@ -668,11 +669,24 @@ impl From<String> for Error {
     }
 }
 
+impl From<std::num::ParseIntError> for Error {
+    fn from(s: std::num::ParseIntError) -> Self {
+        Error::ParseEdn(s.to_string())
+    }
+}
+
+impl From<std::num::ParseFloatError> for Error {
+    fn from(s: std::num::ParseFloatError) -> Self {
+        Error::ParseEdn(s.to_string())
+    }
+}
+
 impl std::error::Error for Error {
     fn description(&self) -> &str {
         match self {
             Error::ParseEdn(s) => &s,
             Error::Deserialize(s) => &s,
+            Error::Iter(s) => &s,
         }
     }
 
@@ -686,6 +700,7 @@ impl std::fmt::Display for Error {
         match self {
             Error::ParseEdn(s) => write!(f, "{}", &s),
             Error::Deserialize(s) => write!(f, "{}", &s),
+            Error::Iter(s) => write!(f, "{}", &s),
         }
     }
 }
