@@ -535,7 +535,7 @@ mod test {
 
     #[test]
     fn from_str_simple_map() {
-        let edn = "{:a \"2\" :b true :c nil}";
+        let edn = "{:a \"2\" :b true :c nil }";
 
         assert_eq!(
             Edn::from_str(edn),
