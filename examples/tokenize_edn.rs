@@ -3,7 +3,7 @@ use edn_rs::{
     edn::{Edn, List},
 };
 
-fn main() {
+fn tokenize() {
     let edn = edn!((sym 1.2 3 false :f nil 3/4));
     let expected = Edn::List(List::new(vec![
         Edn::Symbol("sym".to_string()),
@@ -17,4 +17,13 @@ fn main() {
 
     println!("{:?}", edn);
     assert_eq!(edn, expected);
+}
+
+fn main() {
+    tokenize();
+}
+
+#[test]
+fn test_tokenize() {
+    tokenize();
 }

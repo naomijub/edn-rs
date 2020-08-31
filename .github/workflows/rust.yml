@@ -17,15 +17,8 @@ jobs:
       run: cargo test --test lib --no-fail-fast --features "json"
     - name: Examples
       run: |
-        cargo run --example json_to_edn --features "json"
-        cargo run --example navigate_edn
-        cargo run --example edn_from_str
-        cargo run --example struct_from_str
-        cargo run --example serialize
-        cargo run --example tokenize_edn
-        cargo run --example iterator
-        cargo run --example to_vec
-        cargo run --example async --features "async"
+        cargo test --example json_to_edn --features "json"
+        cargo test --examples
     - name: FMT
       run: |
         rustup component add rustfmt
