@@ -1,7 +1,5 @@
-use edn_rs::{edn, Double, Edn, Vector};
-use futures::prelude::*;
+use edn_rs::{edn, Edn, Vector};
 use futures::Future;
-use tokio::prelude::*;
 
 async fn foo() -> impl Future<Output = Edn> + Send {
     edn!([1 1.5 "hello" :key])

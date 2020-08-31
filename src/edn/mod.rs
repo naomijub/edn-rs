@@ -6,8 +6,6 @@ use utils::index::Index;
 #[cfg(feature = "async")]
 use core::pin::Pin;
 #[cfg(feature = "async")]
-use futures::prelude::*;
-#[cfg(feature = "async")]
 use futures::task;
 #[cfg(feature = "async")]
 use futures::task::Poll;
@@ -41,7 +39,7 @@ pub enum Edn {
 impl futures::future::Future for Edn {
     type Output = Edn;
 
-    fn poll(self: Pin<&mut Self>, cx: &mut task::Context) -> Poll<Self::Output> {
+    fn poll(self: Pin<&mut Self>, _cx: &mut task::Context) -> Poll<Self::Output> {
         if !self.to_string().is_empty() {
             let pinned = self.to_owned();
             Poll::Ready(pinned)
@@ -67,7 +65,8 @@ impl Vector {
 impl futures::future::Future for Vector {
     type Output = Vector;
 
-    fn poll(self: Pin<&mut Self>, cx: &mut task::Context) -> Poll<Self::Output> {
+    #[allow(unused_comparisons)]
+    fn poll(self: Pin<&mut Self>, _cx: &mut task::Context) -> Poll<Self::Output> {
         if self.0.len() >= 0 {
             let pinned = self.to_owned();
             Poll::Ready(pinned)
@@ -93,7 +92,8 @@ impl List {
 impl futures::future::Future for List {
     type Output = List;
 
-    fn poll(self: Pin<&mut Self>, cx: &mut task::Context) -> Poll<Self::Output> {
+    #[allow(unused_comparisons)]
+    fn poll(self: Pin<&mut Self>, _cx: &mut task::Context) -> Poll<Self::Output> {
         if self.0.len() >= 0 {
             let pinned = self.to_owned();
             Poll::Ready(pinned)
@@ -119,7 +119,8 @@ impl Set {
 impl futures::future::Future for Set {
     type Output = Set;
 
-    fn poll(self: Pin<&mut Self>, cx: &mut task::Context) -> Poll<Self::Output> {
+    #[allow(unused_comparisons)]
+    fn poll(self: Pin<&mut Self>, _cx: &mut task::Context) -> Poll<Self::Output> {
         if self.0.len() >= 0 {
             let pinned = self.to_owned();
             Poll::Ready(pinned)
@@ -145,7 +146,8 @@ impl Map {
 impl futures::future::Future for Map {
     type Output = Map;
 
-    fn poll(self: Pin<&mut Self>, cx: &mut task::Context) -> Poll<Self::Output> {
+    #[allow(unused_comparisons)]
+    fn poll(self: Pin<&mut Self>, _cx: &mut task::Context) -> Poll<Self::Output> {
         if self.0.len() >= 0 {
             let pinned = self.to_owned();
             Poll::Ready(pinned)
@@ -180,7 +182,7 @@ impl From<f64> for Double {
 impl futures::future::Future for Double {
     type Output = Double;
 
-    fn poll(self: Pin<&mut Self>, cx: &mut task::Context) -> Poll<Self::Output> {
+    fn poll(self: Pin<&mut Self>, _cx: &mut task::Context) -> Poll<Self::Output> {
         if !self.to_string().is_empty() {
             let pinned = self.to_owned();
             Poll::Ready(pinned)
