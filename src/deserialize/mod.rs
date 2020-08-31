@@ -171,7 +171,13 @@ where
 
 /// `from_str` deserializes an EDN String into type `T` that implements `Deserialize`. Response is `Result<T, EdnError>`
 pub fn from_str<T: Deserialize>(s: &str) -> Result<T, Error> {
-    let edn = Edn::from_str(s)?;
+    let s_clean = String::from(
+        s.replace("]", " ]")
+            .replace("}", " }")
+            .replace(")", " )")
+            .trim(),
+    );
+    let edn = Edn::from_str(&s_clean)?;
     T::deserialize(&edn)
 }
 
