@@ -16,6 +16,7 @@ impl Deserialize for Person {
 }
 
 fn main() -> Result<(), EdnError> {
+    // TODO: Remove extra spacing
     let edn_str = "{:name \"rose\" :age 66 }";
     let person: Person = edn_rs::from_str(edn_str)?;
 
