@@ -22,9 +22,10 @@ edn-rs = "0.13.2"
 
 | Method\Lang 	| Rust --release 	| Rust --debug 	| Clojure 	|
 |-	|-	|-	|-	|
-| parse string 	| 110.932µs 	| 487.179µs 	| 4.712235 milis 	|
-| get-in/navigate (3 blocks)	| 6.972µs 	| 24.294µs 	| 39.914 µs 	|
-| Deserialize to struct 	| 142.983µs 	| 556.568µs 	| 4.712235 milis 	|
+| parse string 	| 77.57µs 	| 266.479µs 	| 4.712235 milis 	|
+| get-in/navigate (3 blocks)	| 4.224µs	| 22.861µs 	| 26.333 µs 	|
+| Deserialize to struct 	| 110.358µs 	| 357.054µs 	| 4.712235 milis 	|
+| parse with criterium | 13.648µs | - | 23.230µs|
 
 ## Quick reference
 
