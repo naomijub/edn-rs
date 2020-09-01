@@ -630,7 +630,8 @@ impl std::str::FromStr for Edn {
 
     /// Parses a `&str` that contains an Edn into `Result<Edn, EdnError>`
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut tokens = parse::tokenize(&s.trim());
+        let clean = String::from(s.replace("#{", "@").trim());
+        let mut tokens = parse::tokenize(&clean);
         let edn = parse::parse(tokens.next(), &mut tokens)?;
         Ok(edn)
     }

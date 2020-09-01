@@ -1,5 +1,4 @@
-use crate::edn::Edn;
-use crate::edn::Error;
+use crate::edn::{Edn, Error};
 use std::str::FromStr;
 
 pub(crate) mod parse;
@@ -174,14 +173,15 @@ where
 
 /// `from_str` deserializes an EDN String into type `T` that implements `Deserialize`. Response is `Result<T, EdnError>`
 pub fn from_str<T: Deserialize>(s: &str) -> Result<T, Error> {
-    let edn = Edn::from_str(&s.trim())?;
+    let clean = String::from(s.replace("#{", "@").trim());
+    let edn = Edn::from_str(&clean)?;
     T::deserialize(&edn)
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::edn::{Double, Map, Set};
+    use crate::edn::{List, Map, Set, Vector};
     use crate::{map, set};
 
     #[test]
@@ -235,7 +235,7 @@ mod test {
 
     #[test]
     fn from_str_simple_map() {
-        let edn = "{:a \"2\" :b true :c nil }";
+        let edn = "{:a \"2\" :b true :c nil}";
 
         assert_eq!(
             Edn::from_str(edn),
@@ -246,22 +246,22 @@ mod test {
         );
     }
 
-    // #[test]
-    // fn from_str_complex_map() {
-    //     let edn = "{:a \"2\" :b [true false] :c #{:A {:a :b} nil}}";
+    #[test]
+    fn from_str_complex_map() {
+        let edn = "{:a \"2\" :b [true false] :c #{:A {:a :b} nil}}";
 
-    //     assert_eq!(
-    //         Edn::from_str(edn),
-    //         Ok(Edn::Map(Map::new(map! {
-    //         ":a".to_string() =>Edn::Str("2".to_string()),
-    //         ":b".to_string() => Edn::Vector(Vector::new(vec![Edn::Bool(true), Edn::Bool(false)])),
-    //         ":c".to_string() => Edn::Set(Set::new(
-    //             set!{
-    //                 Edn::Map(Map::new(map!{":a".to_string() => Edn::Key(":b".to_string())})),
-    //                 Edn::Key(":A".to_string()),
-    //                 Edn::Nil}))})))
-    //     );
-    // }
+        assert_eq!(
+            Edn::from_str(edn),
+            Ok(Edn::Map(Map::new(map! {
+            ":a".to_string() =>Edn::Str("2".to_string()),
+            ":b".to_string() => Edn::Vector(Vector::new(vec![Edn::Bool(true), Edn::Bool(false)])),
+            ":c".to_string() => Edn::Set(Set::new(
+                set!{
+                    Edn::Map(Map::new(map!{":a".to_string() => Edn::Key(":b".to_string())})),
+                    Edn::Key(":A".to_string()),
+                    Edn::Nil}))})))
+        );
+    }
 
     #[test]
     fn from_str_wordy_str() {

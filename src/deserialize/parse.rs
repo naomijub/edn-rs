@@ -8,7 +8,7 @@ pub(crate) fn parse(c: Option<char>, chars: &mut std::str::Chars) -> Result<Edn,
     Ok(match c {
         Some('[') => read_vec(chars)?,
         Some('(') => read_list(chars)?,
-        Some('#') => read_set(chars)?,
+        Some('@') => read_set(chars)?,
         Some('{') => read_map(chars)?,
         edn => parse_edn(edn, chars)?,
     })
@@ -30,10 +30,13 @@ pub(crate) fn parse_edn(c: Option<char>, chars: &mut std::str::Chars) -> Result<
 }
 
 fn read_key(chars: &mut std::str::Chars) -> Edn {
-    let mut key = String::from(":");
-    let key_chars = chars
+    let c_len = chars
+        .clone()
         .take_while(|c| !c.is_whitespace() && c != &')' && c != &']' && c != &'}')
-        .collect::<String>();
+        .collect::<String>()
+        .len();
+    let mut key = String::from(":");
+    let key_chars = chars.take(c_len).collect::<String>();
     key.push_str(&key_chars);
     Edn::Key(key)
 }
@@ -44,10 +47,13 @@ fn read_str(chars: &mut std::str::Chars) -> Edn {
 }
 
 fn read_number(n: char, chars: &mut std::str::Chars) -> Result<Edn, Error> {
-    let mut number = String::new();
-    let string = chars
+    let c_len = chars
+        .clone()
         .take_while(|c| c.is_numeric() || c == &'.' || c == &'/')
-        .collect::<String>();
+        .collect::<String>()
+        .len();
+    let mut number = String::new();
+    let string = chars.take(c_len).collect::<String>();
     number.push(n);
     number.push_str(&string);
 
@@ -72,28 +78,37 @@ fn read_char(chars: &mut std::str::Chars) -> Result<Edn, Error> {
 fn read_bool_or_nil(c: char, chars: &mut std::str::Chars) -> Result<Edn, Error> {
     match c {
         't' => {
-            let mut string = String::new();
-            let t = chars
+            let c_len = chars
+                .clone()
                 .take_while(|e| e == &'r' || e == &'u' || e == &'e')
-                .collect::<String>();
+                .collect::<String>()
+                .len();
+            let mut string = String::new();
+            let t = chars.take(c_len).collect::<String>();
             string.push(c);
             string.push_str(&t);
             Ok(Edn::Bool(string.parse::<bool>()?))
         }
         'f' => {
-            let mut string = String::new();
-            let f = chars
+            let c_len = chars
+                .clone()
                 .take_while(|e| e == &'a' || e == &'l' || e == &'s' || e == &'e')
-                .collect::<String>();
+                .collect::<String>()
+                .len();
+            let mut string = String::new();
+            let f = chars.take(c_len).collect::<String>();
             string.push(c);
             string.push_str(&f);
             Ok(Edn::Bool(string.parse::<bool>()?))
         }
         'n' => {
-            let mut string = String::new();
-            let n = chars
+            let c_len = chars
+                .clone()
                 .take_while(|e| e == &'i' || e == &'l')
-                .collect::<String>();
+                .collect::<String>()
+                .len();
+            let mut string = String::new();
+            let n = chars.take(c_len).collect::<String>();
             string.push(c);
             string.push_str(&n);
             match &string[..] {
@@ -141,10 +156,10 @@ fn read_set(chars: &mut std::str::Chars) -> Result<Edn, Error> {
     loop {
         match chars.next() {
             Some('}') => return Ok(Edn::Set(Set::new(res))),
-            Some(c) if !c.is_whitespace() && c != ',' && c != '{' => {
+            Some(c) if !c.is_whitespace() && c != ',' => {
                 res.insert(parse(Some(c), chars)?);
             }
-            Some(c) if c.is_whitespace() || c == ',' || c == '{' => (),
+            Some(c) if c.is_whitespace() || c == ',' => (),
             err => return Err(Error::ParseEdn(format!("{:?} could not be parsed", err))),
         }
     }
@@ -153,17 +168,26 @@ fn read_set(chars: &mut std::str::Chars) -> Result<Edn, Error> {
 fn read_map(chars: &mut std::str::Chars) -> Result<Edn, Error> {
     use std::collections::BTreeMap;
     let mut res: BTreeMap<String, Edn> = BTreeMap::new();
+    let mut key: Option<Edn> = None;
+    let mut val: Option<Edn> = None;
     loop {
         match chars.next() {
             Some('}') => return Ok(Edn::Map(Map::new(res))),
             Some(c) if !c.is_whitespace() && c != ',' => {
-                res.insert(
-                    parse(Some(c), chars)?.to_string(),
-                    parse(chars.next(), chars)?,
-                );
+                if key.is_some() {
+                    val = Some(parse(Some(c), chars)?);
+                } else {
+                    key = Some(parse(Some(c), chars)?);
+                }
             }
             Some(c) if c.is_whitespace() || c == ',' => (),
             err => return Err(Error::ParseEdn(format!("{:?} could not be parsed", err))),
+        }
+
+        if key.is_some() && val.is_some() {
+            res.insert(key.unwrap().to_string(), val.unwrap());
+            key = None;
+            val = None;
         }
     }
 }
@@ -263,7 +287,7 @@ mod test {
 
     #[test]
     fn parse_set() {
-        let mut edn = "#{true \\c 3 }".chars();
+        let mut edn = "@true \\c 3 }".chars();
 
         assert_eq!(
             parse(edn.next(), &mut edn).unwrap(),
@@ -277,7 +301,7 @@ mod test {
 
     #[test]
     fn parse_complex() {
-        let mut edn = "[:b ( 5 \\c #{true \\c 3 } ) ]".chars();
+        let mut edn = "[:b ( 5 \\c @true \\c 3 } ) ]".chars();
 
         assert_eq!(
             parse(edn.next(), &mut edn).unwrap(),

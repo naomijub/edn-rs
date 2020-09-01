@@ -13,4 +13,4 @@ script:
     - cargo test --locked  --no-fail-fast --lib
     - cargo test --examples
     - cargo test --example json_to_edn --features "json"
-    # - cargo run --example async --features "async"
+    - cargo run --example async --features "async"

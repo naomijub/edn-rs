@@ -18,6 +18,7 @@ jobs:
     - name: Examples
       run: |
         cargo test --example json_to_edn --features "json"
+        cargo run --example async --features "async"
         cargo test --examples
     - name: FMT
       run: |

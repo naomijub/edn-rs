@@ -4,4 +4,8 @@ int:
 unit:
 	cargo test --locked  --no-fail-fast --lib
 
-test: unit int
+ex:
+	cargo test --examples
+	cargo test --example json_to_edn --features "json"
+
+test: unit int ex
