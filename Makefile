@@ -7,5 +7,6 @@ unit:
 ex:
 	cargo test --examples
 	cargo test --example json_to_edn --features "json"
+	cargo run --example async --features "async"
 
 test: unit int ex

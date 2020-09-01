@@ -62,9 +62,8 @@ fn complex_ok() -> Result<(), EdnError> {
     Ok(())
 }
 
-// TODO: Removve edn spaces
 fn complex_wrong() -> Result<(), EdnError> {
-    let bad_edn_str = "{ :list [{:name \"rose\" :age \"some text\" :cool true }, {:name \"josh\" :age 33 :cool false }, {:name \"eva\" :age 296 :cool true } ] }";
+    let bad_edn_str = "{:list [{:name \"rose\" :age \"some text\" :cool true}, {:name \"josh\" :age 33 :cool false}, {:name \"eva\" :age 296 :cool true}]}";
     let complex: Result<Complex, EdnError> = edn_rs::from_str(bad_edn_str);
 
     assert_eq!(
