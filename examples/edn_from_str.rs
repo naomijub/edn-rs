@@ -1,4 +1,4 @@
-use edn_rs::{map, set, Edn, EdnError, Map, Set, Vector};
+use edn_rs::{Edn, EdnError};
 use std::str::FromStr;
 
 fn edn_from_str() -> Result<Edn, EdnError> {
@@ -16,6 +16,7 @@ fn main() -> Result<(), EdnError> {
 
 #[test]
 fn test_edn_from_str() {
+    use edn_rs::{map, set, Map, Set, Vector};
     let edn = edn_from_str().unwrap();
     assert_eq!(
         edn,

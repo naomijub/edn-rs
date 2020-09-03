@@ -173,7 +173,7 @@ where
 
 /// `from_str` deserializes an EDN String into type `T` that implements `Deserialize`. Response is `Result<T, EdnError>`
 pub fn from_str<T: Deserialize>(s: &str) -> Result<T, Error> {
-    let clean = String::from(s.replace("#{", "@").trim());
+    let clean = String::from(s.replace("#{", "@"));
     let edn = Edn::from_str(&clean)?;
     T::deserialize(&edn)
 }
