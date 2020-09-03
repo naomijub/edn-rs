@@ -1,4 +1,4 @@
-use crate::deserialize::parse;
+use crate::deserialize::parse::{self, MaybeReplaceExt};
 use std::cmp::{Ord, PartialOrd};
 use std::collections::{BTreeMap, BTreeSet};
 use utils::index::Index;
@@ -630,7 +630,7 @@ impl std::str::FromStr for Edn {
 
     /// Parses a `&str` that contains an Edn into `Result<Edn, EdnError>`
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let clean = String::from(s.replace("#{", "@"));
+        let clean = String::from(s.maybe_replace("#{", "@"));
         let mut tokens = parse::tokenize(&clean);
         let edn = parse::parse(tokens.next(), &mut tokens)?;
         Ok(edn)
