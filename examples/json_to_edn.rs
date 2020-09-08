@@ -1,12 +1,14 @@
 use edn_rs::json_to_edn;
 
-fn main() {
+fn simple_json() {
     let json = String::from(r#"{"hello": "world"}"#);
     let edn = String::from(r#"{:hello "world"}"#);
 
     println!("{:?}", json_to_edn(json.clone()));
     assert_eq!(edn, json_to_edn(json));
+}
 
+fn complex_json() {
     let complex_json = String::from(
         r#"{
             "people": 
@@ -25,12 +27,27 @@ fn main() {
             "brain": null
         }"#,
     );
+    let edn = "{ :people  [ { :name \"otavio\", :age 22 }, { :name \"Julia\", :age 32.0 } ], :country-or-origin \"Brazil\", :queerentener true, :brain nil }";
 
-    println!(
-        "{:?}",
+    assert_eq!(
+        edn,
         json_to_edn(complex_json.clone())
             .replace("  ", "")
             .replace("\n", " ")
     );
-    // "{ :people  [ { :name \"otavio\", :age 22 }, { :name \"Julia\", :age 32.0 } ], :country-or-origin \"Brazil\", :queerentener true, :brain nil }"
+}
+
+fn main() {
+    simple_json();
+    complex_json();
+}
+
+#[test]
+fn test_simple_json() {
+    simple_json();
+}
+
+#[test]
+fn test_complex_json() {
+    complex_json();
 }

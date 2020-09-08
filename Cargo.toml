@@ -1,6 +1,6 @@
 [package]
 name = "edn-rs"
-version = "0.13.2"
+version = "0.13.3"
 authors = ["Julia Naomi <jnboeira@outlook.com>",  "Otavio Pace <otaviopp8@gmail.com>"]
 description = "Crate to parse and emit EDN"
 readme = "README.md"
@@ -22,12 +22,16 @@ futures = {version = "0.3.5", optional = true }
 
 [dev-dependencies]
 tokio = {version = "0.2.22", features = ["macros"] }
-
+criterion = "0.3"
 
 [dev-dependencies.cargo-husky]
 version = "1"
 default-features = false
 features = ["user-hooks"]
+
+[[bench]]
+name = "parse"
+harness = false
 
 [[example]]
 name = "async"

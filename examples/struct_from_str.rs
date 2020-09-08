@@ -15,9 +15,12 @@ impl Deserialize for Person {
     }
 }
 
-fn main() -> Result<(), EdnError> {
-    let edn_str = "{:name \"rose\" :age 66}";
+fn person_ok() -> Result<(), EdnError> {
+    let edn_str = "  {:name \"rose\" :age 66  }  ";
     let person: Person = edn_rs::from_str(edn_str)?;
+
+    println!("{:?}", person);
+    // Person { name: "rose", age: 66 }
 
     assert_eq!(
         person,
@@ -26,11 +29,11 @@ fn main() -> Result<(), EdnError> {
             age: 66,
         }
     );
+    Ok(())
+}
 
-    println!("{:?}", person);
-    // Person { name: "rose", age: 66 }
-
-    let bad_edn_str = "{:name \"rose\" :age \"some text\"}";
+fn person_mistyped() -> Result<(), EdnError> {
+    let bad_edn_str = "{:name \"rose\" :age \"some text\" }";
     let person: Result<Person, EdnError> = edn_rs::from_str(bad_edn_str);
 
     assert_eq!(
@@ -41,4 +44,21 @@ fn main() -> Result<(), EdnError> {
     );
 
     Ok(())
+}
+
+fn main() -> Result<(), EdnError> {
+    person_ok()?;
+    person_mistyped()?;
+
+    Ok(())
+}
+
+#[test]
+fn test_person_ok() {
+    let _ = person_ok();
+}
+
+#[test]
+fn test_person_mistyped() {
+    let _ = person_mistyped();
 }

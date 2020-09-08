@@ -3,23 +3,24 @@ use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 
 ser_struct! {
 #[derive(Debug, Clone)]
-struct Foo {
-    value: usize,
-}
+    struct Foo {
+        value: usize,
+    }
 }
 
-fn main() {
-    ser_struct! {
-        #[derive(Debug, Clone)]
-        struct Edn {
-            btreemap: BTreeMap<String, Vec<String>>,
-            btreeset: BTreeSet<i64>,
-            hashmap: HashMap<String, Vec<String>>,
-            hashset: HashSet<i64>,
-            tuples: (i32, bool, char),
-            foo_vec: Vec<Foo>,
-        }
-    };
+ser_struct! {
+    #[derive(Debug, Clone)]
+    struct Edn {
+        btreemap: BTreeMap<String, Vec<String>>,
+        btreeset: BTreeSet<i64>,
+        hashmap: HashMap<String, Vec<String>>,
+        hashset: HashSet<i64>,
+        tuples: (i32, bool, char),
+        foo_vec: Vec<Foo>,
+    }
+}
+
+fn serialize() -> String {
     let edn = Edn {
         btreemap: map! {"this is a key".to_string() => vec!["with".to_string(), "many".to_string(), "keys".to_string()]},
         btreeset: set! {3i64, 4i64, 5i64},
@@ -29,6 +30,16 @@ fn main() {
         foo_vec: vec![Foo { value: 2 }, Foo { value: 3 }],
     };
 
-    println!("{}", edn_rs::to_string(edn));
+    edn_rs::to_string(edn)
+}
+
+fn main() {
+    println!("{}", serialize());
     // { :btreemap {:this-is-a-key [\"with\", \"many\", \"keys\"]}, :btreeset #{3, 4, 5}, :hashmap {:this-is-a-key [\"with\", \"many\", \"keys\"]}, :hashset #{3}, :tuples (3, true, \\d), :foo-vec [{ :value 2, }, { :value 3, }], }
+}
+
+#[test]
+fn test_serialize() {
+    let edn_str = "{ :btreemap {:this-is-a-key [\"with\", \"many\", \"keys\"]}, :btreeset #{3, 4, 5}, :hashmap {:this-is-a-key [\"with\", \"many\", \"keys\"]}, :hashset #{3}, :tuples (3, true, \\d), :foo-vec [{ :value 2, }, { :value 3, }], }";
+    assert_eq!(serialize(), edn_str)
 }

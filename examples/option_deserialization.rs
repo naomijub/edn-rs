@@ -32,9 +32,11 @@ impl Deserialize for Complex {
     }
 }
 
-fn main() -> Result<(), EdnError> {
+fn maybe_is_some() -> Result<(), EdnError> {
     let edn_str = "{ :id 22 :maybe {:name \"rose\" :age 66 :cool true} }";
     let complex: Complex = edn_rs::from_str(edn_str)?;
+    println!("{:?}", complex);
+    // Complex { id: 22, maybe: Another { name: "rose", age: 66, cool: true } }
 
     assert_eq!(
         complex,
@@ -47,17 +49,33 @@ fn main() -> Result<(), EdnError> {
             }),
         }
     );
+    Ok(())
+}
 
-    println!("{:?}", complex);
-    // Complex { id: 22, maybe: Another { name: "rose", age: 66, cool: true } }
-
+fn maybe_is_none() -> Result<(), EdnError> {
     let edn_str = "{ :id 1 }";
     let complex: Complex = edn_rs::from_str(edn_str)?;
-
-    assert_eq!(complex, Complex { id: 1, maybe: None });
-
     println!("{:?}", complex);
     // Complex { id: 1, maybe: None }
 
+    assert_eq!(complex, Complex { id: 1, maybe: None });
+
     Ok(())
+}
+
+fn main() -> Result<(), EdnError> {
+    maybe_is_some()?;
+    maybe_is_none()?;
+
+    Ok(())
+}
+
+#[test]
+fn test_maybe_some() {
+    let _ = maybe_is_some();
+}
+
+#[test]
+fn test_maybe_none() {
+    let _ = maybe_is_none();
 }

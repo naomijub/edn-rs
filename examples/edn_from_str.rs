@@ -1,10 +1,23 @@
-use edn_rs::{map, set, Edn, EdnError, Map, Set, Vector};
+use edn_rs::{Edn, EdnError};
 use std::str::FromStr;
 
-fn main() -> Result<(), EdnError> {
-    let edn_str = "{:a \"2\" :b [true false] :c #{:A {:a :b} nil}}";
-    let edn = Edn::from_str(edn_str)?;
+fn edn_from_str() -> Result<Edn, EdnError> {
+    let edn_str = "{:a \"2\"   :b [true false] :c #{:A nil {:a :b}}}";
+    Edn::from_str(edn_str)
+}
 
+fn main() -> Result<(), EdnError> {
+    let edn = edn_from_str()?;
+
+    println!("{:?}", edn);
+
+    Ok(())
+}
+
+#[test]
+fn test_edn_from_str() {
+    use edn_rs::{map, set, Map, Set, Vector};
+    let edn = edn_from_str().unwrap();
     assert_eq!(
         edn,
         Edn::Map(Map::new(map! {
@@ -16,10 +29,5 @@ fn main() -> Result<(), EdnError> {
                 Edn::Key(":A".to_string()),
                 Edn::Nil}))}))
     );
-
-    println!("{:?}", edn);
-
     assert_eq!(edn[":b"][0], Edn::Bool(true));
-
-    Ok(())
 }

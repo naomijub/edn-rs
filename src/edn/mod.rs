@@ -1,12 +1,10 @@
-use crate::deserialize;
+use crate::deserialize::parse::{self, MaybeReplaceExt};
 use std::cmp::{Ord, PartialOrd};
 use std::collections::{BTreeMap, BTreeSet};
 use utils::index::Index;
 
 #[cfg(feature = "async")]
 use core::pin::Pin;
-#[cfg(feature = "async")]
-use futures::prelude::*;
 #[cfg(feature = "async")]
 use futures::task;
 #[cfg(feature = "async")]
@@ -41,7 +39,7 @@ pub enum Edn {
 impl futures::future::Future for Edn {
     type Output = Edn;
 
-    fn poll(self: Pin<&mut Self>, cx: &mut task::Context) -> Poll<Self::Output> {
+    fn poll(self: Pin<&mut Self>, _cx: &mut task::Context) -> Poll<Self::Output> {
         if !self.to_string().is_empty() {
             let pinned = self.to_owned();
             Poll::Ready(pinned)
@@ -67,7 +65,8 @@ impl Vector {
 impl futures::future::Future for Vector {
     type Output = Vector;
 
-    fn poll(self: Pin<&mut Self>, cx: &mut task::Context) -> Poll<Self::Output> {
+    #[allow(unused_comparisons)]
+    fn poll(self: Pin<&mut Self>, _cx: &mut task::Context) -> Poll<Self::Output> {
         if self.0.len() >= 0 {
             let pinned = self.to_owned();
             Poll::Ready(pinned)
@@ -93,7 +92,8 @@ impl List {
 impl futures::future::Future for List {
     type Output = List;
 
-    fn poll(self: Pin<&mut Self>, cx: &mut task::Context) -> Poll<Self::Output> {
+    #[allow(unused_comparisons)]
+    fn poll(self: Pin<&mut Self>, _cx: &mut task::Context) -> Poll<Self::Output> {
         if self.0.len() >= 0 {
             let pinned = self.to_owned();
             Poll::Ready(pinned)
@@ -119,7 +119,8 @@ impl Set {
 impl futures::future::Future for Set {
     type Output = Set;
 
-    fn poll(self: Pin<&mut Self>, cx: &mut task::Context) -> Poll<Self::Output> {
+    #[allow(unused_comparisons)]
+    fn poll(self: Pin<&mut Self>, _cx: &mut task::Context) -> Poll<Self::Output> {
         if self.0.len() >= 0 {
             let pinned = self.to_owned();
             Poll::Ready(pinned)
@@ -145,7 +146,8 @@ impl Map {
 impl futures::future::Future for Map {
     type Output = Map;
 
-    fn poll(self: Pin<&mut Self>, cx: &mut task::Context) -> Poll<Self::Output> {
+    #[allow(unused_comparisons)]
+    fn poll(self: Pin<&mut Self>, _cx: &mut task::Context) -> Poll<Self::Output> {
         if self.0.len() >= 0 {
             let pinned = self.to_owned();
             Poll::Ready(pinned)
@@ -180,7 +182,7 @@ impl From<f64> for Double {
 impl futures::future::Future for Double {
     type Output = Double;
 
-    fn poll(self: Pin<&mut Self>, cx: &mut task::Context) -> Poll<Self::Output> {
+    fn poll(self: Pin<&mut Self>, _cx: &mut task::Context) -> Poll<Self::Output> {
         if !self.to_string().is_empty() {
             let pinned = self.to_owned();
             Poll::Ready(pinned)
@@ -621,23 +623,6 @@ impl Edn {
             _ => None,
         }
     }
-
-    pub(crate) fn parse_word(word: String) -> Edn {
-        match word {
-            w if w.starts_with(":") => Edn::Key(w),
-            w if w.starts_with("\\") && w.len() == 2 => Edn::Char(w.chars().last().unwrap()),
-            w if w.starts_with("\"") && w.ends_with("\"") => Edn::Str(w.replace("\"", "")),
-            w if w.parse::<bool>().is_ok() => Edn::Bool(w.parse::<bool>().unwrap()),
-            w if w == "nil" || w == "Nil" => Edn::Nil,
-            w if w.contains("/") && w.split("/").all(|d| d.parse::<f64>().is_ok()) => {
-                Edn::Rational(w)
-            }
-            w if w.parse::<usize>().is_ok() => Edn::UInt(w.parse::<usize>().unwrap()),
-            w if w.parse::<isize>().is_ok() => Edn::Int(w.parse::<isize>().unwrap()),
-            w if w.parse::<f64>().is_ok() => Edn::Double(w.parse::<f64>().unwrap().into()),
-            w => Edn::Symbol(w),
-        }
-    }
 }
 
 impl std::str::FromStr for Edn {
@@ -645,9 +630,10 @@ impl std::str::FromStr for Edn {
 
     /// Parses a `&str` that contains an Edn into `Result<Edn, EdnError>`
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let tokens = deserialize::tokenize(s);
-
-        Ok(deserialize::parse(&tokens[..])?.0)
+        let clean = String::from(s.maybe_replace("#{", "@"));
+        let mut tokens = parse::tokenize(&clean);
+        let edn = parse::parse(tokens.next(), &mut tokens)?;
+        Ok(edn)
     }
 }
 
@@ -675,6 +661,7 @@ fn rational_to_double(r: &str) -> Option<f64> {
 pub enum Error {
     ParseEdn(String),
     Deserialize(String),
+    Iter(String),
 }
 
 impl From<String> for Error {
@@ -683,11 +670,30 @@ impl From<String> for Error {
     }
 }
 
+impl From<std::num::ParseIntError> for Error {
+    fn from(s: std::num::ParseIntError) -> Self {
+        Error::ParseEdn(s.to_string())
+    }
+}
+
+impl From<std::num::ParseFloatError> for Error {
+    fn from(s: std::num::ParseFloatError) -> Self {
+        Error::ParseEdn(s.to_string())
+    }
+}
+
+impl From<std::str::ParseBoolError> for Error {
+    fn from(s: std::str::ParseBoolError) -> Self {
+        Error::ParseEdn(s.to_string())
+    }
+}
+
 impl std::error::Error for Error {
     fn description(&self) -> &str {
         match self {
             Error::ParseEdn(s) => &s,
             Error::Deserialize(s) => &s,
+            Error::Iter(s) => &s,
         }
     }
 
@@ -701,6 +707,7 @@ impl std::fmt::Display for Error {
         match self {
             Error::ParseEdn(s) => write!(f, "{}", &s),
             Error::Deserialize(s) => write!(f, "{}", &s),
+            Error::Iter(s) => write!(f, "{}", &s),
         }
     }
 }

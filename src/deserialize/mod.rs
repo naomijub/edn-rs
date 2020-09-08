@@ -1,6 +1,8 @@
-use crate::edn::Error;
-use crate::edn::{Edn, List, Map, Set, Vector};
+use crate::edn::{Edn, Error};
 use std::str::FromStr;
+
+pub(crate) mod parse;
+
 /// public trait to be used to `Deserialize` structs
 ///
 /// Example:
@@ -22,7 +24,7 @@ use std::str::FromStr;
 ///     }
 /// }
 ///
-/// let edn_str = "{:name \"rose\" :age 66}";
+/// let edn_str = "{:name \"rose\" :age 66 }";
 /// let person: Person = edn_rs::from_str(edn_str).unwrap();
 ///
 /// assert_eq!(
@@ -36,7 +38,7 @@ use std::str::FromStr;
 /// println!("{:?}", person);
 /// // Person { name: "rose", age: 66 }
 ///
-/// let bad_edn_str = "{:name \"rose\" :age \"some text\"}";
+/// let bad_edn_str = "{:name \"rose\" :age \"some text\" }";
 /// let person: Result<Person, EdnError> = edn_rs::from_str(bad_edn_str);
 ///
 /// assert_eq!(
@@ -136,17 +138,17 @@ where
         match edn {
             Edn::Vector(_) => Ok(edn
                 .iter()
-                .unwrap()
+                .ok_or(Error::Iter(format!("Could not create iter from {:?}", edn)))?
                 .map(|e| Deserialize::deserialize(e))
                 .collect::<Result<Vec<T>, Error>>()?),
             Edn::List(_) => Ok(edn
                 .iter()
-                .unwrap()
+                .ok_or(Error::Iter(format!("Could not create iter from {:?}", edn)))?
                 .map(|e| Deserialize::deserialize(e))
                 .collect::<Result<Vec<T>, Error>>()?),
             Edn::Set(_) => Ok(edn
                 .iter()
-                .unwrap()
+                .ok_or(Error::Iter(format!("Could not create iter from {:?}", edn)))?
                 .map(|e| Deserialize::deserialize(e))
                 .collect::<Result<Vec<T>, Error>>()?),
             _ => Err(build_deserialize_error(
@@ -175,167 +177,14 @@ pub fn from_str<T: Deserialize>(s: &str) -> Result<T, Error> {
     T::deserialize(&edn)
 }
 
-pub(crate) fn tokenize(edn: &str) -> Vec<String> {
-    edn.replace("}", " } ")
-        .replace("#{", " @ ")
-        .replace("{", " { ")
-        .replace("[", " [ ")
-        .replace("]", " ] ")
-        .replace("(", " ( ")
-        .replace(")", " ) ")
-        .replace("\n", " ")
-        .replace(",", " ")
-        .replace("\"", " \" ")
-        .replace("#inst", "")
-        .trim()
-        .split(" ")
-        .map(|s| s.trim())
-        .filter(|s| !s.is_empty())
-        .map(|s| String::from(s))
-        .collect()
-}
-
-pub(crate) fn parse<'a>(tokens: &'a [String]) -> Result<(Edn, &'a [String]), Error> {
-    let (token, rest) = tokens
-        .split_first()
-        .ok_or(Error::from("Could not understand tokens".to_string()))?;
-
-    match &token[..] {
-        "[" => read_vec(rest),
-        "]" => Err("Unexpected Token `]`".to_string().into()),
-        "(" => read_list(rest),
-        ")" => Err("Unexpected Token `)`".to_string().into()),
-        "@" => read_set(rest),
-        "{" => read_map(rest),
-        "}" => Err("Unexpected Token `}`".to_string().into()),
-        "\"" => read_str(rest),
-        _ => Ok((Edn::parse_word(token.to_string()), rest)),
-    }
-}
-
-fn read_vec<'a>(tokens: &'a [String]) -> Result<(Edn, &'a [String]), Error> {
-    let mut res: Vec<Edn> = vec![];
-    let mut xs = tokens;
-    loop {
-        let (next_token, rest) = xs
-            .split_first()
-            .ok_or("Could not find closing `]` for Vector".to_string())?;
-        if next_token == "]" {
-            return Ok((Edn::Vector(Vector::new(res)), rest));
-        }
-        let (exp, new_xs) = parse(&xs)?;
-        res.push(exp);
-        xs = new_xs;
-    }
-}
-
-fn read_list<'a>(tokens: &'a [String]) -> Result<(Edn, &'a [String]), Error> {
-    let mut res: Vec<Edn> = vec![];
-    let mut xs = tokens;
-    loop {
-        let (next_token, rest) = xs
-            .split_first()
-            .ok_or("Could not find closing `)` for List".to_string())?;
-        if next_token == ")" {
-            return Ok((Edn::List(List::new(res)), rest));
-        }
-        let (exp, new_xs) = parse(&xs)?;
-        res.push(exp);
-        xs = new_xs;
-    }
-}
-
-fn read_set<'a>(tokens: &'a [String]) -> Result<(Edn, &'a [String]), Error> {
-    use std::collections::BTreeSet;
-    let mut res: BTreeSet<Edn> = BTreeSet::new();
-    let mut xs = tokens;
-    loop {
-        let (next_token, rest) = xs
-            .split_first()
-            .ok_or("Could not find closing `}` for Set".to_string())?;
-        if next_token == "}" {
-            return Ok((Edn::Set(Set::new(res)), rest));
-        }
-        let (exp, new_xs) = parse(&xs)?;
-        res.insert(exp);
-        xs = new_xs;
-    }
-}
-
-fn read_map<'a>(tokens: &'a [String]) -> Result<(Edn, &'a [String]), Error> {
-    use std::collections::BTreeMap;
-    let mut res = BTreeMap::new();
-    let mut xs = tokens;
-    loop {
-        let (first_token, rest) = xs
-            .split_first()
-            .ok_or("Could not find closing `}` for Map".to_string())?;
-        if first_token == "}" {
-            return Ok((Edn::Map(Map::new(res)), rest));
-        }
-
-        let (exp1, new_xs1) = parse(&xs)?;
-        let (exp2, new_xs2) = parse(&new_xs1)?;
-
-        res.insert(exp1.to_string(), exp2);
-        xs = new_xs2;
-    }
-}
-
-fn read_str<'a>(tokens: &'a [String]) -> Result<(Edn, &'a [String]), Error> {
-    let mut res = String::new();
-    let mut xs = tokens;
-    let mut counter = 0;
-    loop {
-        let (next_token, rest) = xs
-            .split_first()
-            .ok_or("Could not find closing `\"` for Str".to_string())?;
-        if next_token == "\"" {
-            return Ok((Edn::Str(res), rest));
-        }
-        let (exp, new_xs) = xs
-            .split_first()
-            .ok_or("Could not find closing `\"` for Str".to_string())?;
-        if counter != 0 {
-            res.push_str(" ");
-        }
-        res.push_str(exp);
-        xs = new_xs;
-        counter += 1;
-    }
-}
-
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::edn::{Map, Set};
+    use crate::edn::{List, Map, Set, Vector};
     use crate::{map, set};
 
     #[test]
-    fn tokenize_edn() {
-        let edn = "[1 \"2\" 3.3 :b [true \\c]]";
-
-        assert_eq!(
-            tokenize(edn),
-            vec![
-                "[".to_string(),
-                "1".to_string(),
-                "\"".to_string(),
-                "2".to_string(),
-                "\"".to_string(),
-                "3.3".to_string(),
-                ":b".to_string(),
-                "[".to_string(),
-                "true".to_string(),
-                "\\c".to_string(),
-                "]".to_string(),
-                "]".to_string()
-            ]
-        );
-    }
-
-    #[test]
-    fn parse_simple_vec() {
+    fn from_str_simple_vec() {
         let edn = "[1 \"2\" 3.3 :b true \\c]";
 
         assert_eq!(
@@ -352,7 +201,7 @@ mod test {
     }
 
     #[test]
-    fn parse_list_with_vec() {
+    fn from_str_list_with_vec() {
         let edn = "(1 \"2\" 3.3 :b [true \\c])";
 
         assert_eq!(
@@ -368,7 +217,7 @@ mod test {
     }
 
     #[test]
-    fn parse_list_with_set() {
+    fn from_str_list_with_set() {
         let edn = "(1 \"2\" 3.3 :b #{true \\c})";
 
         assert_eq!(
@@ -384,7 +233,7 @@ mod test {
     }
 
     #[test]
-    fn parse_simple_map() {
+    fn from_str_simple_map() {
         let edn = "{:a \"2\" :b true :c nil}";
 
         assert_eq!(
@@ -397,7 +246,7 @@ mod test {
     }
 
     #[test]
-    fn parse_complex_map() {
+    fn from_str_complex_map() {
         let edn = "{:a \"2\" :b [true false] :c #{:A {:a :b} nil}}";
 
         assert_eq!(
@@ -414,7 +263,7 @@ mod test {
     }
 
     #[test]
-    fn parse_wordy_str() {
+    fn from_str_wordy_str() {
         let edn = "[\"hello brave new world\"]";
 
         assert_eq!(
