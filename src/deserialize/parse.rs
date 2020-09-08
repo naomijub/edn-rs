@@ -18,10 +18,10 @@ pub(crate) fn parse_edn(c: Option<char>, chars: &mut std::str::Chars) -> Result<
     match c {
         Some('\"') => Ok(read_str(chars)),
         Some(':') => Ok(read_key(chars)),
-        Some(n) if n.is_numeric() => Ok(read_number(n, chars)?),
         Some('-') => Ok(read_number('-', chars)?),
         Some('\\') => Ok(read_char(chars)?),
         Some(b) if b == 't' || b == 'f' || b == 'n' => Ok(read_bool_or_nil(b, chars)?),
+        Some(n) if n.is_numeric() => Ok(read_number(n, chars)?),
         a => Err(Error::ParseEdn(format!(
             "{} could not be parsed",
             a.unwrap().to_string()
@@ -113,11 +113,11 @@ fn read_bool_or_nil(c: char, chars: &mut std::str::Chars) -> Result<Edn, Error> 
             string.push_str(&n);
             match &string[..] {
                 "nil" => Ok(Edn::Nil),
-                _ => Err(Error::ParseEdn(format!("{} cound not be parsed", string))),
+                _ => Err(Error::ParseEdn(format!("{} could not be parsed", string))),
             }
         }
         _ => Err(Error::ParseEdn(
-            "Nullable boolean cound not be parsed".to_string(),
+            "Nullable boolean could not be parsed".to_string(),
         )),
     }
 }
@@ -274,9 +274,14 @@ mod test {
         let mut t = "true".chars();
         let mut f = "false".chars();
         let mut n = "nil".chars();
+        let mut s = "\"true\"".chars();
         assert_eq!(parse_edn(t.next(), &mut t).unwrap(), Edn::Bool(true));
         assert_eq!(parse_edn(f.next(), &mut f).unwrap(), Edn::Bool(false));
         assert_eq!(parse_edn(n.next(), &mut n).unwrap(), Edn::Nil);
+        assert_eq!(
+            parse_edn(s.next(), &mut s).unwrap(),
+            Edn::Str("true".to_string())
+        );
     }
 
     #[test]

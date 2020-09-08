@@ -3,8 +3,6 @@ use std::str::FromStr;
 
 pub(crate) mod parse;
 
-use crate::deserialize::parse::MaybeReplaceExt;
-
 /// public trait to be used to `Deserialize` structs
 ///
 /// Example:
@@ -175,8 +173,7 @@ where
 
 /// `from_str` deserializes an EDN String into type `T` that implements `Deserialize`. Response is `Result<T, EdnError>`
 pub fn from_str<T: Deserialize>(s: &str) -> Result<T, Error> {
-    let clean = String::from(s.maybe_replace("#{", "@"));
-    let edn = Edn::from_str(&clean)?;
+    let edn = Edn::from_str(s)?;
     T::deserialize(&edn)
 }
 
