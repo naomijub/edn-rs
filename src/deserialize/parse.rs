@@ -33,8 +33,7 @@ fn read_key(chars: &mut std::str::Chars) -> Edn {
     let c_len = chars
         .clone()
         .take_while(|c| !c.is_whitespace() && c != &')' && c != &']' && c != &'}')
-        .collect::<String>()
-        .len();
+        .count();
     let mut key = String::from(":");
     let key_chars = chars.take(c_len).collect::<String>();
     key.push_str(&key_chars);
@@ -50,8 +49,7 @@ fn read_number(n: char, chars: &mut std::str::Chars) -> Result<Edn, Error> {
     let c_len = chars
         .clone()
         .take_while(|c| c.is_numeric() || c == &'.' || c == &'/')
-        .collect::<String>()
-        .len();
+        .count();
     let mut number = String::new();
     let string = chars.take(c_len).collect::<String>();
     number.push(n);
@@ -81,8 +79,7 @@ fn read_bool_or_nil(c: char, chars: &mut std::str::Chars) -> Result<Edn, Error> 
             let c_len = chars
                 .clone()
                 .take_while(|e| e == &'r' || e == &'u' || e == &'e')
-                .collect::<String>()
-                .len();
+                .count();
             let mut string = String::new();
             let t = chars.take(c_len).collect::<String>();
             string.push(c);
@@ -93,8 +90,7 @@ fn read_bool_or_nil(c: char, chars: &mut std::str::Chars) -> Result<Edn, Error> 
             let c_len = chars
                 .clone()
                 .take_while(|e| e == &'a' || e == &'l' || e == &'s' || e == &'e')
-                .collect::<String>()
-                .len();
+                .count();
             let mut string = String::new();
             let f = chars.take(c_len).collect::<String>();
             string.push(c);
@@ -102,11 +98,7 @@ fn read_bool_or_nil(c: char, chars: &mut std::str::Chars) -> Result<Edn, Error> 
             Ok(Edn::Bool(string.parse::<bool>()?))
         }
         'n' => {
-            let c_len = chars
-                .clone()
-                .take_while(|e| e == &'i' || e == &'l')
-                .collect::<String>()
-                .len();
+            let c_len = chars.clone().take_while(|e| e == &'i' || e == &'l').count();
             let mut string = String::new();
             let n = chars.take(c_len).collect::<String>();
             string.push(c);

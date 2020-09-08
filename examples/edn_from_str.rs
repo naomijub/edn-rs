@@ -2,7 +2,7 @@ use edn_rs::{Edn, EdnError};
 use std::str::FromStr;
 
 fn edn_from_str() -> Result<Edn, EdnError> {
-    let edn_str = "{:a \"2\" :b [true false] :c #{:A nil {:a :b}}}";
+    let edn_str = "{:a \"2\"   :b [true false] :c #{:A nil {:a :b}}}";
     Edn::from_str(edn_str)
 }
 
