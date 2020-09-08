@@ -25,7 +25,7 @@ edn-rs = "0.13.3"
 | parse string 	| 77.57µs 	| 266.479µs 	| 4.712235 milis 	|
 | get-in/navigate (3 blocks)	| 4.224µs	| 22.861µs 	| 26.333 µs 	|
 | Deserialize to struct 	| 110.358µs 	| 357.054µs 	| 4.712235 milis 	|
-| parse with criterium | 13.648µs | - | 23.230µs|
+| parse with criterium | 11.348µs | - | 23.230µs|
 
 ## Quick reference
 
