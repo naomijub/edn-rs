@@ -47,7 +47,9 @@ fn read_str(chars: &mut std::str::Chars) -> Edn {
 }
 
 fn read_inst(chars: &mut std::str::Chars) -> Result<Edn, Error> {
-    let inst = chars.take_while(|c| c != &'\"').collect::<String>();
+    let inst = chars
+        .take_while(|c| c != &'\"' || (*c).is_numeric())
+        .collect::<String>();
     let time = chars.take_while(|c| c != &'\"').collect::<String>();
 
     if inst.contains("inst") {
@@ -400,5 +402,14 @@ mod test {
                 Edn::Nil
             }))
         )
+    }
+
+    #[test]
+    #[should_panic(expected = "iasdf 234  could not be parsed")]
+    fn panic_for_wrong_inst() {
+        let mut edn = "#iasdf 234".chars();
+        let a = parse(edn.next(), &mut edn);
+
+        a.unwrap();
     }
 }
