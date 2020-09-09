@@ -52,7 +52,7 @@ fn read_inst(chars: &mut std::str::Chars) -> Result<Edn, Error> {
         .collect::<String>();
     let time = chars.take_while(|c| c != &'\"').collect::<String>();
 
-    if inst.contains("inst") {
+    if inst.starts_with("inst") {
         return Ok(Edn::Inst(time));
     }
     Err(Error::ParseEdn(format!(
