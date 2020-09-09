@@ -272,6 +272,7 @@ async fn foo() -> Edn {
     - [x] List `"(1 :2 \"d\")"`
     - [x] Set `"#{1 2 3}"`
     - [x] Map `"{:a 1 :b 2 }"`
+    - [x] Inst `#inst \"yyyy-mm-ddTHH:MM:ss\"`
     - [x] Nested structures `"{:a \"2\" :b [true false] :c #{:A {:a :b} nil}}"`
 - [ ] Simple data structures in one another [`edn!`](https://docs.rs/edn-rs/0.13.3/edn_rs/macro.edn.html):
     - [x] Vec in Vec `"[1 2 [:3 \"4\"]]"`
