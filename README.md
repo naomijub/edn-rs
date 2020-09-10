@@ -249,6 +249,14 @@ async fn main() {
 }
 ```
 
+The objective of `foo` is to show that `Edn` can be wrapped with a `Future`. If you want to return an `Edn` from an `async` function just use:
+
+```rust
+async fn foo() -> Edn {
+    edn!([1 1.5 "hello" :key])
+}
+```
+
 ## Edn-rs Current Features
 - [x] Define `struct` to map EDN info `EdnNode`
 - [x] Define EDN types, `EdnType`
@@ -264,6 +272,7 @@ async fn main() {
     - [x] List `"(1 :2 \"d\")"`
     - [x] Set `"#{1 2 3}"`
     - [x] Map `"{:a 1 :b 2 }"`
+    - [x] Inst `#inst \"yyyy-mm-ddTHH:MM:ss\"`
     - [x] Nested structures `"{:a \"2\" :b [true false] :c #{:A {:a :b} nil}}"`
 - [ ] Simple data structures in one another [`edn!`](https://docs.rs/edn-rs/0.13.3/edn_rs/macro.edn.html):
     - [x] Vec in Vec `"[1 2 [:3 \"4\"]]"`

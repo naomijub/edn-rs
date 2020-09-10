@@ -123,6 +123,7 @@ impl<'a> fmt::Display for Type<'a> {
             Edn::Char(_) => formatter.write_str("char"),
             Edn::Symbol(_) => formatter.write_str("symbol"),
             Edn::Double(_) => formatter.write_str("double"),
+            Edn::Inst(_) => formatter.write_str("inst"),
             Edn::Rational(_) => formatter.write_str("rational"),
         }
     }

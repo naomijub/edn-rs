@@ -18,6 +18,7 @@ pub(crate) fn parse_edn(c: Option<char>, chars: &mut std::str::Chars) -> Result<
     match c {
         Some('\"') => Ok(read_str(chars)),
         Some(':') => Ok(read_key(chars)),
+        Some('#') => Ok(read_inst(chars)?),
         Some('-') => Ok(read_number('-', chars)?),
         Some('\\') => Ok(read_char(chars)?),
         Some(b) if b == 't' || b == 'f' || b == 'n' => Ok(read_bool_or_nil(b, chars)?),
@@ -43,6 +44,21 @@ fn read_key(chars: &mut std::str::Chars) -> Edn {
 fn read_str(chars: &mut std::str::Chars) -> Edn {
     let string = chars.take_while(|c| c != &'\"').collect::<String>();
     Edn::Str(string)
+}
+
+fn read_inst(chars: &mut std::str::Chars) -> Result<Edn, Error> {
+    let inst = chars
+        .take_while(|c| c != &'\"' || (*c).is_numeric())
+        .collect::<String>();
+    let time = chars.take_while(|c| c != &'\"').collect::<String>();
+
+    if inst.starts_with("inst") {
+        return Ok(Edn::Inst(time));
+    }
+    Err(Error::ParseEdn(format!(
+        "{} {} could not be parsed",
+        inst, time
+    )))
 }
 
 fn read_number(n: char, chars: &mut std::str::Chars) -> Result<Edn, Error> {
@@ -354,5 +370,46 @@ mod test {
                 ":b".to_string() => Edn::Bool(false), ":c".to_string() => Edn::Nil}
             ))
         );
+    }
+
+    #[test]
+    fn parse_inst() {
+        let mut edn = "{:date  #inst \"2020-07-16T21:53:14.628-00:00\"}".chars();
+
+        assert_eq!(
+            parse(edn.next(), &mut edn).unwrap(),
+            Edn::Map(Map::new(map! {
+                ":date".to_string() => Edn::Inst("2020-07-16T21:53:14.628-00:00".to_string())
+            }))
+        )
+    }
+
+    #[test]
+    fn parse_edn_with_inst() {
+        let mut edn =
+            "@ :a :b {:c :d :date  #inst \"2020-07-16T21:53:14.628-00:00\" ::c ::d} nil}".chars();
+
+        assert_eq!(
+            parse(edn.next(), &mut edn).unwrap(),
+            Edn::Set(Set::new(set! {
+                Edn::Key(":a".to_string()),
+                Edn::Key(":b".to_string()),
+                Edn::Map(Map::new(map! {
+                    ":c".to_string() => Edn::Key(":d".to_string()),
+                    ":date".to_string() => Edn::Inst("2020-07-16T21:53:14.628-00:00".to_string()),
+                    "::c".to_string() => Edn::Key("::d".to_string())
+                })),
+                Edn::Nil
+            }))
+        )
+    }
+
+    #[test]
+    #[should_panic(expected = "iasdf 234  could not be parsed")]
+    fn panic_for_wrong_inst() {
+        let mut edn = "#iasdf 234".chars();
+        let a = parse(edn.next(), &mut edn);
+
+        a.unwrap();
     }
 }

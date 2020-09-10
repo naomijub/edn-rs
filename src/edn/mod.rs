@@ -31,6 +31,7 @@ pub enum Edn {
     Rational(String),
     Char(char),
     Bool(bool),
+    Inst(String),
     Nil,
     Empty,
 }
@@ -295,6 +296,7 @@ impl core::fmt::Display for Edn {
             Edn::Rational(r) => r.to_string(),
             Edn::Bool(b) => format!("{}", b),
             Edn::Char(c) => format!("{}", c),
+            Edn::Inst(t) => format!("{}", t),
             Edn::Nil => String::from("nil"),
             Edn::Empty => String::from(""),
         };
