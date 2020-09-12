@@ -24,7 +24,7 @@ pub(crate) fn parse_edn(c: Option<char>, chars: &mut std::str::Chars) -> Result<
         Some(b) if b == 't' || b == 'f' || b == 'n' => Ok(read_bool_or_nil(b, chars)?),
         Some(n) if n.is_numeric() => Ok(read_number(n, chars)?),
         a => Err(Error::ParseEdn(format!(
-            "{} could not be parsed",
+            "{:?} could not be parsed",
             a.unwrap_or(' ').to_string()
         ))),
     }
