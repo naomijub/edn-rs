@@ -358,10 +358,12 @@ impl Edn {
     pub fn to_uint(&self) -> Option<usize> {
         match self {
             Edn::Str(s) => s.parse::<usize>().ok(),
-            Edn::Int(i) => Some(i.to_owned() as usize),
+            Edn::Int(i) if i > &0 => Some(i.to_owned() as usize),
             Edn::UInt(i) => Some(i.to_owned()),
-            Edn::Double(d) => Some(d.to_owned().to_float().round() as usize),
-            Edn::Rational(r) => Some(rational_to_double(&r).unwrap_or(0f64).round() as usize),
+            Edn::Double(d) if d.to_float() > 0f64 => Some(d.to_owned().to_float().round() as usize),
+            Edn::Rational(r) if !r.contains("-") => {
+                Some(rational_to_double(&r).unwrap_or(0f64).round() as usize)
+            }
             _ => None,
         }
     }
