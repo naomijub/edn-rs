@@ -88,6 +88,6 @@ mod tests {
         }
 
         let a: Result<A, EdnError> = edn_rs::from_str("{ :amount \"123\" }");
-        assert_eq!(err, Ok(A { amount: 123 }));
+        assert_eq!(a, Ok(A { amount: 123 }));
     }
 }
