@@ -33,7 +33,7 @@ pub(crate) fn parse_edn(c: Option<char>, chars: &mut std::str::Chars) -> Result<
 fn read_key(chars: &mut std::str::Chars) -> Edn {
     let c_len = chars
         .clone()
-        .take_while(|c| !c.is_whitespace() && c != &')' && c != &']' && c != &'}')
+        .take_while(|c| !c.is_whitespace() && c != &',' && c != &')' && c != &']' && c != &'}')
         .count();
     let mut key = String::from(":");
     let key_chars = chars.take(c_len).collect::<String>();
