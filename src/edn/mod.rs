@@ -269,7 +269,7 @@ impl core::fmt::Display for Map {
         write!(
             f,
             "{{{}}}",
-            self.0.iter().map(|(k, v)| format!("{}: {}, ", k, v)).fold(
+            self.0.iter().map(|(k, v)| format!("{} {}, ", k, v)).fold(
                 String::new(),
                 |mut acc, i| {
                     acc.push_str(&i);
@@ -857,7 +857,7 @@ mod test {
             map! {":a".to_string() => Edn::Key(":something".to_string()),
             ":b".to_string() => Edn::Bool(false), ":c".to_string() => Edn::Nil},
         ));
-        assert_eq!(edn.to_string(), "{:a: :something, :b: false, :c: nil, }");
+        assert_eq!(edn.to_string(), "{:a :something, :b false, :c nil, }");
     }
 
     #[test]
