@@ -44,7 +44,7 @@ fn main() {
                 Edn::Double(1.2.into()),
                 Edn::Int(3),
                 Edn::Bool(false),
-                Edn::Key("f".to_string()),
+                Edn::Key(":f".to_string()),
                 Edn::Nil,
                 Edn::Rational("3/4".to_string())
             ]
@@ -104,7 +104,7 @@ fn main() {
     assert_eq!(edn[1], edn!(1.2));
     assert_eq!(edn[1], Edn::Double(1.2f64.into()));
     assert_eq!(edn[3]["false"], edn!(:f));
-    assert_eq!(edn[3]["false"], Edn::Key("f".to_string()));
+    assert_eq!(edn[3]["false"], Edn::Key(":f".to_string()));
 }
 ```
 
@@ -224,6 +224,42 @@ fn main() {
 }
  ```
 
+**to_string/to_debug**
+
+`to_debug` emits a Debug version of `Edn` type.
+```rust
+use edn_rs::edn::{Edn, Vector};
+
+let edn = Edn::Vector(Vector::new(vec![Edn::Int(5), Edn::Int(6), Edn::Int(7)]));
+let expected = "Vector(Vector([Int(5), Int(6), Int(7)]))";
+
+assert_eq!(edn.to_debug(), expected);
+```
+
+`to_string` emits a valid edn.
+```rust
+use edn_rs::edn::{Edn, Vector};
+
+let edn = Edn::Vector(Vector::new(vec![Edn::Int(5), Edn::Int(6), Edn::Int(7)]));
+let expected = "[5, 6, 7, ]";
+
+assert_eq!(edn.to_string(), expected);
+```
+
+Larger `to_string` example:
+```rust
+fn complex_ok() -> Result<(), EdnError> {
+    use std::str::FromStr;
+    let edn_str = "{ :list [{:name \"rose\" :age 66 :cool true}, {:name \"josh\" :age 33 :cool false}, {:name \"eva\" :age 296 :cool true}] }";
+
+    let edn = Edn::from_str(edn_str)?;
+    println!("{:?}", edn.to_string());
+//    "{:list: [{:age 66, :cool true, :name \"rose\", }, {:age 33, :cool false, :name \"josh\", }, {:age 296, :cool true, :name \"eva\", }, ], }"
+
+    Ok(())
+}
+```
+
 ## Using `async/await` with Edn type
 
 Edn supports `futures` by using the feature `async`. To enable this feature add to your `Cargo.toml`  dependencies the following line `edn-rs = { version = 0.13.5", features = ["async"] }` and you can use futures as in the following example.
@@ -260,8 +296,10 @@ async fn foo() -> Edn {
 ## Edn-rs Current Features
 - [x] Define `struct` to map EDN info `EdnNode`
 - [x] Define EDN types, `EdnType`
- - [x] Edn Type into primitive: `Edn::Bool(true).into() -> true`. This was done by `to_float`, `to_bool`, `to_int`, `to_vec`.
- - [x] implement `futures::Future` trait to `Edn`
+    - [x] Edn Type into primitive: `Edn::Bool(true).into() -> true`. This was done by `to_float`, `to_bool`, `to_int`, `to_vec`.
+    - [x] implement `futures::Future` trait to `Edn`
+    - [x] `to_string()` for `Edn`.
+    - [x] `to_debug()` for `Edn`.
 - [x] Parse EDN data [`from_str`](https://docs.rs/edn-rs/0.13.5/edn_rs/deserialize/fn.from_str.html):
     - [x] nil `""`
     - [x] String `"\"string\""`

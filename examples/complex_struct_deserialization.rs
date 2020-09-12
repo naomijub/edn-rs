@@ -33,6 +33,7 @@ impl Deserialize for Complex {
 fn complex_ok() -> Result<(), EdnError> {
     let edn_str = "{ :list [{:name \"rose\" :age 66 :cool true}, {:name \"josh\" :age 33 :cool false}, {:name \"eva\" :age 296 :cool true}] }";
     let complex: Complex = edn_rs::from_str(edn_str)?;
+
     println!("{:?}", complex);
     // Complex { list: [Another { name: "rose", age: 66, cool: true }, Another { name: "josh", age: 33, cool: false }, Another { name: "eva", age: 296, cool: true }] }
 
@@ -69,7 +70,7 @@ fn complex_wrong() -> Result<(), EdnError> {
     assert_eq!(
         complex,
         Err(EdnError::Deserialize(
-            "couldn't convert `some text` into `uint`".to_string()
+            "couldn't convert `\"some text\"` into `uint`".to_string()
         ))
     );
 

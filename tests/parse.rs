@@ -8,7 +8,7 @@ mod tests {
     fn parse_primitive_types() {
         assert_eq!(edn!(1), Edn::Int(1));
         assert_eq!(edn!(12.5), Edn::Double(12.5.into()));
-        assert_eq!(edn!(:key), Edn::Key("key".to_string()));
+        assert_eq!(edn!(:key), Edn::Key(":key".to_string()));
         assert_eq!(
             edn!("this is a string"),
             Edn::Str("this is a string".to_string())
@@ -36,7 +36,7 @@ mod tests {
             Edn::Double(1.2.into()),
             Edn::Int(3),
             Edn::Bool(false),
-            Edn::Key("f".to_string()),
+            Edn::Key(":f".to_string()),
             Edn::Nil,
             Edn::Rational("3/4".to_string()),
         ]));
@@ -51,7 +51,7 @@ mod tests {
             Edn::Double(1.2.into()),
             Edn::Int(3),
             Edn::Bool(false),
-            Edn::Key("f".to_string()),
+            Edn::Key(":f".to_string()),
             Edn::Nil,
             Edn::Rational("3/4".to_string()),
         ]));
@@ -66,7 +66,7 @@ mod tests {
             Edn::Double(1.2.into()),
             Edn::Int(3),
             Edn::Bool(false),
-            Edn::Key("f".to_string()),
+            Edn::Key(":f".to_string()),
             Edn::Nil,
             Edn::Rational("3/4".to_string())
         }));
@@ -78,7 +78,7 @@ mod tests {
     fn parse_simple_map() {
         let expected = Edn::Map(Map::new(map! {
             String::from("1.2") => Edn::Bool(false),
-            String::from("b") => Edn::Rational(String::from("3/4"))
+            String::from(":b") => Edn::Rational(String::from("3/4"))
         }));
 
         assert_eq!(edn!({1.2 false, :b 3/4}), expected);
@@ -92,7 +92,7 @@ mod tests {
             Edn::Int(3),
             Edn::Vector(Vector::new(vec![
                 Edn::Bool(false),
-                Edn::Key("f".to_string()),
+                Edn::Key(":f".to_string()),
                 Edn::Nil,
                 Edn::Rational("3/4".to_string()),
             ])),
@@ -109,7 +109,7 @@ mod tests {
             Edn::Int(3),
             Edn::List(List::new(vec![
                 Edn::Bool(false),
-                Edn::Key("f".to_string()),
+                Edn::Key(":f".to_string()),
                 Edn::Nil,
                 Edn::Rational("3/4".to_string()),
             ])),
@@ -125,7 +125,7 @@ mod tests {
             Edn::Double(1.2.into()),
             Edn::Int(3),
             Edn::Map(Map::new(map![
-                    String::from("false") => Edn::Key("f".to_string()),
+                    String::from("false") => Edn::Key(":f".to_string()),
                     String::from("nil") => Edn::Rational("3/4".to_string())
             ])),
         ]));
@@ -142,14 +142,14 @@ mod tests {
             Edn::List(
                 List::new( vec![
                     Edn::Bool(false),
-                    Edn::Key("f".to_string()),
+                    Edn::Key(":f".to_string()),
                     Edn::Nil,
                     Edn::Rational("3/4".to_string())
             ])),
             Edn::Vector(
                 Vector::new( vec![
                     Edn::Bool(true),
-                    Edn::Key("b".to_string()),
+                    Edn::Key(":b".to_string()),
                     Edn::Rational("12/5".to_string())
             ]))
         }));
@@ -169,7 +169,7 @@ mod tests {
             Edn::Map(Map::new(map![
                     String::from("false") => Edn::Map(
                         Map::new( map![
-                            String::from("f") => Edn::Key(String::from("b"))
+                            String::from(":f") => Edn::Key(String::from(":b"))
                         ])),
                     String::from("nil") => Edn::Vector(
                         Vector::new( vec![
@@ -189,6 +189,6 @@ mod tests {
         assert_eq!(edn[1], edn!(1.2));
         assert_eq!(edn[1], Edn::Double(1.2f64.into()));
         assert_eq!(edn[3]["false"], edn!(:f));
-        assert_eq!(edn[3]["false"], Edn::Key("f".to_string()));
+        assert_eq!(edn[3]["false"], Edn::Key(":f".to_string()));
     }
 }

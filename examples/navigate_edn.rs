@@ -10,7 +10,7 @@ fn navigate() {
     assert_eq!(edn[1], edn!(1.2));
     assert_eq!(edn[1], Edn::Double(1.2f64.into()));
     assert_eq!(edn[3]["false"], edn!(:f));
-    assert_eq!(edn[3]["false"], Edn::Key("f".to_string()));
+    assert_eq!(edn[3]["false"], Edn::Key(":f".to_string()));
 }
 
 fn main() {

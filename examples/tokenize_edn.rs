@@ -10,7 +10,7 @@ fn tokenize() {
         Edn::Double(1.2.into()),
         Edn::Int(3),
         Edn::Bool(false),
-        Edn::Key("f".to_string()),
+        Edn::Key(":f".to_string()),
         Edn::Nil,
         Edn::Rational("3/4".to_string()),
     ]));
