@@ -254,11 +254,7 @@ fn complex_ok() -> Result<(), EdnError> {
 
     let edn = Edn::from_str(edn_str)?;
     println!("{:?}", edn.to_string());
-//    "{:list: [
-//        {:age 66, :cool true, :name \"rose\", }, 
-//        {:age 33, :cool false, :name \"josh\", }, 
-//        {:age 296, :cool true, :name \"eva\", },
-//     ], }"
+//    "{:list: [{:age 66, :cool true, :name \"rose\", }, {:age 33, :cool false, :name \"josh\", }, {:age 296, :cool true, :name \"eva\", }, ], }"
 
     Ok(())
 }
