@@ -348,6 +348,7 @@ impl Edn {
             Edn::Key(k) => k.parse::<isize>().ok(),
             Edn::Str(s) => s.parse::<isize>().ok(),
             Edn::Int(i) => Some(i.to_owned() as isize),
+            Edn::UInt(u) if *u <= isize::MAX as usize => Some(u.to_owned() as isize),
             Edn::Double(d) => Some(d.to_owned().to_float().round() as isize),
             Edn::Rational(r) => Some(rational_to_double(&r).unwrap_or(0f64).round() as isize),
             _ => None,
@@ -822,5 +823,33 @@ mod test {
         ]));
 
         assert_eq!(edn.to_bool_vec(), None);
+    }
+
+    #[test]
+    fn negative_isize_to_usize() {
+        let neg_i = Edn::Int(-10);
+
+        assert_eq!(neg_i.to_uint(), None);
+    }
+
+    #[test]
+    fn max_usize_to_uint() {
+        let max_u = Edn::UInt(usize::MAX);
+
+        assert_eq!(max_u.to_int(), None);
+    }
+
+    #[test]
+    fn positive_isize_to_usize() {
+        let max_i = Edn::Int(isize::MAX);
+
+        assert_eq!(max_i.to_uint(), Some(isize::MAX as usize));
+    }
+
+    #[test]
+    fn small_usize_to_isize() {
+        let small_u = Edn::UInt(10);
+
+        assert_eq!(small_u.to_int(), Some(10));
     }
 }
