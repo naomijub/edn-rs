@@ -296,10 +296,10 @@ async fn foo() -> Edn {
 ## Edn-rs Current Features
 - [x] Define `struct` to map EDN info `EdnNode`
 - [x] Define EDN types, `EdnType`
- - [x] Edn Type into primitive: `Edn::Bool(true).into() -> true`. This was done by `to_float`, `to_bool`, `to_int`, `to_vec`.
- - [x] implement `futures::Future` trait to `Edn`
- - [x] `to_string()` for `Edn`.
- - [x] `to_debug()` for `Edn`.
+    - [x] Edn Type into primitive: `Edn::Bool(true).into() -> true`. This was done by `to_float`, `to_bool`, `to_int`, `to_vec`.
+    - [x] implement `futures::Future` trait to `Edn`
+    - [x] `to_string()` for `Edn`.
+    - [x] `to_debug()` for `Edn`.
 - [x] Parse EDN data [`from_str`](https://docs.rs/edn-rs/0.13.5/edn_rs/deserialize/fn.from_str.html):
     - [x] nil `""`
     - [x] String `"\"string\""`
