@@ -18,7 +18,7 @@
 ///                     Edn::Double(1.2.into()),
 ///                     Edn::Int(3),
 ///                     Edn::Bool(false),
-///                     Edn::Key("f".to_string()),
+///                     Edn::Key(":f".to_string()),
 ///                     Edn::Nil,
 ///                     Edn::Rational("3/4".to_string())
 ///                 ]
@@ -35,7 +35,7 @@
 ///             Edn::Double(1.2.into()),
 ///             Edn::Int(3),
 ///             Edn::Bool(false),
-///             Edn::Key("f".to_string()),
+///             Edn::Key(":f".to_string()),
 ///             Edn::Nil,
 ///             Edn::Rational("3/4".to_string())
 ///             }
@@ -49,7 +49,7 @@
 ///             map!{
 ///                 String::from("1.2") => Edn::Bool(false),
 ///                 // Note `:b` becomes `b`
-///                 String::from("b") => Edn::Rational(String::from("3/4"))
+///                 String::from(":b") => Edn::Rational(String::from("3/4"))
 ///             }
 ///         )
 ///     );
@@ -75,7 +75,7 @@
 ///                 Map::new( map![
 ///                     String::from("false") => Edn::Map(
 ///                         Map::new( map![
-///                             String::from("f") => Edn::Key(String::from("b"))
+///                             String::from(":f") => Edn::Key(String::from(":b"))
 ///                         ])),
 ///                     String::from("nil") => Edn::Vector(
 ///                         Vector::new( vec![
@@ -104,7 +104,7 @@
 ///     assert_eq!(edn[1], edn!(1.2));
 ///     assert_eq!(edn[1], Edn::Double(1.2f64.into()));
 ///     assert_eq!(edn[3]["false"], edn!(:f));
-///     assert_eq!(edn[3]["false"], Edn::Key("f".to_string()));
+///     assert_eq!(edn[3]["false"], Edn::Key(":f".to_string()));
 /// }
 /// ```
 ///
@@ -203,7 +203,8 @@ macro_rules! edn_internal {
     }};
 
     (:$key:tt) => {{
-        Edn::Key(std::stringify!($key).into())
+        let k = std::format!(":{}", std::stringify!($key));
+        Edn::Key(k)
     }};
 
     (#{ }) => {

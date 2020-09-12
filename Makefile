@@ -6,7 +6,7 @@ unit:
 
 .PHONY: examples
 examples:
-	cargo test --examples
+	cargo test --examples --no-fail-fast
 	cargo test --example json_to_edn --features "json"
 	cargo run --example async --features "async"
 

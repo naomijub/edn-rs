@@ -289,7 +289,7 @@ impl core::fmt::Display for Edn {
             Edn::List(l) => format!("{}", l),
             Edn::Symbol(sy) => sy.to_string(),
             Edn::Key(k) => k.to_string(),
-            Edn::Str(s) => s.to_string(),
+            Edn::Str(s) => format!("{:?}", s),
             Edn::Int(i) => format!("{}", i),
             Edn::UInt(u) => format!("{}", u),
             Edn::Double(d) => format!("{}", d),
@@ -309,7 +309,7 @@ impl Edn {
     /// ```rust
     /// use edn_rs::edn::{Edn, Vector};
     ///
-    /// let key = Edn::Key(String::from("1234"));
+    /// let key = Edn::Key(String::from(":1234"));
     /// let q = Edn::Rational(String::from("3/4"));
     /// let i = Edn::Int(12isize);
     ///
@@ -320,7 +320,7 @@ impl Edn {
     /// ```
     pub fn to_float(&self) -> Option<f64> {
         match self {
-            Edn::Key(k) => k.parse::<f64>().ok(),
+            Edn::Key(k) => k.replace(":", "").parse::<f64>().ok(),
             Edn::Str(s) => s.parse::<f64>().ok(),
             Edn::Int(i) => to_double(i).ok(),
             Edn::UInt(u) => to_double(u).ok(),
@@ -334,7 +334,7 @@ impl Edn {
     /// ```rust
     /// use edn_rs::edn::{Edn, Vector};
     ///
-    /// let key = Edn::Key(String::from("1234"));
+    /// let key = Edn::Key(String::from(":1234"));
     /// let q = Edn::Rational(String::from("3/4"));
     /// let f = Edn::Double(12.3f64.into());
     ///
@@ -345,7 +345,7 @@ impl Edn {
     /// ```
     pub fn to_int(&self) -> Option<isize> {
         match self {
-            Edn::Key(k) => k.parse::<isize>().ok(),
+            Edn::Key(k) => k.replace(":", "").parse::<isize>().ok(),
             Edn::Str(s) => s.parse::<isize>().ok(),
             Edn::Int(i) => Some(i.to_owned() as isize),
             Edn::UInt(u) if *u <= isize::MAX as usize => Some(u.to_owned() as isize),
@@ -537,6 +537,28 @@ impl Edn {
         }
     }
 
+    /// **[std::fmt::Debug]**
+    /// `to_debug` is a wrapper of `format!("{:?}", &self)` for `&Edn`.
+    /// ```
+    /// use edn_rs::edn::{Edn, Vector};
+    ///
+    /// let edn = Edn::Vector(Vector::new(vec![Edn::Int(5), Edn::Int(6), Edn::Int(7)]));
+    /// let expected = "Vector(Vector([Int(5), Int(6), Int(7)]))";
+    ///
+    /// assert_eq!(edn.to_debug(), expected);
+    /// ```
+    ///
+    /// While `to_string` returns a valid edn:
+    ///
+    ///  ```
+    /// use edn_rs::edn::{Edn, Vector};
+    ///
+    /// let edn = Edn::Vector(Vector::new(vec![Edn::Int(5), Edn::Int(6), Edn::Int(7)]));
+    /// let expected = "[5, 6, 7, ]";
+    ///
+    /// assert_eq!(edn.to_string(), expected);
+    /// ```
+    ///
     pub fn to_debug(&self) -> String {
         format!("{:?}", self)
     }
@@ -561,7 +583,7 @@ impl Edn {
     ///     assert_eq!(edn[1], edn!(1.2));
     ///     assert_eq!(edn.get(1).unwrap(), &edn!(1.2));
     ///     assert_eq!(edn[3]["false"], edn!(:f));
-    ///     assert_eq!(edn[3].get("false").unwrap(), &Edn::Key("f".to_string()));
+    ///     assert_eq!(edn[3].get("false").unwrap(), &Edn::Key(":f".to_string()));
     /// }
     /// ```
     pub fn get<I: Index>(&self, index: I) -> Option<&Edn> {
@@ -588,7 +610,7 @@ impl Edn {
     ///     assert_eq!(edn[1], edn!(1.2));
     ///     assert_eq!(edn.get_mut(1).unwrap(), &edn!(1.2));
     ///     assert_eq!(edn[3]["false"], edn!(:f));
-    ///     assert_eq!(edn[3].get_mut("false").unwrap(), &Edn::Key("f".to_string()));
+    ///     assert_eq!(edn[3].get_mut("false").unwrap(), &Edn::Key(":f".to_string()));
     /// }
     /// ```
     pub fn get_mut<I: Index>(&mut self, index: I) -> Option<&mut Edn> {
