@@ -223,7 +223,7 @@ impl core::fmt::Display for Vector {
             "[{}]",
             self.0
                 .iter()
-                .map(|i| format!("{:?}, ", i))
+                .map(|i| format!("{}, ", i))
                 .fold(String::new(), |mut acc, i| {
                     acc.push_str(&i);
                     acc
@@ -239,7 +239,7 @@ impl core::fmt::Display for List {
             "({})",
             self.0
                 .iter()
-                .map(|i| format!("{:?}, ", i))
+                .map(|i| format!("{}, ", i))
                 .fold(String::new(), |mut acc, i| {
                     acc.push_str(&i);
                     acc
@@ -255,7 +255,7 @@ impl core::fmt::Display for Set {
             "#{{{}}}",
             self.0
                 .iter()
-                .map(|i| format!("{:?}, ", i))
+                .map(|i| format!("{}, ", i))
                 .fold(String::new(), |mut acc, i| {
                     acc.push_str(&i);
                     acc
@@ -269,13 +269,13 @@ impl core::fmt::Display for Map {
         write!(
             f,
             "{{{}}}",
-            self.0
-                .iter()
-                .map(|(k, v)| format!("{}: {:?}, ", k, v))
-                .fold(String::new(), |mut acc, i| {
+            self.0.iter().map(|(k, v)| format!("{}: {}, ", k, v)).fold(
+                String::new(),
+                |mut acc, i| {
                     acc.push_str(&i);
                     acc
-                })
+                }
+            )
         )
     }
 }
@@ -532,6 +532,10 @@ impl Edn {
             ),
             _ => None,
         }
+    }
+
+    pub fn to_debug(&self) -> String {
+        format!("{:?}", self)
     }
 
     /// Index into a EDN vector, list, set or map. A string index can be used to access a
@@ -820,5 +824,24 @@ mod test {
         ]));
 
         assert_eq!(edn.to_bool_vec(), None);
+    }
+
+    #[test]
+    fn edn_to_string() {
+        let edn = Edn::Map(Map::new(
+            map! {":a".to_string() => Edn::Key(":something".to_string()),
+            ":b".to_string() => Edn::Bool(false), ":c".to_string() => Edn::Nil},
+        ));
+        assert_eq!(edn.to_string(), "{:a: :something, :b: false, :c: nil, }");
+    }
+
+    #[test]
+    fn edn_to_debug() {
+        let edn = Edn::Map(Map::new(
+            map! {":a".to_string() => Edn::Key(":something".to_string()),
+            ":b".to_string() => Edn::Bool(false), ":c".to_string() => Edn::Nil},
+        ));
+        let expected = "Map(Map({\":a\": Key(\":something\"), \":b\": Bool(false), \":c\": Nil}))";
+        assert_eq!(edn.to_debug(), expected);
     }
 }

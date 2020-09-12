@@ -412,4 +412,17 @@ mod test {
 
         a.unwrap();
     }
+
+    #[test]
+    fn parse_map_keyword_with_commas() {
+        let mut edn = "{ :a :something, :b false, :c nil, }".chars();
+
+        assert_eq!(
+            parse(edn.next(), &mut edn).unwrap(),
+            Edn::Map(Map::new(
+                map! {":a".to_string() => Edn::Key(":something".to_string()),
+                ":b".to_string() => Edn::Bool(false), ":c".to_string() => Edn::Nil}
+            ))
+        );
+    }
 }
