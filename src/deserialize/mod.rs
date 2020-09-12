@@ -218,12 +218,13 @@ mod test {
 
     #[test]
     fn from_str_list_with_set() {
-        let edn = "(1 \"2\" 3.3 :b #{true \\c})";
+        let edn = "(1 -10 \"2\" 3.3 :b #{true \\c})";
 
         assert_eq!(
             Edn::from_str(edn),
             Ok(Edn::List(List::new(vec![
                 Edn::UInt(1),
+                Edn::Int(-10),
                 Edn::Str("2".to_string()),
                 Edn::Double(3.3.into()),
                 Edn::Key(":b".to_string()),
