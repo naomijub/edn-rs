@@ -77,4 +77,17 @@ mod tests {
 
         assert_eq!(edn, json_to_edn(json));
     }
+
+    #[test]
+    fn regression_str_to_uint_test() {
+        use edn_derive::Deserialize;
+        use edn_rs::EdnError;
+        #[derive(Deserialize, Debug, PartialEq)]
+        struct A {
+            amount: usize,
+        }
+
+        let a: Result<A, EdnError> = edn_rs::from_str("{ :amount \"123\" }");
+        assert_eq!(a, Ok(A { amount: 123 }));
+    }
 }
