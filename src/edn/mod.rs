@@ -223,7 +223,7 @@ impl core::fmt::Display for Vector {
             "[{}]",
             self.0
                 .iter()
-                .map(|i| format!("{}, ", i))
+                .map(|i| i.to_string())
                 .fold(String::new(), |mut acc, i| {
                     acc.push_str(&i);
                     acc
@@ -239,7 +239,7 @@ impl core::fmt::Display for List {
             "({})",
             self.0
                 .iter()
-                .map(|i| format!("{}, ", i))
+                .map(|i| i.to_string())
                 .fold(String::new(), |mut acc, i| {
                     acc.push_str(&i);
                     acc
@@ -255,7 +255,7 @@ impl core::fmt::Display for Set {
             "#{{{}}}",
             self.0
                 .iter()
-                .map(|i| format!("{}, ", i))
+                .map(|i| i.to_string())
                 .fold(String::new(), |mut acc, i| {
                     acc.push_str(&i);
                     acc
@@ -414,19 +414,28 @@ impl Edn {
             Edn::Vector(_) => Some(
                 self.iter()
                     .unwrap()
-                    .map(|e| e.to_string())
+                    .map(|e| match e {
+                        Edn::Str(s) => (s.clone()),
+                        _ => e.to_string(),
+                    })
                     .collect::<Vec<String>>(),
             ),
             Edn::List(_) => Some(
                 self.iter()
                     .unwrap()
-                    .map(|e| e.to_string())
+                    .map(|e| match e {
+                        Edn::Str(s) => (s.clone()),
+                        _ => e.to_string(),
+                    })
                     .collect::<Vec<String>>(),
             ),
             Edn::Set(_) => Some(
                 self.iter()
                     .unwrap()
-                    .map(|e| e.to_string())
+                    .map(|e| match e {
+                        Edn::Str(s) => (s.clone()),
+                        _ => e.to_string(),
+                    })
                     .collect::<Vec<String>>(),
             ),
             _ => None,
@@ -896,5 +905,18 @@ mod test {
         let small_u = Edn::UInt(10);
 
         assert_eq!(small_u.to_int(), Some(10));
+    }
+
+    #[test]
+    fn regression_to_vec() {
+        let expected = vec!["true", ":b", "test"];
+        let edn = Edn::Vector(Vector(vec![
+            Edn::Bool(true),
+            Edn::Key(":b".to_string()),
+            Edn::Str("test".to_string()),
+        ]));
+        let edn_vec = edn.to_vec().unwrap();
+
+        assert_eq!(edn_vec, expected);
     }
 }
