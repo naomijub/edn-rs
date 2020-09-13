@@ -18,8 +18,8 @@ pub(crate) mod parse;
 /// impl Deserialize for Person {
 ///     fn deserialize(edn: &Edn) -> Result<Self, EdnError> {
 ///         Ok(Self {
-///             name: Deserialize::deserialize(&edn[":name"])?,
-///             age: Deserialize::deserialize(&edn[":age"])?,
+///             name: edn_rs::from_edn(&edn[":name"])?,
+///             age: edn_rs::from_edn(&edn[":age"])?,
 ///         })
 ///     }
 /// }
@@ -145,17 +145,17 @@ where
             Edn::Vector(_) => Ok(edn
                 .iter()
                 .ok_or(Error::Iter(format!("Could not create iter from {:?}", edn)))?
-                .map(|e| Deserialize::deserialize(e))
+                .map(from_edn)
                 .collect::<Result<Vec<T>, Error>>()?),
             Edn::List(_) => Ok(edn
                 .iter()
                 .ok_or(Error::Iter(format!("Could not create iter from {:?}", edn)))?
-                .map(|e| Deserialize::deserialize(e))
+                .map(from_edn)
                 .collect::<Result<Vec<T>, Error>>()?),
             Edn::Set(_) => Ok(edn
                 .iter()
                 .ok_or(Error::Iter(format!("Could not create iter from {:?}", edn)))?
-                .map(|e| Deserialize::deserialize(e))
+                .map(from_edn)
                 .collect::<Result<Vec<T>, Error>>()?),
             _ => Err(build_deserialize_error(
                 edn.clone(),
@@ -172,7 +172,7 @@ where
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
         match edn {
             Edn::Nil => Ok(None),
-            _ => Ok(Some(Deserialize::deserialize(&edn)?)),
+            _ => Ok(Some(from_edn(&edn)?)),
         }
     }
 }
@@ -180,7 +180,12 @@ where
 /// `from_str` deserializes an EDN String into type `T` that implements `Deserialize`. Response is `Result<T, EdnError>`
 pub fn from_str<T: Deserialize>(s: &str) -> Result<T, Error> {
     let edn = Edn::from_str(s)?;
-    T::deserialize(&edn)
+    from_edn(&edn)
+}
+
+/// `from_edn` deserializes an EDN type into a `T` type that implements `Deserialize`. Response is `Result<T, EdnError>`
+pub fn from_edn<T: Deserialize>(edn: &Edn) -> Result<T, Error> {
+    T::deserialize(edn)
 }
 
 #[cfg(test)]

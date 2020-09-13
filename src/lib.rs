@@ -72,8 +72,7 @@ pub fn json_to_edn(json: String) -> String {
     edn.replace("null", "nil")
 }
 
-pub use deserialize::from_str;
-pub use deserialize::Deserialize;
+pub use deserialize::{from_edn, from_str, Deserialize};
 pub use edn::Error as EdnError;
 pub use edn::{Double, Edn, List, Map, Set, Vector};
 pub use serialize::Serialize;

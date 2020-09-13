@@ -154,8 +154,8 @@ struct Person {
 impl Deserialize for Person {
     fn deserialize(edn: &Edn) -> Result<Self, EdnError> {
         Ok(Self {
-            name: Deserialize::deserialize(&edn[":name"])?,
-            age: Deserialize::deserialize(&edn[":age"])?,
+            name: edn_rs::from_edn(&edn[":name"])?,
+            age: edn_rs::from_edn(&edn[":age"])?,
         })
     }
 }
@@ -182,6 +182,62 @@ fn main() -> Result<(), EdnError> {
         person,
         Err(EdnError::Deserialize(
             "couldn't convert `some text` into `uint`".to_string()
+        ))
+    );
+
+    Ok(())
+}
+```
+
+**Deserializes Edn types into Rust Types**:
+
+> For now you have to implement the conversion yourself with the `Deserialize` trait. Soon you'll be able to have that implemented for you via `edn-derive` crate.
+ ```rust
+use edn_rs::{map, Deserialize, Edn, EdnError, Map};
+
+#[derive(Debug, PartialEq)]
+struct Person {
+    name: String,
+    age: usize,
+}
+
+impl Deserialize for Person {
+    fn deserialize(edn: &Edn) -> Result<Self, EdnError> {
+        Ok(Self {
+            name: edn_rs::from_edn(&edn[":name"])?,
+            age: edn_rs::from_edn(&edn[":age"])?,
+        })
+    }
+}
+
+fn main() -> Result<(), EdnError> {
+    let edn = Edn::Map(Map::new(map! {
+        ":name".to_string() => Edn::Str("rose".to_string()),
+        ":age".to_string() => Edn::UInt(66)
+    }));
+    let person: Person = edn_rs::from_edn(&edn)?;
+
+    println!("{:?}", person);
+    // Person { name: "rose", age: 66 }
+
+    assert_eq!(
+        person,
+        Person {
+            name: "rose".to_string(),
+            age: 66,
+        }
+    );
+
+    let bad_edn = Edn::Map(Map::new(map! {
+        ":name".to_string() => Edn::Str("rose".to_string()),
+        ":age".to_string() => Edn::Str("some text".to_string())
+    }));
+    let person: Result<Person, EdnError> = edn_rs::from_edn(&bad_edn);
+
+    assert_eq!(
+        person,
+        Err(EdnError::Deserialize(
+            "couldn't convert `\"some text\"` into `uint`".to_string()
         ))
     );
 
