@@ -85,8 +85,8 @@ fn read_number(n: char, chars: &mut std::str::Chars) -> Result<Edn, Error> {
 fn read_char(chars: &mut std::str::Chars) -> Result<Edn, Error> {
     let c = chars.next();
     c.ok_or(format!("{:?} could not be parsed", c))
-        .map(|c| Edn::Char(c))
-        .map_err(|e| Error::ParseEdn(e))
+        .map(Edn::Char)
+        .map_err(Error::ParseEdn)
 }
 
 fn read_bool_or_nil(c: char, chars: &mut std::str::Chars) -> Result<Edn, Error> {

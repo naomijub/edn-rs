@@ -52,7 +52,7 @@ where
     fn serialize(self) -> String {
         let aux_vec = self
             .into_iter()
-            .map(|i| i.serialize())
+            .map(Serialize::serialize)
             .collect::<Vec<String>>();
         let mut s = String::new();
         s.push_str("[");
@@ -69,7 +69,7 @@ where
     fn serialize(self) -> String {
         let aux_vec = self
             .into_iter()
-            .map(|i| i.serialize())
+            .map(Serialize::serialize)
             .collect::<Vec<String>>();
         let mut s = String::new();
         s.push_str("#{");
@@ -86,7 +86,7 @@ where
     fn serialize(self) -> String {
         let aux_vec = self
             .into_iter()
-            .map(|i| i.serialize())
+            .map(Serialize::serialize)
             .collect::<Vec<String>>();
         let mut s = String::new();
         s.push_str("#{");
@@ -103,7 +103,7 @@ where
     fn serialize(self) -> String {
         let aux_vec = self
             .into_iter()
-            .map(|i| i.serialize())
+            .map(Serialize::serialize)
             .collect::<Vec<String>>();
         let mut s = String::new();
         s.push_str("(");
