@@ -1,6 +1,7 @@
 use crate::deserialize::parse::{self, MaybeReplaceExt};
 use std::cmp::{Ord, PartialOrd};
 use std::collections::{BTreeMap, BTreeSet};
+use std::convert::TryFrom;
 use utils::index::Index;
 
 #[cfg(feature = "async")]
@@ -164,7 +165,7 @@ pub struct Double(i64, u64);
 impl From<f64> for Double {
     fn from(f: f64) -> Double {
         let f_as_str = format!("{}", f);
-        let f_split = f_as_str.split(".").collect::<Vec<&str>>();
+        let f_split = f_as_str.split('.').collect::<Vec<&str>>();
         Double(
             f_split[0].parse::<i64>().unwrap(),
             f_split
@@ -223,7 +224,7 @@ impl core::fmt::Display for Vector {
             "[{}]",
             self.0
                 .iter()
-                .map(|i| i.to_string())
+                .map(ToString::to_string)
                 .fold(String::new(), |mut acc, i| {
                     acc.push_str(&i);
                     acc
@@ -239,7 +240,7 @@ impl core::fmt::Display for List {
             "({})",
             self.0
                 .iter()
-                .map(|i| i.to_string())
+                .map(ToString::to_string)
                 .fold(String::new(), |mut acc, i| {
                     acc.push_str(&i);
                     acc
@@ -255,7 +256,7 @@ impl core::fmt::Display for Set {
             "#{{{}}}",
             self.0
                 .iter()
-                .map(|i| i.to_string())
+                .map(ToString::to_string)
                 .fold(String::new(), |mut acc, i| {
                     acc.push_str(&i);
                     acc
@@ -348,7 +349,7 @@ impl Edn {
             Edn::Key(k) => k.replace(":", "").parse::<isize>().ok(),
             Edn::Str(s) => s.parse::<isize>().ok(),
             Edn::Int(i) => Some(i.to_owned() as isize),
-            Edn::UInt(u) if *u <= isize::MAX as usize => Some(u.to_owned() as isize),
+            Edn::UInt(u) if isize::try_from(*u).is_ok() => Some(u.to_owned() as isize),
             Edn::Double(d) => Some(d.to_owned().to_float().round() as isize),
             Edn::Rational(r) => Some(rational_to_double(&r).unwrap_or(0f64).round() as isize),
             _ => None,
@@ -362,7 +363,7 @@ impl Edn {
             Edn::Int(i) if i > &0 => Some(i.to_owned() as usize),
             Edn::UInt(i) => Some(i.to_owned()),
             Edn::Double(d) if d.to_float() > 0f64 => Some(d.to_owned().to_float().round() as usize),
-            Edn::Rational(r) if !r.contains("-") => {
+            Edn::Rational(r) if !r.contains('-') => {
                 Some(rational_to_double(&r).unwrap_or(0f64).round() as usize)
             }
             _ => None,
@@ -384,8 +385,7 @@ impl Edn {
     pub fn to_bool(&self) -> Option<bool> {
         match self {
             Edn::Bool(b) => Some(*b),
-            Edn::Str(s) => s.parse::<bool>().ok(),
-            Edn::Symbol(s) => s.parse::<bool>().ok(),
+            Edn::Str(s) | Edn::Symbol(s) => s.parse::<bool>().ok(),
             _ => None,
         }
     }
@@ -731,9 +731,7 @@ impl From<std::str::ParseBoolError> for Error {
 impl std::error::Error for Error {
     fn description(&self) -> &str {
         match self {
-            Error::ParseEdn(s) => &s,
-            Error::Deserialize(s) => &s,
-            Error::Iter(s) => &s,
+            Error::ParseEdn(s) | Error::Deserialize(s) | Error::Iter(s) => &s,
         }
     }
 
@@ -745,9 +743,7 @@ impl std::error::Error for Error {
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Error::ParseEdn(s) => write!(f, "{}", &s),
-            Error::Deserialize(s) => write!(f, "{}", &s),
-            Error::Iter(s) => write!(f, "{}", &s),
+            Error::ParseEdn(s) | Error::Deserialize(s) | Error::Iter(s) => write!(f, "{}", &s),
         }
     }
 }

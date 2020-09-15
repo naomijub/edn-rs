@@ -52,7 +52,7 @@ pub trait Deserialize: Sized {
     fn deserialize(edn: &Edn) -> Result<Self, Error>;
 }
 
-fn build_deserialize_error(edn: Edn, type_: &str) -> Error {
+fn build_deserialize_error(edn: &Edn, type_: &str) -> Error {
     Error::Deserialize(format!("couldn't convert `{}` into `{}`", edn, type_))
 }
 
@@ -64,7 +64,7 @@ macro_rules! impl_deserialize_float {
                 fn deserialize(edn: &Edn) -> Result<Self, Error> {
                     edn
                         .to_float()
-                        .ok_or_else(|| build_deserialize_error(edn.clone(), "float"))
+                        .ok_or_else(|| build_deserialize_error(&edn, "float"))
                         .map(|u| u as $name)
                 }
             }
@@ -82,7 +82,7 @@ macro_rules! impl_deserialize_int {
                 fn deserialize(edn: &Edn) -> Result<Self, Error> {
                     edn
                         .to_int()
-                        .ok_or_else(|| build_deserialize_error(edn.clone(), "int"))
+                        .ok_or_else(|| build_deserialize_error(&edn, "int"))
                         .map(|u| u as $name)
                 }
             }
@@ -100,7 +100,7 @@ macro_rules! impl_deserialize_uint {
                 fn deserialize(edn: &Edn) -> Result<Self, Error> {
                     edn
                         .to_uint()
-                        .ok_or_else(|| build_deserialize_error(edn.clone(), "uint"))
+                        .ok_or_else(|| build_deserialize_error(&edn, "uint"))
                         .map(|u| u as $name)
                 }
             }
@@ -113,7 +113,7 @@ impl_deserialize_uint!(usize, u8, u16, u32, u64);
 impl Deserialize for bool {
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
         edn.to_bool()
-            .ok_or_else(|| build_deserialize_error(edn.clone(), "bool"))
+            .ok_or_else(|| build_deserialize_error(&edn, "bool"))
     }
 }
 
@@ -132,7 +132,7 @@ impl Deserialize for String {
 impl Deserialize for char {
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
         edn.to_char()
-            .ok_or_else(|| build_deserialize_error(edn.clone(), "char"))
+            .ok_or_else(|| build_deserialize_error(&edn, "char"))
     }
 }
 
@@ -144,21 +144,21 @@ where
         match edn {
             Edn::Vector(_) => Ok(edn
                 .iter()
-                .ok_or(Error::Iter(format!("Could not create iter from {:?}", edn)))?
-                .map(from_edn)
+                .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
+                .map(|e| Deserialize::deserialize(e))
                 .collect::<Result<Vec<T>, Error>>()?),
             Edn::List(_) => Ok(edn
                 .iter()
-                .ok_or(Error::Iter(format!("Could not create iter from {:?}", edn)))?
-                .map(from_edn)
+                .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
+                .map(|e| Deserialize::deserialize(e))
                 .collect::<Result<Vec<T>, Error>>()?),
             Edn::Set(_) => Ok(edn
                 .iter()
-                .ok_or(Error::Iter(format!("Could not create iter from {:?}", edn)))?
-                .map(from_edn)
+                .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
+                .map(|e| Deserialize::deserialize(e))
                 .collect::<Result<Vec<T>, Error>>()?),
             _ => Err(build_deserialize_error(
-                edn.clone(),
+                &edn,
                 std::any::type_name::<Vec<T>>(),
             )),
         }

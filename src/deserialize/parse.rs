@@ -75,7 +75,7 @@ fn read_number(n: char, chars: &mut std::str::Chars) -> Result<Edn, Error> {
         n if n.parse::<usize>().is_ok() => Ok(Edn::UInt(n.parse::<usize>()?)),
         n if n.parse::<isize>().is_ok() => Ok(Edn::Int(n.parse::<isize>()?)),
         n if n.parse::<f64>().is_ok() => Ok(Edn::Double(n.parse::<f64>()?.into())),
-        n if n.contains("/") && n.split("/").all(|d| d.parse::<f64>().is_ok()) => {
+        n if n.contains('/') && n.split('/').all(|d| d.parse::<f64>().is_ok()) => {
             Ok(Edn::Rational(n))
         }
         _ => Err(Error::ParseEdn(format!("{} could not be parsed", number))),
@@ -85,8 +85,8 @@ fn read_number(n: char, chars: &mut std::str::Chars) -> Result<Edn, Error> {
 fn read_char(chars: &mut std::str::Chars) -> Result<Edn, Error> {
     let c = chars.next();
     c.ok_or(format!("{:?} could not be parsed", c))
-        .map(|c| Edn::Char(c))
-        .map_err(|e| Error::ParseEdn(e))
+        .map(Edn::Char)
+        .map_err(Error::ParseEdn)
 }
 
 fn read_bool_or_nil(c: char, chars: &mut std::str::Chars) -> Result<Edn, Error> {

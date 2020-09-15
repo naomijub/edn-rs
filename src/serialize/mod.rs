@@ -21,7 +21,7 @@ pub trait Serialize {
 #[doc(hidden)]
 pub fn field_names(id: Vec<String>) -> std::collections::HashMap<String, String> {
     let mut hashmap = std::collections::HashMap::new();
-    for i in id.into_iter() {
+    for i in id {
         let mut value = format!("{}", i)
             .replace("___", "/")
             .replace("__", ".")
@@ -52,7 +52,7 @@ where
     fn serialize(self) -> String {
         let aux_vec = self
             .into_iter()
-            .map(|i| i.serialize())
+            .map(Serialize::serialize)
             .collect::<Vec<String>>();
         let mut s = String::new();
         s.push_str("[");
@@ -69,7 +69,7 @@ where
     fn serialize(self) -> String {
         let aux_vec = self
             .into_iter()
-            .map(|i| i.serialize())
+            .map(Serialize::serialize)
             .collect::<Vec<String>>();
         let mut s = String::new();
         s.push_str("#{");
@@ -86,7 +86,7 @@ where
     fn serialize(self) -> String {
         let aux_vec = self
             .into_iter()
-            .map(|i| i.serialize())
+            .map(Serialize::serialize)
             .collect::<Vec<String>>();
         let mut s = String::new();
         s.push_str("#{");
@@ -103,7 +103,7 @@ where
     fn serialize(self) -> String {
         let aux_vec = self
             .into_iter()
-            .map(|i| i.serialize())
+            .map(Serialize::serialize)
             .collect::<Vec<String>>();
         let mut s = String::new();
         s.push_str("(");
@@ -146,7 +146,7 @@ where
             .map(|(k, v)| {
                 format!(
                     ":{} {}",
-                    k.to_string().replace(" ", "-").replace("_", "-"),
+                    k.replace(" ", "-").replace("_", "-"),
                     v.serialize()
                 )
             })
@@ -169,7 +169,7 @@ where
             .map(|(k, v)| {
                 format!(
                     ":{} {}",
-                    k.to_string().replace(" ", "-").replace("_", "-"),
+                    k.replace(" ", "-").replace("_", "-"),
                     v.serialize()
                 )
             })
