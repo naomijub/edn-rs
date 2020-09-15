@@ -1,4 +1,4 @@
-use edn_rs::{Deserialize, Edn, EdnError};
+use edn_rs::{map, Deserialize, Edn, EdnError, Map};
 
 #[derive(Debug, PartialEq)]
 struct Person {
@@ -16,8 +16,11 @@ impl Deserialize for Person {
 }
 
 fn person_ok() -> Result<(), EdnError> {
-    let edn_str = "  {:name \"rose\" :age 66  }  ";
-    let person: Person = edn_rs::from_str(edn_str)?;
+    let edn = Edn::Map(Map::new(map! {
+        ":name".to_string() => Edn::Str("rose".to_string()),
+        ":age".to_string() => Edn::UInt(66)
+    }));
+    let person: Person = edn_rs::from_edn(&edn)?;
 
     println!("{:?}", person);
     // Person { name: "rose", age: 66 }
@@ -33,8 +36,11 @@ fn person_ok() -> Result<(), EdnError> {
 }
 
 fn person_mistyped() -> Result<(), EdnError> {
-    let bad_edn_str = "{:name \"rose\" :age \"some text\" }";
-    let person: Result<Person, EdnError> = edn_rs::from_str(bad_edn_str);
+    let bad_edn = Edn::Map(Map::new(map! {
+        ":name".to_string() => Edn::Str("rose".to_string()),
+        ":age".to_string() => Edn::Str("some text".to_string())
+    }));
+    let person: Result<Person, EdnError> = edn_rs::from_edn(&bad_edn);
 
     assert_eq!(
         person,

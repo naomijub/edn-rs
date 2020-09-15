@@ -14,7 +14,7 @@ Current example usage in:
 `Cargo.toml`
 ```toml
 [dependencies]
-edn-rs = "0.14.2"
+edn-rs = "0.15.0"
 ```
 
 ## Simple time-only benchmarks of `edn-rs` agains Clojure Edn
@@ -154,8 +154,8 @@ struct Person {
 impl Deserialize for Person {
     fn deserialize(edn: &Edn) -> Result<Self, EdnError> {
         Ok(Self {
-            name: Deserialize::deserialize(&edn[":name"])?,
-            age: Deserialize::deserialize(&edn[":age"])?,
+            name: edn_rs::from_edn(&edn[":name"])?,
+            age: edn_rs::from_edn(&edn[":age"])?,
         })
     }
 }
@@ -189,8 +189,64 @@ fn main() -> Result<(), EdnError> {
 }
 ```
 
+**Deserializes Edn types into Rust Types**:
+
+> For now you have to implement the conversion yourself with the `Deserialize` trait. Soon you'll be able to have that implemented for you via `edn-derive` crate.
+ ```rust
+use edn_rs::{map, Deserialize, Edn, EdnError, Map};
+
+#[derive(Debug, PartialEq)]
+struct Person {
+    name: String,
+    age: usize,
+}
+
+impl Deserialize for Person {
+    fn deserialize(edn: &Edn) -> Result<Self, EdnError> {
+        Ok(Self {
+            name: edn_rs::from_edn(&edn[":name"])?,
+            age: edn_rs::from_edn(&edn[":age"])?,
+        })
+    }
+}
+
+fn main() -> Result<(), EdnError> {
+    let edn = Edn::Map(Map::new(map! {
+        ":name".to_string() => Edn::Str("rose".to_string()),
+        ":age".to_string() => Edn::UInt(66)
+    }));
+    let person: Person = edn_rs::from_edn(&edn)?;
+
+    println!("{:?}", person);
+    // Person { name: "rose", age: 66 }
+
+    assert_eq!(
+        person,
+        Person {
+            name: "rose".to_string(),
+            age: 66,
+        }
+    );
+
+    let bad_edn = Edn::Map(Map::new(map! {
+        ":name".to_string() => Edn::Str("rose".to_string()),
+        ":age".to_string() => Edn::Str("some text".to_string())
+    }));
+    let person: Result<Person, EdnError> = edn_rs::from_edn(&bad_edn);
+
+    assert_eq!(
+        person,
+        Err(EdnError::Deserialize(
+            "couldn't convert `\"some text\"` into `uint`".to_string()
+        ))
+    );
+
+    Ok(())
+}
+```
+
 **Emits EDN** format from a Json:
-* This function requires feature `json` to be activated. To enable this feature add to your `Cargo.toml`  dependencies the following line `edn-rs = { version = 0.14.2", features = ["json"] }`.
+* This function requires feature `json` to be activated. To enable this feature add to your `Cargo.toml`  dependencies the following line `edn-rs = { version = 0.15.0", features = ["json"] }`.
 
  ```rust
 use edn_rs::json_to_edn;
@@ -262,7 +318,7 @@ fn complex_ok() -> Result<(), EdnError> {
 
 ## Using `async/await` with Edn type
 
-Edn supports `futures` by using the feature `async`. To enable this feature add to your `Cargo.toml`  dependencies the following line `edn-rs = { version = 0.14.2", features = ["async"] }` and you can use futures as in the following example.
+Edn supports `futures` by using the feature `async`. To enable this feature add to your `Cargo.toml`  dependencies the following line `edn-rs = { version = 0.15.0", features = ["async"] }` and you can use futures as in the following example.
 
 ```rust
 use edn_rs::{edn, Double, Edn, Vector};
@@ -300,7 +356,7 @@ async fn foo() -> Edn {
     - [x] implement `futures::Future` trait to `Edn`
     - [x] `to_string()` for `Edn`.
     - [x] `to_debug()` for `Edn`.
-- [x] Parse EDN data [`from_str`](https://docs.rs/edn-rs/0.14.2/edn_rs/deserialize/fn.from_str.html):
+- [x] Parse EDN data [`from_str`](https://docs.rs/edn-rs/0.15.0/edn_rs/deserialize/fn.from_str.html):
     - [x] nil `""`
     - [x] String `"\"string\""`
     - [x] Numbers `"324352"`, `"3442.234"`, `"3/4"`
@@ -312,7 +368,7 @@ async fn foo() -> Edn {
     - [x] Map `"{:a 1 :b 2 }"`
     - [x] Inst `#inst \"yyyy-mm-ddTHH:MM:ss\"`
     - [x] Nested structures `"{:a \"2\" :b [true false] :c #{:A {:a :b} nil}}"`
-- [ ] Simple data structures in one another [`edn!`](https://docs.rs/edn-rs/0.14.2/edn_rs/macro.edn.html):
+- [ ] Simple data structures in one another [`edn!`](https://docs.rs/edn-rs/0.15.0/edn_rs/macro.edn.html):
     - [x] Vec in Vec `"[1 2 [:3 \"4\"]]"`
     - [ ] Set in _Vec_ `"[1 2 #{:3 \"4\"}]"`
     - [x] List in List `"(1 2 (:3 \"4\"))"`
@@ -337,7 +393,7 @@ Just add to your `Cargo.toml` the following:
 ```toml
 [dependencies]
 edn-derive = "<version>"
-edn-rs = "0.14.2"
+edn-rs = "0.15.0"
 ```
 
 ### Examples
