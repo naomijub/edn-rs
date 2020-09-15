@@ -10,9 +10,9 @@ struct Another {
 impl Deserialize for Another {
     fn deserialize(edn: &Edn) -> Result<Self, EdnError> {
         Ok(Self {
-            name: Deserialize::deserialize(&edn[":name"])?,
-            age: Deserialize::deserialize(&edn[":age"])?,
-            cool: Deserialize::deserialize(&edn[":cool"])?,
+            name: edn_rs::from_edn(&edn[":name"])?,
+            age: edn_rs::from_edn(&edn[":age"])?,
+            cool: edn_rs::from_edn(&edn[":cool"])?,
         })
     }
 }
@@ -26,8 +26,8 @@ struct Complex {
 impl Deserialize for Complex {
     fn deserialize(edn: &Edn) -> Result<Self, EdnError> {
         Ok(Self {
-            id: Deserialize::deserialize(&edn[":id"])?,
-            maybe: Deserialize::deserialize(&edn[":maybe"])?,
+            id: edn_rs::from_edn(&edn[":id"])?,
+            maybe: edn_rs::from_edn(&edn[":maybe"])?,
         })
     }
 }
