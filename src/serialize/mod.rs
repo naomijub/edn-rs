@@ -146,7 +146,7 @@ where
             .map(|(k, v)| {
                 format!(
                     ":{} {}",
-                    k.to_string().replace(" ", "-").replace("_", "-"),
+                    k.replace(" ", "-").replace("_", "-"),
                     v.serialize()
                 )
             })
@@ -169,7 +169,7 @@ where
             .map(|(k, v)| {
                 format!(
                     ":{} {}",
-                    k.to_string().replace(" ", "-").replace("_", "-"),
+                    k.replace(" ", "-").replace("_", "-"),
                     v.serialize()
                 )
             })
