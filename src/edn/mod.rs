@@ -1,6 +1,7 @@
 use crate::deserialize::parse::{self, MaybeReplaceExt};
 use std::cmp::{Ord, PartialOrd};
 use std::collections::{BTreeMap, BTreeSet};
+use std::convert::TryFrom;
 use utils::index::Index;
 
 #[cfg(feature = "async")]
@@ -348,7 +349,7 @@ impl Edn {
             Edn::Key(k) => k.replace(":", "").parse::<isize>().ok(),
             Edn::Str(s) => s.parse::<isize>().ok(),
             Edn::Int(i) => Some(i.to_owned() as isize),
-            Edn::UInt(u) if *u <= isize::MAX as usize => Some(u.to_owned() as isize),
+            Edn::UInt(u) if isize::try_from(*u).is_ok() => Some(u.to_owned() as isize),
             Edn::Double(d) => Some(d.to_owned().to_float().round() as isize),
             Edn::Rational(r) => Some(rational_to_double(&r).unwrap_or(0f64).round() as isize),
             _ => None,
