@@ -144,17 +144,17 @@ where
         match edn {
             Edn::Vector(_) => Ok(edn
                 .iter()
-                .ok_or(Error::Iter(format!("Could not create iter from {:?}", edn)))?
+                .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
                 .map(|e| Deserialize::deserialize(e))
                 .collect::<Result<Vec<T>, Error>>()?),
             Edn::List(_) => Ok(edn
                 .iter()
-                .ok_or(Error::Iter(format!("Could not create iter from {:?}", edn)))?
+                .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
                 .map(|e| Deserialize::deserialize(e))
                 .collect::<Result<Vec<T>, Error>>()?),
             Edn::Set(_) => Ok(edn
                 .iter()
-                .ok_or(Error::Iter(format!("Could not create iter from {:?}", edn)))?
+                .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
                 .map(|e| Deserialize::deserialize(e))
                 .collect::<Result<Vec<T>, Error>>()?),
             _ => Err(build_deserialize_error(
