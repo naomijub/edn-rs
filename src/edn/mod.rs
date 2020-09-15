@@ -384,8 +384,7 @@ impl Edn {
     pub fn to_bool(&self) -> Option<bool> {
         match self {
             Edn::Bool(b) => Some(*b),
-            Edn::Str(s) => s.parse::<bool>().ok(),
-            Edn::Symbol(s) => s.parse::<bool>().ok(),
+            Edn::Str(s) | Edn::Symbol(s) => s.parse::<bool>().ok(),
             _ => None,
         }
     }
@@ -731,9 +730,7 @@ impl From<std::str::ParseBoolError> for Error {
 impl std::error::Error for Error {
     fn description(&self) -> &str {
         match self {
-            Error::ParseEdn(s) => &s,
-            Error::Deserialize(s) => &s,
-            Error::Iter(s) => &s,
+            Error::ParseEdn(s) | Error::Deserialize(s) | Error::Iter(s) => &s,
         }
     }
 
@@ -745,9 +742,7 @@ impl std::error::Error for Error {
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Error::ParseEdn(s) => write!(f, "{}", &s),
-            Error::Deserialize(s) => write!(f, "{}", &s),
-            Error::Iter(s) => write!(f, "{}", &s),
+            Error::ParseEdn(s) | Error::Deserialize(s) | Error::Iter(s) => write!(f, "{}", &s),
         }
     }
 }
