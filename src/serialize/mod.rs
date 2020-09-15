@@ -21,7 +21,7 @@ pub trait Serialize {
 #[doc(hidden)]
 pub fn field_names(id: Vec<String>) -> std::collections::HashMap<String, String> {
     let mut hashmap = std::collections::HashMap::new();
-    for i in id.into_iter() {
+    for i in id {
         let mut value = format!("{}", i)
             .replace("___", "/")
             .replace("__", ".")
