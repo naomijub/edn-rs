@@ -164,7 +164,7 @@ pub struct Double(i64, u64);
 impl From<f64> for Double {
     fn from(f: f64) -> Double {
         let f_as_str = format!("{}", f);
-        let f_split = f_as_str.split(".").collect::<Vec<&str>>();
+        let f_split = f_as_str.split('.').collect::<Vec<&str>>();
         Double(
             f_split[0].parse::<i64>().unwrap(),
             f_split
@@ -362,7 +362,7 @@ impl Edn {
             Edn::Int(i) if i > &0 => Some(i.to_owned() as usize),
             Edn::UInt(i) => Some(i.to_owned()),
             Edn::Double(d) if d.to_float() > 0f64 => Some(d.to_owned().to_float().round() as usize),
-            Edn::Rational(r) if !r.contains("-") => {
+            Edn::Rational(r) if !r.contains('-') => {
                 Some(rational_to_double(&r).unwrap_or(0f64).round() as usize)
             }
             _ => None,

@@ -75,7 +75,7 @@ fn read_number(n: char, chars: &mut std::str::Chars) -> Result<Edn, Error> {
         n if n.parse::<usize>().is_ok() => Ok(Edn::UInt(n.parse::<usize>()?)),
         n if n.parse::<isize>().is_ok() => Ok(Edn::Int(n.parse::<isize>()?)),
         n if n.parse::<f64>().is_ok() => Ok(Edn::Double(n.parse::<f64>()?.into())),
-        n if n.contains("/") && n.split("/").all(|d| d.parse::<f64>().is_ok()) => {
+        n if n.contains('/') && n.split('/').all(|d| d.parse::<f64>().is_ok()) => {
             Ok(Edn::Rational(n))
         }
         _ => Err(Error::ParseEdn(format!("{} could not be parsed", number))),
