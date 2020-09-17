@@ -33,6 +33,7 @@ pub enum Edn {
     Char(char),
     Bool(bool),
     Inst(String),
+    NamespacedMap(String, Map),
     Nil,
     Empty,
 }
@@ -298,6 +299,7 @@ impl core::fmt::Display for Edn {
             Edn::Bool(b) => format!("{}", b),
             Edn::Char(c) => format!("{}", c),
             Edn::Inst(t) => format!("{}", t),
+            Edn::NamespacedMap(s, m) => format!(":{}{}", s, m),
             Edn::Nil => String::from("nil"),
             Edn::Empty => String::from(""),
         };
@@ -914,5 +916,20 @@ mod test {
         let edn_vec = edn.to_vec().unwrap();
 
         assert_eq!(edn_vec, expected);
+    }
+
+    #[test]
+    fn namespaced_map_to_string() {
+        assert_eq!(
+            ":abc{0 :val, 1 :value, }",
+            Edn::NamespacedMap(
+                "abc".to_string(),
+                Map::new(map! {
+                    "0".to_string() => Edn::Key(":val".to_string()),
+                    "1".to_string() => Edn::Key(":value".to_string())
+                })
+            )
+            .to_string()
+        );
     }
 }

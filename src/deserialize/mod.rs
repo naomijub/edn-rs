@@ -285,4 +285,20 @@ mod test {
             )]))
         )
     }
+
+    #[test]
+    fn namespaced_maps() {
+        let edn = ":abc{ 0 :val 1 :value}";
+
+        assert_eq!(
+            Edn::from_str(edn).unwrap(),
+            Edn::NamespacedMap(
+                "abc".to_string(),
+                Map::new(map! {
+                    "0".to_string() => Edn::Key(":val".to_string()),
+                    "1".to_string() => Edn::Key(":value".to_string())
+                })
+            )
+        );
+    }
 }
