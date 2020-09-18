@@ -119,17 +119,15 @@ impl Deserialize for bool {
 
 impl Deserialize for String {
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
-        // we need remove the first and the last chars because our Display implementation
-        // uses format!("{:?}", s) which adds `"` to the beginning and end of the string.
-        let mut s = edn.to_string();
-        if s.starts_with('\"') {
-            s.remove(0);
+        match edn {
+            Edn::Str(s) => {
+                let mut s = s.to_owned();
+                s.remove(0);
+                s.remove(s.len() - 1);
+                Ok(s)
+            }
+            e => Ok(e.to_string()),
         }
-        if s.ends_with('\"') {
-            s.remove(s.len() - 1);
-        }
-
-        Ok(s)
     }
 }
 
