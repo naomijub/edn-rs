@@ -9,7 +9,7 @@ async fn foo() -> impl Future<Output = Edn> + Send {
 async fn main() {
     let edn = foo().await.await;
 
-    println!("{}", edn.to_string());
+    assert_eq!("[1, 1.5, \"hello\", :key, ]", edn.to_string());
     assert_eq!(edn, edn!([1 1.5 "hello" :key]));
 
     assert_eq!(edn[1].to_float(), Some(1.5f64));

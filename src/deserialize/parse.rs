@@ -17,7 +17,7 @@ pub(crate) fn parse(c: Option<char>, chars: &mut std::str::Chars) -> Result<Edn,
 pub(crate) fn parse_edn(c: Option<char>, chars: &mut std::str::Chars) -> Result<Edn, Error> {
     match c {
         Some('\"') => Ok(read_str(chars)),
-        Some(':') => Ok(read_key(chars)),
+        Some(':') => read_key_or_nsmap(chars),
         Some('#') => Ok(read_inst(chars)?),
         Some('-') => Ok(read_number('-', chars)?),
         Some('\\') => Ok(read_char(chars)?),
@@ -30,11 +30,19 @@ pub(crate) fn parse_edn(c: Option<char>, chars: &mut std::str::Chars) -> Result<
     }
 }
 
-fn read_key(chars: &mut std::str::Chars) -> Edn {
-    let c_len = chars
+fn read_key_or_nsmap(chars: &mut std::str::Chars) -> Result<Edn, Error> {
+    let mut key_chars = chars
         .clone()
-        .take_while(|c| !c.is_whitespace() && c != &',' && c != &')' && c != &']' && c != &'}')
-        .count();
+        .take_while(|c| !c.is_whitespace() && c != &',' && c != &')' && c != &']' && c != &'}');
+    let c_len = key_chars.clone().count();
+
+    Ok(match key_chars.find(|c| c == &'{') {
+        Some(_) => read_namespaced_map(chars)?,
+        None => read_key(chars, c_len),
+    })
+}
+
+fn read_key(chars: &mut std::str::Chars, c_len: usize) -> Edn {
     let mut key = String::from(":");
     let key_chars = chars.take(c_len).collect::<String>();
     key.push_str(&key_chars);
@@ -169,6 +177,35 @@ fn read_set(chars: &mut std::str::Chars) -> Result<Edn, Error> {
             }
             Some(c) if c.is_whitespace() || c == ',' => (),
             err => return Err(Error::ParseEdn(format!("{:?} could not be parsed", err))),
+        }
+    }
+}
+
+fn read_namespaced_map(chars: &mut std::str::Chars) -> Result<Edn, Error> {
+    use std::collections::BTreeMap;
+    let mut res: BTreeMap<String, Edn> = BTreeMap::new();
+    let mut key: Option<Edn> = None;
+    let mut val: Option<Edn> = None;
+    let namespace = chars.take_while(|c| c != &'{').collect::<String>();
+
+    loop {
+        match chars.next() {
+            Some('}') => return Ok(Edn::NamespacedMap(namespace, Map::new(res))),
+            Some(c) if !c.is_whitespace() && c != ',' => {
+                if key.is_some() {
+                    val = Some(parse(Some(c), chars)?);
+                } else {
+                    key = Some(parse(Some(c), chars)?);
+                }
+            }
+            Some(c) if c.is_whitespace() || c == ',' => (),
+            err => return Err(Error::ParseEdn(format!("{:?} could not be parsed", err))),
+        }
+
+        if key.is_some() && val.is_some() {
+            res.insert(key.unwrap().to_string(), val.unwrap());
+            key = None;
+            val = None;
         }
     }
 }

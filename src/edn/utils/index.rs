@@ -118,6 +118,7 @@ impl<'a> fmt::Display for Type<'a> {
             Edn::Set(_) => formatter.write_str("set"),
             Edn::List(_) => formatter.write_str("list"),
             Edn::Map(_) => formatter.write_str("map"),
+            Edn::NamespacedMap(_, _) => formatter.write_str("namespaced-map"),
             Edn::Key(_) => formatter.write_str("key"),
             Edn::Char(_) => formatter.write_str("char"),
             Edn::Symbol(_) => formatter.write_str("symbol"),
