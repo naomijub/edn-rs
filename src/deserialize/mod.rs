@@ -119,17 +119,16 @@ impl Deserialize for bool {
 
 impl Deserialize for String {
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
-        // we need remove the first and the last chars because our Display implementation
-        // uses format!("{:?}", s) which adds `"` to the beginning and end of the string.
-        let mut s = edn.to_string();
-        if s.starts_with("\"") {
-            s.remove(0);
+        match edn {
+            Edn::Str(s) => {
+                if s.starts_with('\"') {
+                    Ok(s.replace('\"', ""))
+                } else {
+                    Ok(s.to_owned())
+                }
+            }
+            e => Ok(e.to_string()),
         }
-        if s.ends_with("\"") {
-            s.remove(s.len() - 1);
-        }
-
-        Ok(s)
     }
 }
 
@@ -304,5 +303,16 @@ mod test {
                 })
             )
         );
+    }
+
+    #[test]
+    fn uuid() {
+        let uuid = "#uuid \"af6d8699-f442-4dfd-8b26-37d80543186b\"";
+        let edn: Edn = Edn::from_str(uuid).unwrap();
+
+        assert_eq!(
+            edn,
+            Edn::Uuid("af6d8699-f442-4dfd-8b26-37d80543186b".to_string())
+        )
     }
 }

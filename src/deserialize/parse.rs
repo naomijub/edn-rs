@@ -18,7 +18,7 @@ pub(crate) fn parse_edn(c: Option<char>, chars: &mut std::str::Chars) -> Result<
     match c {
         Some('\"') => Ok(read_str(chars)),
         Some(':') => read_key_or_nsmap(chars),
-        Some('#') => Ok(read_inst(chars)?),
+        Some('#') => Ok(read_tagged(chars)?),
         Some('-') => Ok(read_number('-', chars)?),
         Some('\\') => Ok(read_char(chars)?),
         Some(b) if b == 't' || b == 'f' || b == 'n' => Ok(read_bool_or_nil(b, chars)?),
@@ -54,18 +54,22 @@ fn read_str(chars: &mut std::str::Chars) -> Edn {
     Edn::Str(string)
 }
 
-fn read_inst(chars: &mut std::str::Chars) -> Result<Edn, Error> {
-    let inst = chars
+fn read_tagged(chars: &mut std::str::Chars) -> Result<Edn, Error> {
+    let tag = chars
         .take_while(|c| c != &'\"' || (*c).is_numeric())
         .collect::<String>();
-    let time = chars.take_while(|c| c != &'\"').collect::<String>();
+    let content = chars.take_while(|c| c != &'\"').collect::<String>();
 
-    if inst.starts_with("inst") {
-        return Ok(Edn::Inst(time));
+    if tag.starts_with("inst ") {
+        return Ok(Edn::Inst(content));
+    }
+
+    if tag.starts_with("uuid ") {
+        return Ok(Edn::Uuid(content));
     }
     Err(Error::ParseEdn(format!(
         "{} {} could not be parsed",
-        inst, time
+        tag, content
     )))
 }
 

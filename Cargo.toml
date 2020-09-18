@@ -37,6 +37,10 @@ name = "parse"
 harness = false
 
 [[bench]]
+name = "tagged_parse"
+harness = false
+
+[[bench]]
 name = "serialize"
 harness = false
 

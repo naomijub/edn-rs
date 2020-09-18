@@ -33,6 +33,7 @@ pub enum Edn {
     Char(char),
     Bool(bool),
     Inst(String),
+    Uuid(String),
     NamespacedMap(String, Map),
     Nil,
     Empty,
@@ -302,6 +303,7 @@ impl core::fmt::Display for Edn {
             Edn::Bool(b) => format!("{}", b),
             Edn::Char(c) => format!("{}", c),
             Edn::Inst(t) => format!("{}", t),
+            Edn::Uuid(t) => format!("{}", t),
             Edn::NamespacedMap(s, m) => format!(":{}{}", s, m),
             Edn::Nil => String::from("nil"),
             Edn::Empty => String::from(""),
@@ -943,5 +945,14 @@ mod test {
         assert_eq!(inst.to_string(), "2020-09-18T01:16:25.909-00:00");
         let str_inst: String = crate::deserialize::from_edn(&inst).unwrap();
         assert_eq!(str_inst, "2020-09-18T01:16:25.909-00:00");
+    }
+
+    #[test]
+    fn uuid_to_string() {
+        let uuid = Edn::Uuid("af6d8699-f442-4dfd-8b26-37d80543186b".to_string());
+
+        assert_eq!(uuid.to_string(), "af6d8699-f442-4dfd-8b26-37d80543186b");
+        let str_uuid: String = crate::deserialize::from_edn(&uuid).unwrap();
+        assert_eq!(str_uuid, "af6d8699-f442-4dfd-8b26-37d80543186b");
     }
 }
