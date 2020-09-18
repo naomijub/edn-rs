@@ -227,6 +227,7 @@ impl core::fmt::Display for Vector {
                 .map(ToString::to_string)
                 .fold(String::new(), |mut acc, i| {
                     acc.push_str(&i);
+                    acc.push_str(", ");
                     acc
                 })
         )
@@ -243,6 +244,7 @@ impl core::fmt::Display for List {
                 .map(ToString::to_string)
                 .fold(String::new(), |mut acc, i| {
                     acc.push_str(&i);
+                    acc.push_str(", ");
                     acc
                 })
         )
@@ -259,6 +261,7 @@ impl core::fmt::Display for Set {
                 .map(ToString::to_string)
                 .fold(String::new(), |mut acc, i| {
                     acc.push_str(&i);
+                    acc.push_str(", ");
                     acc
                 })
         )
@@ -914,5 +917,14 @@ mod test {
         let edn_vec = edn.to_vec().unwrap();
 
         assert_eq!(edn_vec, expected);
+    }
+
+    #[test]
+    fn inst_to_string() {
+        let inst = Edn::Inst("2020-09-18T01:16:25.909-00:00".to_string());
+
+        assert_eq!(inst.to_string(), "2020-09-18T01:16:25.909-00:00");
+        let str_inst: String = crate::deserialize::from_edn(&inst).unwrap();
+        assert_eq!(str_inst, "2020-09-18T01:16:25.909-00:00");
     }
 }
