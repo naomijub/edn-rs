@@ -946,4 +946,13 @@ mod test {
         let str_inst: String = crate::deserialize::from_edn(&inst).unwrap();
         assert_eq!(str_inst, "2020-09-18T01:16:25.909-00:00");
     }
+
+    #[test]
+    fn uuid_to_string() {
+        let uuid = Edn::Uuid("af6d8699-f442-4dfd-8b26-37d80543186b".to_string());
+
+        assert_eq!(uuid.to_string(), "af6d8699-f442-4dfd-8b26-37d80543186b");
+        let str_uuid: String = crate::deserialize::from_edn(&uuid).unwrap();
+        assert_eq!(str_uuid, "af6d8699-f442-4dfd-8b26-37d80543186b");
+    }
 }
