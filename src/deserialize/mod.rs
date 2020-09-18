@@ -121,10 +121,11 @@ impl Deserialize for String {
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
         match edn {
             Edn::Str(s) => {
-                let mut s = s.to_owned();
-                s.remove(0);
-                s.remove(s.len() - 1);
-                Ok(s)
+                if s.starts_with('\"') {
+                    Ok(s.replace('\"', ""))
+                } else {
+                    Ok(s.to_owned())
+                }
             }
             e => Ok(e.to_string()),
         }
