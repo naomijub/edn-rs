@@ -305,4 +305,15 @@ mod test {
             )
         );
     }
+
+    #[test]
+    fn uuid() {
+        let uuid = "#uuid \"af6d8699-f442-4dfd-8b26-37d80543186b\"";
+        let edn: Edn = Edn::from_str(uuid).unwrap();
+
+        assert_eq!(
+            edn,
+            Edn::Uuid("af6d8699-f442-4dfd-8b26-37d80543186b".to_string())
+        )
+    }
 }
