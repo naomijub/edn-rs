@@ -228,6 +228,7 @@ impl core::fmt::Display for Vector {
                 .map(ToString::to_string)
                 .fold(String::new(), |mut acc, i| {
                     acc.push_str(&i);
+                    acc.push_str(", ");
                     acc
                 })
         )
@@ -244,6 +245,7 @@ impl core::fmt::Display for List {
                 .map(ToString::to_string)
                 .fold(String::new(), |mut acc, i| {
                     acc.push_str(&i);
+                    acc.push_str(", ");
                     acc
                 })
         )
@@ -260,6 +262,7 @@ impl core::fmt::Display for Set {
                 .map(ToString::to_string)
                 .fold(String::new(), |mut acc, i| {
                     acc.push_str(&i);
+                    acc.push_str(", ");
                     acc
                 })
         )
