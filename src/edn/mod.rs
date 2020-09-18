@@ -935,4 +935,13 @@ mod test {
             .to_string()
         );
     }
+
+    #[test]
+    fn inst_to_string() {
+        let inst = Edn::Inst("2020-09-18T01:16:25.909-00:00".to_string());
+
+        assert_eq!(inst.to_string(), "2020-09-18T01:16:25.909-00:00");
+        let str_inst: String = crate::deserialize::from_edn(&inst).unwrap();
+        assert_eq!(str_inst, "2020-09-18T01:16:25.909-00:00");
+    }
 }

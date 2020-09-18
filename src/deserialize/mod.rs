@@ -122,8 +122,12 @@ impl Deserialize for String {
         // we need remove the first and the last chars because our Display implementation
         // uses format!("{:?}", s) which adds `"` to the beginning and end of the string.
         let mut s = edn.to_string();
-        s.remove(0);
-        s.remove(s.len() - 1);
+        if s.starts_with("\"") {
+            s.remove(0);
+        }
+        if s.ends_with("\"") {
+            s.remove(s.len() - 1);
+        }
 
         Ok(s)
     }
