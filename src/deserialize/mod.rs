@@ -44,7 +44,7 @@ pub(crate) mod parse;
 /// assert_eq!(
 ///     person,
 ///     Err(EdnError::Deserialize(
-///         "couldn't convert `some text` into `uint`".to_string()
+///         "couldn't convert `\"some text\"` into `uint`".to_string()
 ///     ))
 /// );
 /// ```
