@@ -20,18 +20,20 @@ impl Deserialize for Another {
 #[derive(Debug, PartialEq)]
 struct Complex {
     list: Vec<Another>,
+    nothing: (),
 }
 
 impl Deserialize for Complex {
     fn deserialize(edn: &Edn) -> Result<Self, EdnError> {
         Ok(Self {
             list: edn_rs::from_edn(&edn[":list"])?,
+            nothing: edn_rs::from_edn(&edn[":nothing"])?,
         })
     }
 }
 
 fn complex_ok() -> Result<(), EdnError> {
-    let edn_str = "{ :list [{:name \"rose\" :age 66 :cool true}, {:name \"josh\" :age 33 :cool false}, {:name \"eva\" :age 296 :cool true}] }";
+    let edn_str = "{ :list [{:name \"rose\" :age 66 :cool true}, {:name \"josh\" :age 33 :cool false}, {:name \"eva\" :age 296 :cool true}] :nothing nil }";
     let complex: Complex = edn_rs::from_str(edn_str)?;
 
     println!("{:?}", complex);
@@ -57,6 +59,7 @@ fn complex_ok() -> Result<(), EdnError> {
                     cool: true,
                 },
             ],
+            nothing: (),
         }
     );
 
