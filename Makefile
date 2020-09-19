@@ -10,4 +10,7 @@ examples:
 	cargo test --example json_to_edn --features "json"
 	cargo run --example async --features "async"
 
-test: unit integration examples
+doc-tests:
+	cargo test --doc
+
+test: unit integration examples doc-tests
