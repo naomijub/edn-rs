@@ -190,12 +190,104 @@ where
 }
 
 /// `from_str` deserializes an EDN String into type `T` that implements `Deserialize`. Response is `Result<T, EdnError>`
+///
+/// ```
+/// use edn_rs::{Deserialize, Edn, EdnError};
+///
+/// #[derive(Debug, PartialEq)]
+/// struct Person {
+///     name: String,
+///     age: usize,
+/// }
+///
+/// impl Deserialize for Person {
+///     fn deserialize(edn: &Edn) -> Result<Self, EdnError> {
+///         Ok(Self {
+///             name: edn_rs::from_edn(&edn[":name"])?,
+///             age: edn_rs::from_edn(&edn[":age"])?,
+///         })
+///     }
+/// }
+///
+/// let edn_str = "  {:name \"rose\" :age 66  }  ";
+/// let person: Person = edn_rs::from_str(edn_str).unwrap();
+///
+/// println!("{:?}", person);
+/// // Person { name: "rose", age: 66 }
+///
+/// assert_eq!(
+///     person,
+///     Person {
+///         name: "rose".to_string(),
+///         age: 66,
+///     }
+/// );
+///
+/// let bad_edn_str = "{:name \"rose\" :age \"some text\" }";
+/// let person: Result<Person, EdnError> = edn_rs::from_str(bad_edn_str);
+///
+/// assert_eq!(
+///     person,
+///     Err(EdnError::Deserialize(
+///             "couldn't convert `\"some text\"` into `uint`".to_string()
+///     ))
+/// );
+/// ```
 pub fn from_str<T: Deserialize>(s: &str) -> Result<T, Error> {
     let edn = Edn::from_str(s)?;
     from_edn(&edn)
 }
 
 /// `from_edn` deserializes an EDN type into a `T` type that implements `Deserialize`. Response is `Result<T, EdnError>`
+///
+/// ```
+/// use edn_rs::{map, Deserialize, Edn, EdnError, Map};
+///
+/// #[derive(Debug, PartialEq)]
+/// struct Person {
+///     name: String,
+///     age: usize,
+/// }
+///
+/// impl Deserialize for Person {
+///     fn deserialize(edn: &Edn) -> Result<Self, EdnError> {
+///         Ok(Self {
+///             name: edn_rs::from_edn(&edn[":name"])?,
+///             age: edn_rs::from_edn(&edn[":age"])?,
+///         })
+///     }
+/// }
+///
+/// let edn = Edn::Map(Map::new(map! {
+///     ":name".to_string() => Edn::Str("rose".to_string()),
+///     ":age".to_string() => Edn::UInt(66)
+/// }));
+/// let person: Person = edn_rs::from_edn(&edn).unwrap();
+///
+/// println!("{:?}", person);
+/// // Person { name: "rose", age: 66 }
+///
+/// assert_eq!(
+///     person,
+///     Person {
+///         name: "rose".to_string(),
+///         age: 66,
+///     }
+/// );
+///
+/// let bad_edn = Edn::Map(Map::new(map! {
+///     ":name".to_string() => Edn::Str("rose".to_string()),
+///     ":age".to_string() => Edn::Str("some text".to_string())
+/// }));
+/// let person: Result<Person, EdnError> = edn_rs::from_edn(&bad_edn);
+///
+/// assert_eq!(
+///     person,
+///     Err(EdnError::Deserialize(
+///         "couldn't convert `\"some text\"` into `uint`".to_string()
+///     ))
+/// );
+/// ```
 pub fn from_edn<T: Deserialize>(edn: &Edn) -> Result<T, Error> {
     T::deserialize(edn)
 }
