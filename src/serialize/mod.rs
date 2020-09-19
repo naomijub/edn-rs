@@ -208,6 +208,12 @@ where
 // Primitive Types
 ser_primitives![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool];
 
+impl Serialize for () {
+    fn serialize(self) -> String {
+        "nil".to_string()
+    }
+}
+
 impl Serialize for String {
     fn serialize(self) -> String {
         format!("{:?}", self)
@@ -447,6 +453,11 @@ macro_rules! ser_struct {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn unit() {
+        assert_eq!(().serialize(), "nil");
+    }
 
     #[test]
     fn primitive_types() {

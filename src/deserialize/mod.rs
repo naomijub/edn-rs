@@ -56,6 +56,15 @@ fn build_deserialize_error(edn: &Edn, type_: &str) -> Error {
     Error::Deserialize(format!("couldn't convert `{}` into `{}`", edn, type_))
 }
 
+impl Deserialize for () {
+    fn deserialize(edn: &Edn) -> Result<Self, Error> {
+        match edn {
+            Edn::Nil => Ok(()),
+            _ => Err(build_deserialize_error(&edn, "unit")),
+        }
+    }
+}
+
 macro_rules! impl_deserialize_float {
     ( $( $name:ty ),+ ) => {
         $(
@@ -196,6 +205,14 @@ mod test {
     use super::*;
     use crate::edn::{List, Map, Set, Vector};
     use crate::{map, set};
+
+    #[test]
+    fn unit() {
+        let nil = "nil";
+        let unit: () = from_str(nil).unwrap();
+
+        assert_eq!(unit, ())
+    }
 
     #[test]
     fn from_str_simple_vec() {

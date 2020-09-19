@@ -17,6 +17,7 @@ ser_struct! {
         hashset: HashSet<i64>,
         tuples: (i32, bool, char),
         foo_vec: Vec<Foo>,
+        nothing: (),
     }
 }
 
@@ -28,6 +29,7 @@ fn serialize() -> String {
         hashset: hset! {3i64},
         tuples: (3i32, true, 'd'),
         foo_vec: vec![Foo { value: 2 }, Foo { value: 3 }],
+        nothing: (),
     };
 
     edn_rs::to_string(edn)
@@ -35,11 +37,11 @@ fn serialize() -> String {
 
 fn main() {
     println!("{}", serialize());
-    // { :btreemap {:this-is-a-key [\"with\", \"many\", \"keys\"]}, :btreeset #{3, 4, 5}, :hashmap {:this-is-a-key [\"with\", \"many\", \"keys\"]}, :hashset #{3}, :tuples (3, true, \\d), :foo-vec [{ :value 2, }, { :value 3, }], }
+    // { :btreemap {:this-is-a-key [\"with\", \"many\", \"keys\"]}, :btreeset #{3, 4, 5}, :hashmap {:this-is-a-key [\"with\", \"many\", \"keys\"]}, :hashset #{3}, :tuples (3, true, \\d), :foo-vec [{ :value 2, }, { :value 3, }], :nothing nil, }
 }
 
 #[test]
 fn test_serialize() {
-    let edn_str = "{ :btreemap {:this-is-a-key [\"with\", \"many\", \"keys\"]}, :btreeset #{3, 4, 5}, :hashmap {:this-is-a-key [\"with\", \"many\", \"keys\"]}, :hashset #{3}, :tuples (3, true, \\d), :foo-vec [{ :value 2, }, { :value 3, }], }";
+    let edn_str = "{ :btreemap {:this-is-a-key [\"with\", \"many\", \"keys\"]}, :btreeset #{3, 4, 5}, :hashmap {:this-is-a-key [\"with\", \"many\", \"keys\"]}, :hashset #{3}, :tuples (3, true, \\d), :foo-vec [{ :value 2, }, { :value 3, }], :nothing nil, }";
     assert_eq!(serialize(), edn_str)
 }
