@@ -424,4 +424,28 @@ mod test {
             Edn::Uuid("af6d8699-f442-4dfd-8b26-37d80543186b".to_string())
         )
     }
+
+    #[test]
+    fn deserialize_struct_with_vec() {
+        #[derive(PartialEq, Debug)]
+        struct Foo {
+            bar: Vec<Option<usize>>,
+        }
+        impl Deserialize for Foo {
+            fn deserialize(edn: &Edn) -> Result<Self, Error> {
+                Ok(Foo {
+                    bar: from_edn(&edn[":bar"])?,
+                })
+            }
+        }
+        let edn_foo = "{:bar [1 nil 3]}";
+        let foo: Foo = from_str(edn_foo).unwrap();
+
+        assert_eq!(
+            foo,
+            Foo {
+                bar: vec![Some(1), None, Some(3)],
+            }
+        );
+    }
 }
