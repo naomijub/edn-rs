@@ -448,4 +448,31 @@ mod test {
             }
         );
     }
+
+    #[test]
+    fn test_sym() {
+        let edn: Edn = Edn::from_str("(a b c your-hair!-is+_parsed?)").unwrap();
+        let expected = Edn::List(List::new(vec![
+            Edn::Symbol("a".to_string()),
+            Edn::Symbol("b".to_string()),
+            Edn::Symbol("c".to_string()),
+            Edn::Symbol("your-hair!-is+_parsed?".to_string()),
+        ]));
+        assert_eq!(edn, expected);
+    }
+
+    #[test]
+    fn test_more_sym() {
+        let edn: Edn = Edn::from_str("(a \\b \"c\" 5 #{hello world})").unwrap();
+        let expected = Edn::List(List::new(vec![
+            Edn::Symbol("a".to_string()),
+            Edn::Char('b'),
+            Edn::Str("c".to_string()),
+            Edn::UInt(5usize),
+            Edn::Set(Set::new(
+                set! { Edn::Symbol("hello".to_string()), Edn::Symbol("world".to_string()) },
+            )),
+        ]));
+        assert_eq!(edn, expected);
+    }
 }

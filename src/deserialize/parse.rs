@@ -23,10 +23,8 @@ pub(crate) fn parse_edn(c: Option<char>, chars: &mut std::str::Chars) -> Result<
         Some('\\') => Ok(read_char(chars)?),
         Some(b) if b == 't' || b == 'f' || b == 'n' => Ok(read_bool_or_nil(b, chars)?),
         Some(n) if n.is_numeric() => Ok(read_number(n, chars)?),
-        a => Err(Error::ParseEdn(format!(
-            "{:?} could not be parsed",
-            a.unwrap_or(' ').to_string()
-        ))),
+        Some(a) => Ok(read_symbol(a, chars)?),
+        None => Err(Error::ParseEdn("Edn could not be parsed".to_string())),
     }
 }
 
@@ -52,6 +50,23 @@ fn read_key(chars: &mut std::str::Chars, c_len: usize) -> Edn {
 fn read_str(chars: &mut std::str::Chars) -> Edn {
     let string = chars.take_while(|c| c != &'\"').collect::<String>();
     Edn::Str(string)
+}
+
+fn read_symbol(a: char, chars: &mut std::str::Chars) -> Result<Edn, Error> {
+    let c_len = chars
+        .clone()
+        .enumerate()
+        .take_while(|&(i, c)| i <= 200 && !c.is_whitespace() && c != ')' && c != '}' && c != ']')
+        .count();
+
+    if a.is_whitespace() {
+        return Err(Error::ParseEdn(format!("\"{}\" could not be parsed", a)));
+    }
+
+    let mut symbol = String::from(a);
+    let symbol_chars = chars.take(c_len).collect::<String>();
+    symbol.push_str(&symbol_chars);
+    Ok(Edn::Symbol(symbol))
 }
 
 fn read_tagged(chars: &mut std::str::Chars) -> Result<Edn, Error> {
