@@ -376,6 +376,7 @@ async fn foo() -> Edn {
     - [x] List in List `"(1 2 (:3 \"4\"))"`
     - [x] List in Set `"'#{1 2 (:3 \"4\")}"`
     - [x] Maps in general `"{:a 2 :b {:3 \"4\"}}"`, `"{:a 2 :b [:3 \"4\"]}"`
+    - [ ] Namespaced Maps `":abc{0 5 1 "hello"}`, unfortunately now this is misinterpreted as a keyword
 - [x] Multiple simple data structures in one another (Map and Set in a vector)
 - [x] Multi deepen data structures (Map in a Set in a List in a  Vec in a Vec)
 - [x] Navigate through Edn Data 

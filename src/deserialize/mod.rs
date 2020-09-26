@@ -475,4 +475,16 @@ mod test {
         ]));
         assert_eq!(edn, expected);
     }
+
+    #[test]
+    fn namespaced_maps_navigation() {
+        let edn_str = ":abc{ 0 :val 1 :value}";
+
+        let edn = Edn::from_str(edn_str).unwrap();
+
+        assert_eq!(edn[0], Edn::Key(":val".to_string()));
+        assert_eq!(edn["0"], Edn::Key(":val".to_string()));
+        assert_eq!(edn[1], Edn::Key(":value".to_string()));
+        assert_eq!(edn["1"], Edn::Key(":value".to_string()));
+    }
 }
