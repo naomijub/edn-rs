@@ -58,15 +58,15 @@ fn read_symbol(a: char, chars: &mut std::str::Chars) -> Result<Edn, Error> {
         .enumerate()
         .take_while(|&(i, c)| i <= 200 && !c.is_whitespace() && c != ')' && c != '}' && c != ']')
         .count();
-    match a {
-        ws if ws.is_whitespace() => Err(Error::ParseEdn(format!("\"{}\" could not be parsed", ws))),
-        c => {
-            let mut symbol = String::from(c);
-            let symbol_chars = chars.take(c_len).collect::<String>();
-            symbol.push_str(&symbol_chars);
-            Ok(Edn::Symbol(symbol))
-        }
+
+    if a.is_whitespace() {
+        return Err(Error::ParseEdn(format!("\"{}\" could not be parsed", a)));
     }
+
+    let mut symbol = String::from(a);
+    let symbol_chars = chars.take(c_len).collect::<String>();
+    symbol.push_str(&symbol_chars);
+    Ok(Edn::Symbol(symbol))
 }
 
 fn read_tagged(chars: &mut std::str::Chars) -> Result<Edn, Error> {
