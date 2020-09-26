@@ -23,7 +23,7 @@ pub(crate) fn parse_edn(c: Option<char>, chars: &mut std::str::Chars) -> Result<
         Some('\\') => Ok(read_char(chars)?),
         Some(b) if b == 't' || b == 'f' || b == 'n' => Ok(read_bool_or_nil(b, chars)?),
         Some(n) if n.is_numeric() => Ok(read_number(n, chars)?),
-        Some(a) => Ok(read_others(a, chars)?),
+        Some(a) => Ok(read_symbol(a, chars)?),
         None => Err(Error::ParseEdn("Edn could not be parsed".to_string())),
     }
 }
@@ -52,7 +52,7 @@ fn read_str(chars: &mut std::str::Chars) -> Edn {
     Edn::Str(string)
 }
 
-fn read_others(a: char, chars: &mut std::str::Chars) -> Result<Edn, Error> {
+fn read_symbol(a: char, chars: &mut std::str::Chars) -> Result<Edn, Error> {
     let c_len = chars
         .clone()
         .enumerate()
