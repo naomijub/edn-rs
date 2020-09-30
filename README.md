@@ -14,7 +14,7 @@ Current example usage in:
 `Cargo.toml`
 ```toml
 [dependencies]
-edn-rs = "0.16.5"
+edn-rs = "0.16.6"
 ```
 
 ## Simple time-only benchmarks of `edn-rs` agains Clojure Edn
@@ -248,7 +248,7 @@ fn main() -> Result<(), EdnError> {
 ```
 
 **Emits EDN** format from a Json:
-* This function requires feature `json` to be activated. To enable this feature add to your `Cargo.toml`  dependencies the following line `edn-rs = { version = 0.16.5", features = ["json"] }`.
+* This function requires feature `json` to be activated. To enable this feature add to your `Cargo.toml`  dependencies the following line `edn-rs = { version = 0.16.6", features = ["json"] }`.
 
  ```rust
 use edn_rs::json_to_edn;
@@ -320,7 +320,7 @@ fn complex_ok() -> Result<(), EdnError> {
 
 ## Using `async/await` with Edn type
 
-Edn supports `futures` by using the feature `async`. To enable this feature add to your `Cargo.toml`  dependencies the following line `edn-rs = { version = 0.16.5", features = ["async"] }` and you can use futures as in the following example.
+Edn supports `futures` by using the feature `async`. To enable this feature add to your `Cargo.toml`  dependencies the following line `edn-rs = { version = 0.16.6", features = ["async"] }` and you can use futures as in the following example.
 
 ```rust
 use edn_rs::{edn, Double, Edn, Vector};
@@ -358,7 +358,7 @@ async fn foo() -> Edn {
     - [x] implement `futures::Future` trait to `Edn`
     - [x] `to_string()` for `Edn`.
     - [x] `to_debug()` for `Edn`.
-- [x] Parse EDN data [`from_str`](https://docs.rs/edn-rs/0.16.5/edn_rs/deserialize/fn.from_str.html):
+- [x] Parse EDN data [`from_str`](https://docs.rs/edn-rs/0.16.6/edn_rs/deserialize/fn.from_str.html):
     - [x] nil `""`
     - [x] String `"\"string\""`
     - [x] Numbers `"324352"`, `"3442.234"`, `"3/4"`
@@ -370,7 +370,7 @@ async fn foo() -> Edn {
     - [x] Map `"{:a 1 :b 2 }"`
     - [x] Inst `#inst \"yyyy-mm-ddTHH:MM:ss\"`
     - [x] Nested structures `"{:a \"2\" :b [true false] :c #{:A {:a :b} nil}}"`
-- [ ] Simple data structures in one another [`edn!`](https://docs.rs/edn-rs/0.16.5/edn_rs/macro.edn.html):
+- [ ] Simple data structures in one another [`edn!`](https://docs.rs/edn-rs/0.16.6/edn_rs/macro.edn.html):
     - [x] Vec in Vec `"[1 2 [:3 \"4\"]]"`
     - [ ] Set in _Vec_ `"[1 2 #{:3 \"4\"}]"`
     - [x] List in List `"(1 2 (:3 \"4\"))"`
@@ -396,7 +396,7 @@ Just add to your `Cargo.toml` the following:
 ```toml
 [dependencies]
 edn-derive = "<version>"
-edn-rs = "0.16.5"
+edn-rs = "0.16.6"
 ```
 
 ### Examples
