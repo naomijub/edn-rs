@@ -184,7 +184,7 @@ mod tests {
 
     #[test]
     fn navigate_data_structure() {
-        let edn = edn!([ 1 1.2 3 {false :f nil 3/4}]);
+        let edn = edn!([1 1.2 3 {false :f nil 3/4}]);
 
         assert_eq!(edn[1], edn!(1.2));
         assert_eq!(edn[1], Edn::Double(1.2f64.into()));

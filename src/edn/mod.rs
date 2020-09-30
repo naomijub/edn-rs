@@ -667,6 +667,7 @@ impl Edn {
     pub fn map_iter(&self) -> Option<std::collections::btree_map::Iter<'_, String, Edn>> {
         match self {
             Edn::Map(m) => Some(m.0.iter()),
+            Edn::NamespacedMap(_, m) => Some(m.0.iter()),
             _ => None,
         }
     }
