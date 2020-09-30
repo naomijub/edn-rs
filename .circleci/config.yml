@@ -1,0 +1,53 @@
+version: 2
+
+jobs:
+  build:
+    docker:
+      - image: rust
+    steps:
+      - checkout
+      - run:
+          name: Build
+          command: cargo build --verbose
+
+  test-unit:
+    docker:
+      - image: rust
+    steps:
+      - checkout
+      - run:
+          name: Run unit tests
+          command: cargo test --locked  --no-fail-fast --lib
+
+  test-integration:
+    docker:
+      - image: rust
+    steps:
+      - checkout
+      - run:
+          name: Run integration tests
+          command: cargo test --test lib --no-fail-fast --features "json"
+
+  test-examples:
+    docker:
+      - image: rust
+    steps:
+      - checkout
+      - run:
+          name: Run example tests without features
+          command: cargo test --examples
+      - run:
+          name: Run example tests with json feature
+          command: cargo test --example json_to_edn --features "json"
+      - run:
+          name: Run example tests with async feature
+          command: cargo run --example async --features "async"
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+      - test-unit
+      - test-integration
+      - test-examples
