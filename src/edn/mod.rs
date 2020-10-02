@@ -63,6 +63,10 @@ impl Vector {
     pub fn empty() -> Vector {
         Vector(Vec::new())
     }
+
+    pub fn to_vec(self) -> Vec<Edn> {
+        self.0
+    }
 }
 
 #[cfg(feature = "async")]
@@ -90,6 +94,10 @@ impl List {
     pub fn empty() -> List {
         List(Vec::new())
     }
+
+    pub fn to_vec(self) -> Vec<Edn> {
+        self.0
+    }
 }
 
 #[cfg(feature = "async")]
@@ -116,6 +124,10 @@ impl Set {
 
     pub fn empty() -> Set {
         Set(BTreeSet::new())
+    }
+
+    pub fn to_set(self) -> BTreeSet<Edn> {
+        self.0
     }
 }
 

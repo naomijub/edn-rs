@@ -1,4 +1,4 @@
-use crate::edn::{rational_to_double, Edn};
+use crate::edn::{rational_to_double, Edn, Vector};
 
 pub(crate) fn to_json(edn: Edn) -> String {
     String::new()
@@ -6,11 +6,11 @@ pub(crate) fn to_json(edn: Edn) -> String {
 
 pub(crate) fn display_as_json(edn: &Edn) -> String {
     match edn {
-        Edn::Vector(_) => unimplemented!(),
-        Edn::Set(_) => unimplemented!(),
+        Edn::Vector(v) => vec_to_json(v.to_owned().to_vec()),
+        Edn::Set(s) => set_to_json_vec(s.to_owned().to_set()),
         Edn::Map(_) => unimplemented!(),
-        Edn::List(_) => unimplemented!(),
-        Edn::Key(key) => kebab_to_camel(key),
+        Edn::List(l) => vec_to_json(l.to_owned().to_vec()),
+        Edn::Key(key) => format!("{:?}", kebab_to_camel(key)),
         Edn::Symbol(s) => format!("{:?}", s),
         Edn::Str(s) => format!("{:?}", s),
         Edn::Int(n) => format!("{}", n),
@@ -34,7 +34,7 @@ fn kebab_to_camel(key: &str) -> String {
         .map(|(i, c)| {
             if c == ':' {
                 ' '
-            } else if i > 0 {
+            } else if i > 0 && i != 1 {
                 if &key[i - 1..i] == ":" || &key[i - 1..i] == "-" || &key[i - 1..i] == "." {
                     c.to_uppercase()
                         .collect::<String>()
@@ -54,10 +54,35 @@ fn kebab_to_camel(key: &str) -> String {
     keywrod.trim().replace("-", "").replace(".", "")
 }
 
+fn vec_to_json(vec: Vec<Edn>) -> String {
+    let vec_str = vec
+        .iter()
+        .map(|e| display_as_json(e))
+        .collect::<Vec<String>>()
+        .join(",");
+    let mut s = String::from("[");
+    s.push_str(&vec_str);
+    s.push_str("]");
+    s
+}
+
+fn set_to_json_vec(set: std::collections::BTreeSet<Edn>) -> String {
+    let set_str = set
+        .iter()
+        .map(|e| display_as_json(e))
+        .collect::<Vec<String>>()
+        .join(",");
+    let mut s = String::from("[");
+    s.push_str(&set_str);
+    s.push_str("]");
+    s
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::edn::Edn;
+    use crate::edn::{Edn, List, Set, Vector};
+    use crate::set;
 
     #[test]
     fn nil_and_empty_edns() {
@@ -130,6 +155,58 @@ mod test {
     fn keyword() {
         // Don't know what to do with '/'. maybe whitespace?
         let edn = Edn::Key(":hellow-world/again.id".to_string());
-        assert_eq!(display_as_json(&edn), "HellowWorld/againId".to_string());
+        assert_eq!(display_as_json(&edn), "\"hellowWorld/againId\"".to_string());
+    }
+
+    #[test]
+    fn vector() {
+        let edn = Edn::Vector(Vector::new(vec![
+            Edn::Bool(true),
+            Edn::Key(":b".to_string()),
+            Edn::Str("test".to_string()),
+            Edn::Char('4'),
+            Edn::Rational("-3/4".to_string()),
+            Edn::Double(4.5f64.into()),
+            Edn::UInt(4),
+        ]));
+        assert_eq!(
+            display_as_json(&edn),
+            "[true,\"b\",\"test\",\'4\',-0.75,4.5,4]".to_string()
+        );
+    }
+
+    #[test]
+    fn list() {
+        let edn = Edn::List(List::new(vec![
+            Edn::Bool(true),
+            Edn::Key(":b".to_string()),
+            Edn::Str("test".to_string()),
+            Edn::Char('4'),
+            Edn::Rational("-3/4".to_string()),
+            Edn::Double(4.5f64.into()),
+            Edn::UInt(4),
+        ]));
+        assert_eq!(
+            display_as_json(&edn),
+            "[true,\"b\",\"test\",\'4\',-0.75,4.5,4]".to_string()
+        );
+    }
+
+    #[test]
+    fn set_test() {
+        let edn = Edn::Set(Set::new(set![
+            Edn::Bool(true),
+            Edn::Key(":my-bestie".to_string()),
+            Edn::Str("test".to_string()),
+            Edn::Char('4'),
+            Edn::Rational("-3/4".to_string()),
+            Edn::Double(4.5f64.into()),
+            Edn::UInt(4),
+        ]));
+        let set = display_as_json(&edn);
+        assert!(set.contains("["));
+        assert!(set.contains("]"));
+        assert!(set.contains("-0.75"));
+        assert!(set.contains("\"myBestie\""));
     }
 }
