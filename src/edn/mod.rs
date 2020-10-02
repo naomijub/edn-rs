@@ -697,7 +697,7 @@ where
     format!("{:?}", i).parse::<f64>()
 }
 
-fn rational_to_double(r: &str) -> Option<f64> {
+pub(crate) fn rational_to_double(r: &str) -> Option<f64> {
     if r.split('/').count() == 2 {
         let vals = r
             .split('/')
