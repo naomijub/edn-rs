@@ -39,6 +39,9 @@ pub mod edn;
 ///```
 pub mod serialize;
 
+// #[cfg(feature = "json")]
+pub(crate) mod json;
+
 mod deserialize;
 /// `json_to_edn` receives a json string and parses its common key-values to a regular EDN format. It requires feature `json`
 /// tested examples are:

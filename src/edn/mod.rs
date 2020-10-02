@@ -671,6 +671,11 @@ impl Edn {
             _ => None,
         }
     }
+
+    // #[cfg(feature = "json")]
+    pub fn to_json(self) -> String {
+        crate::json::to_json(self)
+    }
 }
 
 impl std::str::FromStr for Edn {
