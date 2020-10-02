@@ -17,8 +17,8 @@ pub(crate) fn display_as_json(edn: &Edn) -> String {
         Edn::UInt(n) => format!("{}", n),
         Edn::Double(n) => format!("{}", n),
         Edn::Rational(r) => format!("{}", rational_to_double(r).unwrap()),
-        Edn::Char(_) => unimplemented!(),
-        Edn::Bool(_) => unimplemented!(),
+        Edn::Char(c) => format!("'{}'", c),
+        Edn::Bool(b) => format!("{}", b),
         Edn::Inst(_) => unimplemented!(),
         Edn::Uuid(_) => unimplemented!(),
         Edn::NamespacedMap(_, _) => unimplemented!(),
@@ -58,5 +58,17 @@ mod test {
             display_as_json(&Edn::Rational("-3/9".to_string())),
             String::from("-0.3333333333333333")
         );
+    }
+
+    #[test]
+    fn bools() {
+        assert_eq!(display_as_json(&Edn::Bool(true)), String::from("true"));
+        assert_eq!(display_as_json(&Edn::Bool(false)), String::from("false"));
+    }
+
+    #[test]
+    fn chars() {
+        assert_eq!(display_as_json(&Edn::Char('e')), String::from("'e'"));
+        assert_eq!(display_as_json(&Edn::Char('5')), String::from("'5'"));
     }
 }
