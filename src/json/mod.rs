@@ -1,8 +1,4 @@
-use crate::edn::{rational_to_double, Edn, Vector};
-
-pub(crate) fn to_json(edn: Edn) -> String {
-    String::new()
-}
+use crate::edn::{rational_to_double, Edn};
 
 pub(crate) fn display_as_json(edn: &Edn) -> String {
     match edn {

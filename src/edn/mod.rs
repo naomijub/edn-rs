@@ -688,9 +688,9 @@ impl Edn {
         }
     }
 
-    // #[cfg(feature = "json")]
-    pub fn to_json(self) -> String {
-        crate::json::to_json(self)
+    #[cfg(feature = "json")]
+    pub fn to_json(&self) -> String {
+        crate::json::display_as_json(self)
     }
 }
 

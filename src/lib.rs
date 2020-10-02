@@ -39,7 +39,7 @@ pub mod edn;
 ///```
 pub mod serialize;
 
-// #[cfg(feature = "json")]
+#[cfg(feature = "json")]
 pub(crate) mod json;
 
 mod deserialize;
