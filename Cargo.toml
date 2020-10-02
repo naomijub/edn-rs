@@ -1,6 +1,6 @@
 [package]
 name = "edn-rs"
-version = "0.16.6"
+version = "0.16.7"
 authors = ["Julia Naomi <jnboeira@outlook.com>",  "Otavio Pace <otaviopp8@gmail.com>"]
 description = "Crate to parse and emit EDN"
 readme = "README.md"
@@ -19,13 +19,13 @@ json = ["regex"]
 [dependencies]
 regex = {version = "1", optional = true }
 futures = {version = "0.3.5", optional = true }
-edn-derive = "0.5.0"
 
 [dev-dependencies]
 tokio = {version = "0.2.22", features = ["macros"] }
 criterion = "0.3"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+edn-derive = "0.5.0"
 
 [dev-dependencies.cargo-husky]
 version = "1"
@@ -50,4 +50,8 @@ required-features = ["async"]
 
 [[example]]
 name = "json_to_edn"
+required-features = ["json"]
+
+[[example]]
+name = "edn_to_json"
 required-features = ["json"]
