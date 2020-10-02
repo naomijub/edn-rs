@@ -283,6 +283,38 @@ fn main() {
 }
  ```
 
+ **Emits a JSON** from type `edn_rs::Edn`.
+ * The associated emthod is `to_json(&self)` and it requires feature `json` to be activated. To enable this feature add to your `Cargo.toml`  dependencies the following line `edn-rs = { version = 0.16.7", features = ["json"] }`.
+ 
+```rust
+use std::str::FromStr;
+fn complex_json() {
+    let edn = "{ 
+        :people-list [ 
+            { :first-name \"otavio\", :age 22 }, 
+            { :first-name \"Julia\", :age 32.0 } 
+        ], 
+        :country-or-origin \"Brazil\", 
+        :queerentener true, 
+        :brain nil }";
+    let parsed_edn : edn_rs::Edn = edn_rs::Edn::from_str(edn).unwrap();
+    let actual_json = parsed_edn.to_json();
+    let expected = String::from(
+        "{\"brain\": null, 
+          \"countryOrOrigin\": \"Brazil\", 
+          \"peopleList\": [
+              {\"age\": 22, \"firstName\": \"otavio\"}, 
+              {\"age\": 32.0, \"firstName\": \"Julia\"}
+            ], 
+          \"queerentener\": true}",
+    );
+    assert_eq!(
+        actual_json,
+        expected
+    );
+}
+```
+
 **to_string/to_debug**
 
 `to_debug` emits a Debug version of `Edn` type.
