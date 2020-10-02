@@ -14,20 +14,19 @@ pub mod edn;
 ///
 /// Example:
 /// ```rust
-/// #[macro_use] extern crate edn_rs;
 ///
 /// use std::collections::{BTreeMap, BTreeSet};
-/// use crate::edn_rs::Serialize;
+/// use edn_derive::Serialize;
+/// use edn_rs::{map, set};
+///
+/// #[derive(Debug, Serialize)]
+/// struct Edn {
+///     map: BTreeMap<String, Vec<String>>,
+///     set: BTreeSet<i64>,
+///     tuples: (i32, bool, char),
+/// }
 ///
 /// fn main() {
-///     ser_struct!{
-///         #[derive(Debug)]
-///         struct Edn {
-///             map: BTreeMap<String, Vec<String>>,
-///             set: BTreeSet<i64>,
-///             tuples: (i32, bool, char),
-///         }
-///     };
 ///     let edn = Edn {
 ///         map: map!{"this is a key".to_string() => vec!["with".to_string(), "many".to_string(), "keys".to_string()]},
 ///         set: set!{3i64, 4i64, 5i64},
@@ -82,25 +81,23 @@ pub use serialize::Serialize;
 
 /// Function for converting Rust types into EDN Strings.
 /// For it to work, the type must implement the Serialize trait.
-/// For now you can do it via `ser_struct!` macro, in the future
-/// it will be via `#[derive(Serialize)]` from `edn-derive` crate.
+/// It is possible to implement the `Serialize` from `edn-derive` crate.
 ///
 /// Example:
 /// ```rust
-/// #[macro_use] extern crate edn_rs;
-///
 /// use std::collections::{BTreeMap, BTreeSet};
-/// use crate::edn_rs::Serialize;
+/// use edn_derive::Serialize;
+/// use edn_rs::{map, set};
+///
+/// #[derive(Debug, Serialize)]
+/// struct Edn {
+///     map: BTreeMap<String, Vec<String>>,
+///     set: BTreeSet<i64>,
+///     tuples: (i32, bool, char),
+/// }
 ///
 /// fn main() {
-///     ser_struct!{
-///         #[derive(Debug)]
-///         struct Edn {
-///             map: BTreeMap<String, Vec<String>>,
-///             set: BTreeSet<i64>,
-///             tuples: (i32, bool, char),
-///         }
-///     };
+///
 ///     let edn = Edn {
 ///         map: map!{"this is a key".to_string() => vec!["with".to_string(), "many".to_string(), "keys".to_string()]},
 ///         set: set!{3i64, 4i64, 5i64},
