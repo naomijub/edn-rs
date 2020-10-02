@@ -59,7 +59,7 @@ fn vec_to_json(vec: Vec<Edn>) -> String {
         .iter()
         .map(|e| display_as_json(e))
         .collect::<Vec<String>>()
-        .join(",");
+        .join(", ");
     let mut s = String::from("[");
     s.push_str(&vec_str);
     s.push_str("]");
@@ -71,7 +71,7 @@ fn set_to_json_vec(set: std::collections::BTreeSet<Edn>) -> String {
         .iter()
         .map(|e| display_as_json(e))
         .collect::<Vec<String>>()
-        .join(",");
+        .join(", ");
     let mut s = String::from("[");
     s.push_str(&set_str);
     s.push_str("]");
@@ -171,7 +171,7 @@ mod test {
         ]));
         assert_eq!(
             display_as_json(&edn),
-            "[true,\"b\",\"test\",\'4\',-0.75,4.5,4]".to_string()
+            "[true, \"b\", \"test\", \'4\', -0.75, 4.5, 4]".to_string()
         );
     }
 
@@ -188,7 +188,7 @@ mod test {
         ]));
         assert_eq!(
             display_as_json(&edn),
-            "[true,\"b\",\"test\",\'4\',-0.75,4.5,4]".to_string()
+            "[true, \"b\", \"test\", \'4\', -0.75, 4.5, 4]".to_string()
         );
     }
 
