@@ -156,6 +156,10 @@ impl Map {
     pub fn empty() -> Map {
         Map(BTreeMap::new())
     }
+
+    pub fn to_map(self) -> BTreeMap<String, Edn> {
+        self.0
+    }
 }
 
 #[cfg(feature = "async")]

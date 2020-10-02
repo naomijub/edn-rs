@@ -8,7 +8,7 @@ pub(crate) fn display_as_json(edn: &Edn) -> String {
     match edn {
         Edn::Vector(v) => vec_to_json(v.to_owned().to_vec()),
         Edn::Set(s) => set_to_json_vec(s.to_owned().to_set()),
-        Edn::Map(_) => unimplemented!(),
+        Edn::Map(map) => map_to_json(map.to_owned().to_map()),
         Edn::List(l) => vec_to_json(l.to_owned().to_vec()),
         Edn::Key(key) => format!("{:?}", kebab_to_camel(key)),
         Edn::Symbol(s) => format!("{:?}", s),
@@ -78,11 +78,32 @@ fn set_to_json_vec(set: std::collections::BTreeSet<Edn>) -> String {
     s
 }
 
+fn map_to_json(map: std::collections::BTreeMap<String, Edn>) -> String {
+    let map_str = map
+        .iter()
+        .map(|(k, e)| {
+            let key = if k.starts_with(':') {
+                kebab_to_camel(k)
+            } else {
+                k.to_string()
+            };
+            let edn = display_as_json(e);
+
+            format!("{:?}: {}", key, edn)
+        })
+        .collect::<Vec<String>>()
+        .join(", ");
+    let mut s = String::from("{");
+    s.push_str(&map_str);
+    s.push_str("}");
+    s
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::edn::{Edn, List, Set, Vector};
-    use crate::set;
+    use crate::edn::{Edn, List, Map, Set, Vector};
+    use crate::{map, set};
 
     #[test]
     fn nil_and_empty_edns() {
@@ -208,5 +229,55 @@ mod test {
         assert!(set.contains("]"));
         assert!(set.contains("-0.75"));
         assert!(set.contains("\"myBestie\""));
+    }
+
+    #[test]
+    fn simple_map() {
+        let map = Edn::Map(Map::new(map! {
+            String::from("1.2") => Edn::Bool(false),
+            String::from(":belo-monte") => Edn::Rational(String::from("3/4")),
+            String::from("true") => Edn::Char('d')
+        }));
+
+        assert_eq!(
+            display_as_json(&map),
+            "{\"1.2\": false, \"beloMonte\": 0.75, \"true\": \'d\'}"
+        )
+    }
+
+    #[test]
+    fn complex_structure() {
+        let edn = Edn::Vector(Vector::new(vec![
+            Edn::Int(1),
+            Edn::Double(1.2.into()),
+            Edn::UInt(3),
+            Edn::List(List::new(vec![
+                Edn::Bool(false),
+                Edn::Key(":f".to_string()),
+                Edn::Nil,
+                Edn::Rational("3/4".to_string()),
+                Edn::Set(Set::new(set! {
+                    Edn::Rational("3/4".to_string())
+                })),
+            ])),
+            Edn::Map(Map::new(map![
+                    String::from("false") => Edn::Key(":f".to_string()),
+                    String::from("nil") => Edn::Rational("3/4".to_string()),
+                    String::from(":my-crazy-map") => Edn::Map(Map::new(map![
+                        String::from("false") => Edn::Map(
+                            Map::new( map![
+                                String::from(":f") => Edn::Key(String::from(":b"))
+                            ])),
+                        String::from("nil") => Edn::Vector(
+                            Vector::new( vec![
+                                Edn::Rational("3/4".to_string()),
+                                Edn::Int(1isize)
+                            ]))
+                ]))
+            ])),
+        ]));
+
+        assert_eq!(display_as_json(&edn),
+            "[1, 1.2, 3, [false, \"f\", null, 0.75, [0.75]], {\"myCrazyMap\": {\"false\": {\"f\": \"b\"}, \"nil\": [0.75, 1]}, \"false\": \"f\", \"nil\": 0.75}]");
     }
 }
