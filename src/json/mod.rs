@@ -10,8 +10,8 @@ pub(crate) fn display_as_json(edn: &Edn) -> String {
         Edn::Set(_) => unimplemented!(),
         Edn::Map(_) => unimplemented!(),
         Edn::List(_) => unimplemented!(),
-        Edn::Key(_) => unimplemented!(),
-        Edn::Symbol(_) => unimplemented!(),
+        Edn::Key(key) => kebab_to_camel(key),
+        Edn::Symbol(s) => format!("{:?}", s),
         Edn::Str(s) => format!("{:?}", s),
         Edn::Int(n) => format!("{}", n),
         Edn::UInt(n) => format!("{}", n),
@@ -25,6 +25,33 @@ pub(crate) fn display_as_json(edn: &Edn) -> String {
         Edn::Nil => String::from("null"),
         Edn::Empty => String::from(""),
     }
+}
+
+fn kebab_to_camel(key: &str) -> String {
+    let keywrod = key
+        .chars()
+        .enumerate()
+        .map(|(i, c)| {
+            if c == ':' {
+                ' '
+            } else if i > 0 {
+                if &key[i - 1..i] == ":" || &key[i - 1..i] == "-" || &key[i - 1..i] == "." {
+                    c.to_uppercase()
+                        .collect::<String>()
+                        .chars()
+                        .take(1)
+                        .next()
+                        .unwrap()
+                } else {
+                    c
+                }
+            } else {
+                c
+            }
+        })
+        .collect::<String>();
+
+    keywrod.trim().replace("-", "").replace(".", "")
 }
 
 #[cfg(test)]
@@ -91,5 +118,18 @@ mod test {
     fn strings() {
         let edn = Edn::Str("Hello World".to_string());
         assert_eq!(display_as_json(&edn), "\"Hello World\"".to_string());
+    }
+
+    #[test]
+    fn symbols() {
+        let edn = Edn::Symbol("Hello World".to_string());
+        assert_eq!(display_as_json(&edn), "\"Hello World\"".to_string());
+    }
+
+    #[test]
+    fn keyword() {
+        // Don't know what to do with '/'. maybe whitespace?
+        let edn = Edn::Key(":hellow-world/again.id".to_string());
+        assert_eq!(display_as_json(&edn), "HellowWorld/againId".to_string());
     }
 }
