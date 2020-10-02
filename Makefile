@@ -2,7 +2,7 @@ integration:
 	cargo test --test lib --no-fail-fast --features "json"
 
 unit:
-	cargo test  --no-fail-fast --lib
+	cargo test  --no-fail-fast --lib --features "json"
 
 .PHONY: examples
 examples:
