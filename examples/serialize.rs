@@ -1,24 +1,21 @@
-use edn_rs::{hmap, hset, map, ser_struct, set, Serialize};
+use edn_derive::Serialize;
+use edn_rs::{hmap, hset, map, set};
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 
-ser_struct! {
-#[derive(Debug, Clone)]
-    struct Foo {
-        value: usize,
-    }
+#[derive(Debug, Clone, Serialize)]
+struct Foo {
+    value: usize,
 }
 
-ser_struct! {
-    #[derive(Debug, Clone)]
-    struct Edn {
-        btreemap: BTreeMap<String, Vec<String>>,
-        btreeset: BTreeSet<i64>,
-        hashmap: HashMap<String, Vec<String>>,
-        hashset: HashSet<i64>,
-        tuples: (i32, bool, char),
-        foo_vec: Vec<Foo>,
-        nothing: (),
-    }
+#[derive(Debug, Clone, Serialize)]
+struct Edn {
+    btreemap: BTreeMap<String, Vec<String>>,
+    btreeset: BTreeSet<i64>,
+    hashmap: HashMap<String, Vec<String>>,
+    hashset: HashSet<i64>,
+    tuples: (i32, bool, char),
+    foo_vec: Vec<Foo>,
+    nothing: (),
 }
 
 fn serialize() -> String {

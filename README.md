@@ -108,26 +108,27 @@ fn main() {
 }
 ```
 
-**Serializes Rust Types into EDN with `ser_struct!`** or use `edn-derive::Serialize`
+**Serializes Rust Types into EDN with `edn-derive::Serialize`**
  ```rust
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use edn_rs::{
-    ser_struct, map, set, hmap, hset
+    map, set, hmap, hset
 };
+use edn_derive::Serialize;
+
+#[derive(Debug, Clone, Serialize)]
+struct ExampleEdn {
+    btreemap: BTreeMap<String, Vec<String>>,
+    btreeset: BTreeSet<i64>,
+    hashmap: HashMap<String, Vec<String>>,
+    hashset: HashSet<i64>,
+    tuples: (i32, bool, char),
+    nothing: (),
+}
 
 fn main() {
-    ser_struct!{
-        #[derive(Debug, Clone)]
-        struct Edn {
-            btreemap: BTreeMap<String, Vec<String>>,
-            btreeset: BTreeSet<i64>,
-            hashmap: HashMap<String, Vec<String>>,
-            hashset: HashSet<i64>,
-            tuples: (i32, bool, char),
-            nothing: (),
-        }
-    };
-    let edn = Edn {
+
+    let edn = ExampleEdn {
         btreemap: map!{"this is a key".to_string() => vec!["with".to_string(), "many".to_string(), "keys".to_string()]},
         btreeset: set!{3i64, 4i64, 5i64},
         hashmap: hmap!{"this is a key".to_string() => vec!["with".to_string(), "many".to_string(), "keys".to_string()]},
