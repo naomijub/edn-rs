@@ -112,12 +112,12 @@ fn main() {
  ```rust
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use edn_rs::{
-     map, set, hmap, hset
+    map, set, hmap, hset
 };
 use edn_derive::Serialize;
 
 #[derive(Debug, Clone, Serialize)]
-struct Edn {
+struct ExampleEdn {
     btreemap: BTreeMap<String, Vec<String>>,
     btreeset: BTreeSet<i64>,
     hashmap: HashMap<String, Vec<String>>,
@@ -127,8 +127,7 @@ struct Edn {
 }
 
 fn main() {
-    
-    let edn = Edn {
+    let edn = ExampleEdn {
         btreemap: map!{"this is a key".to_string() => vec!["with".to_string(), "many".to_string(), "keys".to_string()]},
         btreeset: set!{3i64, 4i64, 5i64},
         hashmap: hmap!{"this is a key".to_string() => vec!["with".to_string(), "many".to_string(), "keys".to_string()]},

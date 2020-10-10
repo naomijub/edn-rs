@@ -14,20 +14,18 @@ pub mod edn;
 ///
 /// Example:
 /// ```rust
-///
 /// use std::collections::{BTreeMap, BTreeSet};
 /// use edn_derive::Serialize;
-/// use edn_rs::{map, set};
+/// use edn_rs::{set, map, edn::Edn};
 ///
-/// #[derive(Debug, Serialize)]
-/// struct Edn {
+/// #[derive(Serialize)]
+/// struct ExampleEdn {
 ///     map: BTreeMap<String, Vec<String>>,
 ///     set: BTreeSet<i64>,
 ///     tuples: (i32, bool, char),
 /// }
-///
 /// fn main() {
-///     let edn = Edn {
+///     let edn = ExampleEdn {
 ///         map: map!{"this is a key".to_string() => vec!["with".to_string(), "many".to_string(), "keys".to_string()]},
 ///         set: set!{3i64, 4i64, 5i64},
 ///         tuples: (3i32, true, 'd')
@@ -81,24 +79,23 @@ pub use serialize::Serialize;
 
 /// Function for converting Rust types into EDN Strings.
 /// For it to work, the type must implement the Serialize trait.
-/// It is possible to implement the `Serialize` from `edn-derive` crate.
+/// Use `#[derive(Serialize)]` from `edn-derive` crate.
 ///
 /// Example:
 /// ```rust
 /// use std::collections::{BTreeMap, BTreeSet};
 /// use edn_derive::Serialize;
-/// use edn_rs::{map, set};
+/// use edn_rs::{set, map, edn::Edn};
 ///
 /// #[derive(Debug, Serialize)]
-/// struct Edn {
+/// struct ExampleEdn {
 ///     map: BTreeMap<String, Vec<String>>,
 ///     set: BTreeSet<i64>,
 ///     tuples: (i32, bool, char),
 /// }
 ///
 /// fn main() {
-///
-///     let edn = Edn {
+///     let edn = ExampleEdn {
 ///         map: map!{"this is a key".to_string() => vec!["with".to_string(), "many".to_string(), "keys".to_string()]},
 ///         set: set!{3i64, 4i64, 5i64},
 ///         tuples: (3i32, true, 'd')

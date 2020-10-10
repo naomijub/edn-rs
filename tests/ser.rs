@@ -1,13 +1,12 @@
 #[cfg(test)]
 mod tests {
     use edn_derive::Serialize;
-    use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
-
     use edn_rs::{hmap, hset, map, set};
+    use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 
     #[test]
     fn serializes_a_complex_structure() {
-        #[derive(Debug, Clone, Serialize)]
+        #[derive(Serialize, Debug, Clone)]
         struct Example {
             btreemap: BTreeMap<String, Vec<String>>,
             btreeset: BTreeSet<i64>,
@@ -29,18 +28,18 @@ mod tests {
 
     #[test]
     fn serializes_nested_structures() {
-        #[derive(Debug, Clone, Serialize)]
+        #[derive(Serialize, Debug, Clone)]
         struct Foo {
             value: bool,
         }
 
-        #[derive(Debug, Clone, Serialize)]
+        #[derive(Serialize, Debug, Clone)]
         struct Bar {
             value: String,
             foo_vec: Vec<Foo>,
         }
 
-        #[derive(Debug, Clone, Serialize)]
+        #[derive(Serialize, Debug, Clone)]
         struct FooBar {
             value: f64,
             bar: Bar,
@@ -55,5 +54,26 @@ mod tests {
         };
 
         assert_eq!(edn_rs::to_string(edn), "{ :value 3.4, :bar { :value \"data\", :foo-vec [{ :value false, }, { :value true, }], }, }");
+    }
+}
+
+#[test]
+fn pub_struct() {
+    let edn = helper::Edn {
+        val: 6i32,
+        tuples: (3i32, true, 'd'),
+    };
+
+    assert_eq!(edn.val, 6i32);
+    assert_eq!(edn.tuples, (3i32, true, 'd'));
+}
+
+mod helper {
+    use edn_derive::Serialize;
+
+    #[derive(Serialize, Debug, Clone)]
+    pub struct Edn {
+        pub val: i32,
+        pub tuples: (i32, bool, char),
     }
 }
