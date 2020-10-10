@@ -17,7 +17,7 @@ jobs:
       - checkout
       - run:
           name: Run unit tests
-          command: cargo test  --no-fail-fast --lib
+          command: cargo test  --no-fail-fast --lib --features "json"
 
   test-integration:
     docker:

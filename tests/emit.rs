@@ -90,4 +90,43 @@ mod tests {
         let a: Result<A, EdnError> = edn_rs::from_str("{ :amount \"123\" }");
         assert_eq!(a, Ok(A { amount: 123 }));
     }
+
+    #[test]
+    fn to_json() {
+        use edn_rs::edn::{Edn, List, Map, Set, Vector};
+        use edn_rs::{map, set};
+
+        let edn = Edn::Vector(Vector::new(vec![
+            Edn::Int(1),
+            Edn::Double(1.2.into()),
+            Edn::UInt(3),
+            Edn::List(List::new(vec![
+                Edn::Bool(false),
+                Edn::Key(":f".to_string()),
+                Edn::Nil,
+                Edn::Rational("3/4".to_string()),
+                Edn::Set(Set::new(set! {
+                    Edn::Rational("3/4".to_string())
+                })),
+            ])),
+            Edn::Map(Map::new(map![
+                    String::from("false") => Edn::Key(":f".to_string()),
+                    String::from("nil") => Edn::Rational("3/4".to_string()),
+                    String::from(":my-crazy-map") => Edn::Map(Map::new(map![
+                        String::from("false") => Edn::Map(
+                            Map::new( map![
+                                String::from(":f") => Edn::Key(String::from(":b"))
+                            ])),
+                        String::from("nil") => Edn::Vector(
+                            Vector::new( vec![
+                                Edn::Rational("3/4".to_string()),
+                                Edn::Int(1isize)
+                            ]))
+                ]))
+            ])),
+        ]));
+
+        assert_eq!(edn.to_json(),
+            "[1, 1.2, 3, [false, \"f\", null, 0.75, [0.75]], {\"myCrazyMap\": {\"false\": {\"f\": \"b\"}, \"nil\": [0.75, 1]}, \"false\": \"f\", \"nil\": 0.75}]");
+    }
 }

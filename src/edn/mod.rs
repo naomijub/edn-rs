@@ -63,6 +63,10 @@ impl Vector {
     pub fn empty() -> Vector {
         Vector(Vec::new())
     }
+
+    pub fn to_vec(self) -> Vec<Edn> {
+        self.0
+    }
 }
 
 #[cfg(feature = "async")]
@@ -89,6 +93,10 @@ impl List {
 
     pub fn empty() -> List {
         List(Vec::new())
+    }
+
+    pub fn to_vec(self) -> Vec<Edn> {
+        self.0
     }
 }
 
@@ -117,6 +125,10 @@ impl Set {
     pub fn empty() -> Set {
         Set(BTreeSet::new())
     }
+
+    pub fn to_set(self) -> BTreeSet<Edn> {
+        self.0
+    }
 }
 
 #[cfg(feature = "async")]
@@ -143,6 +155,10 @@ impl Map {
 
     pub fn empty() -> Map {
         Map(BTreeMap::new())
+    }
+
+    pub fn to_map(self) -> BTreeMap<String, Edn> {
+        self.0
     }
 }
 
@@ -671,6 +687,48 @@ impl Edn {
             _ => None,
         }
     }
+
+    /// Method `to_json` allows you to convert a `edn_rs::Edn` into a JSON string. Type convertions are:
+    /// `Edn::Vector(v)` => a vector like `[value1, value2, ..., valueN]`
+    /// `Edn::Set(s)` => a vector like `[value1, value2, ..., valueN]`
+    /// `Edn::Map(map)` => a map like `{\"key1\": value1, ..., \"keyN\": valueN}`
+    /// `Edn::List(l)` => a vector like `[value1, value2, ..., valueN]`
+    /// `Edn::Key(key)` => a `camelCase` version of the `:kebab-case` keyword,
+    /// `Edn::Symbol(s)` => `\"a-simple-string\"`
+    /// `Edn::Str(s)` => `\"a simple string\"`
+    /// `Edn::Int(n)` => a number like `5`
+    /// `Edn::UInt(n)` => a number like `5`
+    /// `Edn::Double(n)` => a number like `3.14`
+    /// `Edn::Rational(r)` => a number like `0.25` for `1/4`.
+    /// `Edn::Char(c)` => a simple char `\'c\'`
+    /// `Edn::Bool(b)` => boolean options, `true` and `false`
+    /// `Edn::Inst(inst)` => a DateTime string like `\"2020-10-21T00:00:00.000-00:00\"`
+    /// `Edn::Uuid(uuid)` => a UUID string like `\"7a6b6722-0221-4280-865e-ad41060d53b2\"`
+    /// `Edn::NamespacedMap(ns, map)` => a namespaced map like `{\"nameSpace\": {\"key1\": value1, ..., \"keyN\": valueN}}`
+    /// `Edn::Nil` => `null`
+    /// `Edn::Empty` => empty value, ` `
+    /// ```
+    /// use std::str::FromStr;
+    ///
+    /// fn complex_json() {
+    ///     let edn = "{ :people-list  [ { :first-name \"otavio\", :age 22 }, { :first-name \"Julia\", :age 32.0 } ], :country-or-origin \"Brazil\", :queerentener true, :brain nil }";
+    ///     let parsed_edn : edn_rs::Edn = edn_rs::Edn::from_str(edn).unwrap();
+    ///     let actual_json = parsed_edn.to_json();
+    ///
+    ///     let expected = String::from(
+    ///         "{\"brain\": null, \"countryOrOrigin\": \"Brazil\", \"peopleList\": [{\"age\": 22, \"firstName\": \"otavio\"}, {\"age\": 32.0, \"firstName\": \"Julia\"}], \"queerentener\": true}",
+    ///     );
+    ///
+    ///     assert_eq!(
+    ///         actual_json,
+    ///         expected
+    ///     );
+    /// }
+    /// ```
+    #[cfg(feature = "json")]
+    pub fn to_json(&self) -> String {
+        crate::json::display_as_json(self)
+    }
 }
 
 impl std::str::FromStr for Edn {
@@ -692,7 +750,7 @@ where
     format!("{:?}", i).parse::<f64>()
 }
 
-fn rational_to_double(r: &str) -> Option<f64> {
+pub(crate) fn rational_to_double(r: &str) -> Option<f64> {
     if r.split('/').count() == 2 {
         let vals = r
             .split('/')

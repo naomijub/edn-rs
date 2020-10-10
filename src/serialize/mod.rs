@@ -380,6 +380,7 @@ impl<A: Serialize, B: Serialize, C: Serialize, D: Serialize, E: Serialize, F: Se
 /// Note than when you `serialize` `_` will become `-`, `__` will become `.` and `___` will become `/`
 /// **PLEASE USE `#[derive(Debug)]` for now**
 #[macro_export]
+#[deprecated]
 macro_rules! ser_struct {
     (@gen () -> {$(#[$attr:meta])* struct $name:ident $(($id:ident: $ty:ty))*}) => {
         $(#[$attr])* struct $name { $($id: $ty),* }

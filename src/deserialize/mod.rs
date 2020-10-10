@@ -1,4 +1,5 @@
 use crate::edn::{Edn, Error};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::str::FromStr;
 
 pub(crate) mod parse;
@@ -172,6 +173,120 @@ where
             _ => Err(build_deserialize_error(
                 &edn,
                 std::any::type_name::<Vec<T>>(),
+            )),
+        }
+    }
+}
+
+impl<T> Deserialize for HashMap<String, T>
+where
+    T: Deserialize,
+{
+    fn deserialize(edn: &Edn) -> Result<Self, Error> {
+        match edn {
+            Edn::Map(_) => Ok(edn
+                .map_iter()
+                .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
+                .map(|(key, e)| (key, Deserialize::deserialize(e).unwrap()))
+                .fold(HashMap::new(), |mut acc, (key, e)| {
+                    acc.insert(key.to_string(), e);
+                    acc
+                })),
+            Edn::NamespacedMap(ns, _) => Ok(edn
+                .map_iter()
+                .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
+                .map(|(key, e)| {
+                    (
+                        ns.to_string() + "/" + key,
+                        Deserialize::deserialize(e).unwrap(),
+                    )
+                })
+                .fold(HashMap::new(), |mut acc, (key, e)| {
+                    acc.insert(key.to_string(), e);
+                    acc
+                })),
+            _ => Err(build_deserialize_error(
+                &edn,
+                std::any::type_name::<HashMap<String, T>>(),
+            )),
+        }
+    }
+}
+
+impl<T> Deserialize for BTreeMap<String, T>
+where
+    T: Deserialize,
+{
+    fn deserialize(edn: &Edn) -> Result<Self, Error> {
+        match edn {
+            Edn::Map(_) => Ok(edn
+                .map_iter()
+                .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
+                .map(|(key, e)| (key, Deserialize::deserialize(e).unwrap()))
+                .fold(BTreeMap::new(), |mut acc, (key, e)| {
+                    acc.insert(key.to_string(), e);
+                    acc
+                })),
+            Edn::NamespacedMap(ns, _) => Ok(edn
+                .map_iter()
+                .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
+                .map(|(key, e)| {
+                    (
+                        ns.to_string() + "/" + key,
+                        Deserialize::deserialize(e).unwrap(),
+                    )
+                })
+                .fold(BTreeMap::new(), |mut acc, (key, e)| {
+                    acc.insert(key.to_string(), e);
+                    acc
+                })),
+            _ => Err(build_deserialize_error(
+                &edn,
+                std::any::type_name::<BTreeMap<String, T>>(),
+            )),
+        }
+    }
+}
+
+impl<T: std::cmp::Eq + std::hash::Hash> Deserialize for HashSet<T>
+where
+    T: Deserialize,
+{
+    fn deserialize(edn: &Edn) -> Result<Self, Error> {
+        match edn {
+            Edn::Set(_) => Ok(edn
+                .set_iter()
+                .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
+                .map(|e| Deserialize::deserialize(e).unwrap())
+                .fold(HashSet::new(), |mut acc, e| {
+                    acc.insert(e);
+                    acc
+                })),
+            _ => Err(build_deserialize_error(
+                &edn,
+                std::any::type_name::<HashSet<T>>(),
+            )),
+        }
+    }
+}
+
+impl<T: std::cmp::Eq + std::hash::Hash + std::cmp::Ord> Deserialize for BTreeSet<T>
+where
+    T: Deserialize,
+{
+    fn deserialize(edn: &Edn) -> Result<Self, Error> {
+        match edn {
+            Edn::Set(_) => Ok(edn
+                .set_iter()
+                .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
+                .map(|e| Deserialize::deserialize(e).unwrap())
+                .fold(BTreeSet::new(), |mut acc, e| {
+                    acc.insert(e);
+                    acc
+                })),
+            _ => Err(build_deserialize_error(
+                &edn,
+                std::any::type_name::<BTreeSet<T>>(),
             )),
         }
     }
