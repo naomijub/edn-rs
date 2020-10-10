@@ -312,7 +312,7 @@ impl<A: Serialize, B: Serialize, C: Serialize, D: Serialize, E: Serialize, F: Se
     }
 }
 
-/// `ser_struct!` creates a struct with the serialization trait already implemented:
+/// [DEPRECATED - use `edn-derive::Serialize`instead] `ser_struct!` creates a struct with the serialization trait already implemented:
 ///
 /// `
 /// ser_struct! {
@@ -388,6 +388,8 @@ macro_rules! ser_struct {
             fn serialize(self) -> String {
                 let mut s = String::new();
                 let mut v = Vec::new();
+                println!("[ser_struct is DEPRECATED - use `edn-derive::Serialize`instead]");
+
                 $(
                     v.push(format!("{}", stringify!($id)));
                 )*
@@ -412,6 +414,7 @@ macro_rules! ser_struct {
             fn serialize(self) -> String {
                 let mut s = String::new();
                 let mut v = Vec::new();
+                println!("[ser_struct is DEPRECATED - use `edn-derive::Serialize`instead]");
                 $(
                     v.push(format!("{}", stringify!($id)));
                 )*
