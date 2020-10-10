@@ -36,6 +36,9 @@ pub mod edn;
 ///```
 pub mod serialize;
 
+#[cfg(feature = "json")]
+pub(crate) mod json;
+
 mod deserialize;
 /// `json_to_edn` receives a json string and parses its common key-values to a regular EDN format. It requires feature `json`
 /// tested examples are:
@@ -92,7 +95,6 @@ pub use serialize::Serialize;
 /// }
 ///
 /// fn main() {
-///     
 ///     let edn = ExampleEdn {
 ///         map: map!{"this is a key".to_string() => vec!["with".to_string(), "many".to_string(), "keys".to_string()]},
 ///         set: set!{3i64, 4i64, 5i64},

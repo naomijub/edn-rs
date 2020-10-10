@@ -1,9 +1,8 @@
 #[cfg(test)]
 mod tests {
-    use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
-
     use edn_derive::Serialize;
     use edn_rs::{hmap, hset, map, set};
+    use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 
     #[test]
     fn serializes_a_complex_structure() {
