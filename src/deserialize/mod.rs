@@ -1,4 +1,5 @@
 use crate::edn::{Edn, Error};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::str::FromStr;
 
 pub(crate) mod parse;
@@ -82,6 +83,14 @@ macro_rules! impl_deserialize_float {
 }
 
 impl_deserialize_float!(f32, f64);
+
+impl Deserialize for crate::Double {
+    fn deserialize(edn: &Edn) -> Result<Self, Error> {
+        edn.to_float()
+            .ok_or_else(|| build_deserialize_error(&edn, "edn_rs::Double"))
+            .map(|u| u.into())
+    }
+}
 
 macro_rules! impl_deserialize_int {
     ( $( $name:ty ),+ ) => {
@@ -172,6 +181,128 @@ where
             _ => Err(build_deserialize_error(
                 &edn,
                 std::any::type_name::<Vec<T>>(),
+            )),
+        }
+    }
+}
+
+impl<T> Deserialize for HashMap<String, T>
+where
+    T: Deserialize,
+{
+    fn deserialize(edn: &Edn) -> Result<Self, Error> {
+        match edn {
+            Edn::Map(_) => Ok(edn
+                .map_iter()
+                .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
+                .map(|(key, e)| (key, Deserialize::deserialize(e).unwrap()))
+                .fold(HashMap::new(), |mut acc, (key, e)| {
+                    acc.insert(key.to_string(), e);
+                    acc
+                })),
+            Edn::NamespacedMap(ns, _) => Ok(edn
+                .map_iter()
+                .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
+                .map(|(key, e)| {
+                    (
+                        if ns.starts_with(":") {
+                            ns.to_string() + "/" + key
+                        } else {
+                            String::from(":") + ns + "/" + key
+                        },
+                        Deserialize::deserialize(e).unwrap(),
+                    )
+                })
+                .fold(HashMap::new(), |mut acc, (key, e)| {
+                    acc.insert(key.to_string(), e);
+                    acc
+                })),
+            _ => Err(build_deserialize_error(
+                &edn,
+                std::any::type_name::<HashMap<String, T>>(),
+            )),
+        }
+    }
+}
+
+impl<T> Deserialize for BTreeMap<String, T>
+where
+    T: Deserialize,
+{
+    fn deserialize(edn: &Edn) -> Result<Self, Error> {
+        match edn {
+            Edn::Map(_) => Ok(edn
+                .map_iter()
+                .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
+                .map(|(key, e)| (key, Deserialize::deserialize(e).unwrap()))
+                .fold(BTreeMap::new(), |mut acc, (key, e)| {
+                    acc.insert(key.to_string(), e);
+                    acc
+                })),
+            Edn::NamespacedMap(ns, _) => Ok(edn
+                .map_iter()
+                .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
+                .map(|(key, e)| {
+                    (
+                        if ns.starts_with(":") {
+                            ns.to_string() + "/" + key
+                        } else {
+                            String::from(":") + ns + "/" + key
+                        },
+                        Deserialize::deserialize(e).unwrap(),
+                    )
+                })
+                .fold(BTreeMap::new(), |mut acc, (key, e)| {
+                    acc.insert(key.to_string(), e);
+                    acc
+                })),
+            _ => Err(build_deserialize_error(
+                &edn,
+                std::any::type_name::<BTreeMap<String, T>>(),
+            )),
+        }
+    }
+}
+
+impl<T: std::cmp::Eq + std::hash::Hash> Deserialize for HashSet<T>
+where
+    T: Deserialize,
+{
+    fn deserialize(edn: &Edn) -> Result<Self, Error> {
+        match edn {
+            Edn::Set(_) => Ok(edn
+                .set_iter()
+                .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
+                .map(|e| Deserialize::deserialize(e).unwrap())
+                .fold(HashSet::new(), |mut acc, e| {
+                    acc.insert(e);
+                    acc
+                })),
+            _ => Err(build_deserialize_error(
+                &edn,
+                std::any::type_name::<HashSet<T>>(),
+            )),
+        }
+    }
+}
+
+impl<T: std::cmp::Eq + std::hash::Hash + std::cmp::Ord> Deserialize for BTreeSet<T>
+where
+    T: Deserialize,
+{
+    fn deserialize(edn: &Edn) -> Result<Self, Error> {
+        match edn {
+            Edn::Set(_) => Ok(edn
+                .set_iter()
+                .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
+                .map(|e| Deserialize::deserialize(e).unwrap())
+                .fold(BTreeSet::new(), |mut acc, e| {
+                    acc.insert(e);
+                    acc
+                })),
+            _ => Err(build_deserialize_error(
+                &edn,
+                std::any::type_name::<BTreeSet<T>>(),
             )),
         }
     }
@@ -296,7 +427,7 @@ pub fn from_edn<T: Deserialize>(edn: &Edn) -> Result<T, Error> {
 mod test {
     use super::*;
     use crate::edn::{List, Map, Set, Vector};
-    use crate::{map, set};
+    use crate::{hmap, hset, map, set};
 
     #[test]
     fn unit() {
@@ -486,5 +617,99 @@ mod test {
         assert_eq!(edn["0"], Edn::Key(":val".to_string()));
         assert_eq!(edn[1], Edn::Key(":value".to_string()));
         assert_eq!(edn["1"], Edn::Key(":value".to_string()));
+    }
+
+    #[test]
+    fn deser_namespaced_btreemap() {
+        let ns_map = Edn::NamespacedMap(
+            "abc".to_string(),
+            Map::new(map! {
+                "0".to_string() => Edn::Key(":val".to_string()),
+                "1".to_string() => Edn::Key(":value".to_string())
+            }),
+        );
+        let expected = map! {
+            ":abc/0".to_string() => ":val".to_string(),
+            ":abc/1".to_string() => ":value".to_string()
+        };
+        let map: std::collections::BTreeMap<String, String> = from_edn(&ns_map).unwrap();
+        assert_eq!(map, expected);
+    }
+
+    #[test]
+    fn deser_namespaced_hashmap() {
+        let ns_map = Edn::NamespacedMap(
+            "abc".to_string(),
+            Map::new(map! {
+                "0".to_string() => Edn::Key(":val".to_string()),
+                "1".to_string() => Edn::Key(":value".to_string())
+            }),
+        );
+        let expected = hmap! {
+            ":abc/0".to_string() => ":val".to_string(),
+            ":abc/1".to_string() => ":value".to_string()
+        };
+        let map: std::collections::HashMap<String, String> = from_edn(&ns_map).unwrap();
+        assert_eq!(map, expected);
+    }
+
+    #[test]
+    fn deser_btreemap() {
+        let ns_map = Edn::Map(Map::new(map! {
+            ":a".to_string() => Edn::Vector(Vector::new(vec![Edn::Key(":val".to_string())])),
+            ":b".to_string() => Edn::Vector(Vector::new(vec![Edn::Key(":value".to_string())]))
+        }));
+        let expected = map! {
+            ":a".to_string() => vec![":val".to_string()],
+            ":b".to_string() => vec![":value".to_string()]
+        };
+        let map: std::collections::BTreeMap<String, Vec<String>> = from_edn(&ns_map).unwrap();
+        assert_eq!(map, expected);
+    }
+
+    #[test]
+    fn deser_hashmap() {
+        let ns_map = Edn::Map(Map::new(map! {
+            ":a".to_string() => Edn::Bool(true),
+            ":b".to_string() => Edn::Bool(false)
+        }));
+        let expected = hmap! {
+            ":a".to_string() => true,
+            ":b".to_string() => false
+        };
+        let map: std::collections::HashMap<String, bool> = from_edn(&ns_map).unwrap();
+        assert_eq!(map, expected);
+    }
+
+    #[test]
+    fn deser_btreeset() {
+        let set = Edn::Set(Set::new(set! {
+            Edn::UInt(4),
+            Edn::UInt(5),
+            Edn::UInt(6)
+        }));
+        let expected = set! {
+            4,
+            5,
+            6,
+        };
+        let deser_set: std::collections::BTreeSet<usize> = from_edn(&set).unwrap();
+        assert_eq!(deser_set, expected);
+    }
+
+    #[test]
+    fn deser_hashset() {
+        let set = Edn::Set(Set::new(set! {
+            Edn::Double(4.6.into()),
+            Edn::Double(5.6.into()),
+            Edn::Double(6.6.into())
+        }));
+        let expected = hset! {
+            crate::Double::from(4.6),
+            crate::Double::from(5.6),
+            crate::Double::from(6.6),
+        };
+        let deser_set: std::collections::HashSet<crate::Double> = from_edn(&set).unwrap();
+        assert_eq!(deser_set, expected);
     }
 }
