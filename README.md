@@ -192,6 +192,7 @@ fn main() -> Result<(), EdnError> {
 ```
 
 **Deserializes Edn types into Rust Types**:
+* Deserialization to `std::collection::*` is currently unsafe.
 
 > For now you have to implement the conversion yourself with the `Deserialize` trait. Soon you'll be able to have that implemented for you via `edn-derive` crate.
  ```rust
