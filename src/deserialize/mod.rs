@@ -593,6 +593,19 @@ mod test {
     }
 
     #[test]
+    fn test_nft() {
+        let t: Edn = Edn::from_str("tTEST").unwrap();
+        let f: Edn = Edn::from_str("fTEST").unwrap();
+        let n: Edn = Edn::from_str("nTEST").unwrap();
+        let err: Edn = Edn::from_str("fTE").unwrap();
+
+        assert_eq!(n, Edn::Symbol("nTEST".to_string()));
+        assert_eq!(f, Edn::Symbol("fTEST".to_string()));
+        assert_eq!(t, Edn::Symbol("tTEST".to_string()));
+        assert_eq!(err, Edn::Symbol("fTE".to_string()));
+    }
+
+    #[test]
     fn test_more_sym() {
         let edn: Edn = Edn::from_str("(a \\b \"c\" 5 #{hello world})").unwrap();
         let expected = Edn::List(List::new(vec![

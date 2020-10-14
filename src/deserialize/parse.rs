@@ -117,33 +117,24 @@ fn read_char(chars: &mut std::str::Chars) -> Result<Edn, Error> {
 }
 
 fn read_bool_or_nil(c: char, chars: &mut std::str::Chars) -> Result<Edn, Error> {
-    match c {
-        't' => {
-            let c_len = chars
-                .clone()
-                .take_while(|e| e == &'r' || e == &'u' || e == &'e')
-                .count();
+    match c.clone() {
+        't' if chars.clone().take(3).collect::<String>() == "rue" => {
             let mut string = String::new();
-            let t = chars.take(c_len).collect::<String>();
+            let t = chars.take(3).collect::<String>();
             string.push(c);
             string.push_str(&t);
             Ok(Edn::Bool(string.parse::<bool>()?))
         }
-        'f' => {
-            let c_len = chars
-                .clone()
-                .take_while(|e| e == &'a' || e == &'l' || e == &'s' || e == &'e')
-                .count();
+        'f' if chars.clone().take(4).collect::<String>() == "alse" => {
             let mut string = String::new();
-            let f = chars.take(c_len).collect::<String>();
+            let f = chars.take(4).collect::<String>();
             string.push(c);
             string.push_str(&f);
             Ok(Edn::Bool(string.parse::<bool>()?))
         }
-        'n' => {
-            let c_len = chars.clone().take_while(|e| e == &'i' || e == &'l').count();
+        'n' if chars.clone().take(2).collect::<String>() == "il" => {
             let mut string = String::new();
-            let n = chars.take(c_len).collect::<String>();
+            let n = chars.take(2).collect::<String>();
             string.push(c);
             string.push_str(&n);
             match &string[..] {
@@ -151,9 +142,7 @@ fn read_bool_or_nil(c: char, chars: &mut std::str::Chars) -> Result<Edn, Error> 
                 _ => Err(Error::ParseEdn(format!("{} could not be parsed", string))),
             }
         }
-        _ => Err(Error::ParseEdn(
-            "Nullable boolean could not be parsed".to_string(),
-        )),
+        _ => read_symbol(c, chars),
     }
 }
 
