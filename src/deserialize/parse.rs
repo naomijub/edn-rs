@@ -118,21 +118,48 @@ fn read_char(chars: &mut std::str::Chars) -> Result<Edn, Error> {
 
 fn read_bool_or_nil(c: char, chars: &mut std::str::Chars) -> Result<Edn, Error> {
     match c.clone() {
-        't' if chars.clone().take(3).collect::<String>() == "rue" => {
+        't' if {
+            let val = chars.clone().take(4).collect::<String>();
+            val.eq("rue ")
+                || val.eq("rue,")
+                || val.eq("rue]")
+                || val.eq("rue}")
+                || val.eq("rue)")
+                || val.eq("rue")
+        } =>
+        {
             let mut string = String::new();
             let t = chars.take(3).collect::<String>();
             string.push(c);
             string.push_str(&t);
             Ok(Edn::Bool(string.parse::<bool>()?))
         }
-        'f' if chars.clone().take(4).collect::<String>() == "alse" => {
+        'f' if {
+            let val = chars.clone().take(5).collect::<String>();
+            val.eq("alse ")
+                || val.eq("alse,")
+                || val.eq("alse]")
+                || val.eq("alse}")
+                || val.eq("alse)")
+                || val.eq("alse")
+        } =>
+        {
             let mut string = String::new();
             let f = chars.take(4).collect::<String>();
             string.push(c);
             string.push_str(&f);
             Ok(Edn::Bool(string.parse::<bool>()?))
         }
-        'n' if chars.clone().take(2).collect::<String>() == "il" => {
+        'n' if {
+            let val = chars.clone().take(3).collect::<String>();
+            val.eq("il ")
+                || val.eq("il,")
+                || val.eq("il]")
+                || val.eq("il}")
+                || val.eq("il)")
+                || val.eq("il")
+        } =>
+        {
             let mut string = String::new();
             let n = chars.take(2).collect::<String>();
             string.push(c);
