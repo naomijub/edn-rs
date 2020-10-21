@@ -69,7 +69,11 @@ fn read_symbol(a: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Re
             i <= 200 && !c.1.is_whitespace() && c.1 != ')' && c.1 != '}' && c.1 != ']'
         })
         .count();
-    let i = chars.clone().next().unwrap().0;
+    let i = chars
+        .clone()
+        .next()
+        .ok_or_else(|| Error::ParseEdn("Could not identify symbol index".to_string()))?
+        .0;
 
     if a.is_whitespace() {
         return Err(Error::ParseEdn(format!(
@@ -85,7 +89,11 @@ fn read_symbol(a: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Re
 }
 
 fn read_tagged(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
-    let i = chars.clone().next().unwrap().0;
+    let i = chars
+        .clone()
+        .next()
+        .ok_or_else(|| Error::ParseEdn("Could not identify symbol index".to_string()))?
+        .0;
     let tag = chars
         .take_while(|c| c.1 != '\"' || c.1.is_numeric())
         .map(|c| c.1)
@@ -110,7 +118,11 @@ fn read_tagged(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn,
 }
 
 fn read_number(n: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
-    let i = chars.clone().next().unwrap().0;
+    let i = chars
+        .clone()
+        .next()
+        .ok_or_else(|| Error::ParseEdn("Could not identify symbol index".to_string()))?
+        .0;
     let c_len = chars
         .clone()
         .take_while(|c| c.1.is_numeric() || c.1 == '.' || c.1 == '/')
@@ -135,7 +147,11 @@ fn read_number(n: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Re
 }
 
 fn read_char(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
-    let i = chars.clone().next().unwrap().0;
+    let i = chars
+        .clone()
+        .next()
+        .ok_or_else(|| Error::ParseEdn("Could not identify symbol index".to_string()))?
+        .0;
     let c = chars.next();
     c.ok_or(format!("{:?} could not be parsed at char count {}", c, i))
         .map(|c| c.1)
@@ -147,7 +163,11 @@ fn read_bool_or_nil(
     c: char,
     chars: &mut std::iter::Enumerate<std::str::Chars>,
 ) -> Result<Edn, Error> {
-    let i = chars.clone().next().unwrap().0;
+    let i = chars
+        .clone()
+        .next()
+        .ok_or_else(|| Error::ParseEdn("Could not identify symbol index".to_string()))?
+        .0;
     match c.clone() {
         't' if {
             let val = chars.clone().take(4).map(|c| c.1).collect::<String>();
@@ -208,7 +228,11 @@ fn read_bool_or_nil(
 }
 
 fn read_vec(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
-    let i = chars.clone().next().unwrap().0;
+    let i = chars
+        .clone()
+        .next()
+        .ok_or_else(|| Error::ParseEdn("Could not identify symbol index".to_string()))?
+        .0;
     let mut res: Vec<Edn> = vec![];
     loop {
         match chars.next() {
@@ -228,7 +252,11 @@ fn read_vec(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Er
 }
 
 fn read_list(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
-    let i = chars.clone().next().unwrap().0;
+    let i = chars
+        .clone()
+        .next()
+        .ok_or_else(|| Error::ParseEdn("Could not identify symbol index".to_string()))?
+        .0;
     let mut res: Vec<Edn> = vec![];
     loop {
         match chars.next() {
@@ -248,7 +276,11 @@ fn read_list(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, E
 }
 
 fn read_set(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
-    let i = chars.clone().next().unwrap().0;
+    let i = chars
+        .clone()
+        .next()
+        .ok_or_else(|| Error::ParseEdn("Could not identify symbol index".to_string()))?
+        .0;
     use std::collections::BTreeSet;
     let mut res: BTreeSet<Edn> = BTreeSet::new();
     loop {
@@ -269,7 +301,11 @@ fn read_set(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Er
 }
 
 fn read_namespaced_map(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
-    let i = chars.clone().next().unwrap().0;
+    let i = chars
+        .clone()
+        .next()
+        .ok_or_else(|| Error::ParseEdn("Could not identify symbol index".to_string()))?
+        .0;
     use std::collections::BTreeMap;
     let mut res: BTreeMap<String, Edn> = BTreeMap::new();
     let mut key: Option<Edn> = None;
@@ -307,7 +343,11 @@ fn read_namespaced_map(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Res
 }
 
 fn read_map(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
-    let i = chars.clone().next().unwrap().0;
+    let i = chars
+        .clone()
+        .next()
+        .ok_or_else(|| Error::ParseEdn("Could not identify symbol index".to_string()))?
+        .0;
     use std::collections::BTreeMap;
     let mut res: BTreeMap<String, Edn> = BTreeMap::new();
     let mut key: Option<Edn> = None;
