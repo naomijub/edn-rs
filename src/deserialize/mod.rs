@@ -195,9 +195,19 @@ where
             Edn::Map(_) => Ok(edn
                 .map_iter()
                 .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
-                .map(|(key, e)| (key, Deserialize::deserialize(e).unwrap()))
+                .map(|(key, e)| {
+                    (
+                        key,
+                        Deserialize::deserialize(e).or_else(|_| {
+                            Err(Error::Deserialize(format!(
+                                "Cannot safely deserialize {:?}",
+                                edn
+                            )))
+                        }),
+                    )
+                })
                 .fold(HashMap::new(), |mut acc, (key, e)| {
-                    acc.insert(key.to_string(), e);
+                    acc.insert(key.to_string(), e.unwrap());
                     acc
                 })),
             Edn::NamespacedMap(ns, _) => Ok(edn
@@ -210,11 +220,16 @@ where
                         } else {
                             String::from(":") + ns + "/" + key
                         },
-                        Deserialize::deserialize(e).unwrap(),
+                        Deserialize::deserialize(e).or_else(|_| {
+                            Err(Error::Deserialize(format!(
+                                "Cannot safely deserialize {:?}",
+                                edn
+                            )))
+                        }),
                     )
                 })
                 .fold(HashMap::new(), |mut acc, (key, e)| {
-                    acc.insert(key.to_string(), e);
+                    acc.insert(key.to_string(), e.unwrap());
                     acc
                 })),
             _ => Err(build_deserialize_error(
@@ -234,9 +249,19 @@ where
             Edn::Map(_) => Ok(edn
                 .map_iter()
                 .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
-                .map(|(key, e)| (key, Deserialize::deserialize(e).unwrap()))
+                .map(|(key, e)| {
+                    (
+                        key,
+                        Deserialize::deserialize(e).or_else(|_| {
+                            Err(Error::Deserialize(format!(
+                                "Cannot safely deserialize {:?}",
+                                edn
+                            )))
+                        }),
+                    )
+                })
                 .fold(BTreeMap::new(), |mut acc, (key, e)| {
-                    acc.insert(key.to_string(), e);
+                    acc.insert(key.to_string(), e.unwrap());
                     acc
                 })),
             Edn::NamespacedMap(ns, _) => Ok(edn
@@ -249,11 +274,16 @@ where
                         } else {
                             String::from(":") + ns + "/" + key
                         },
-                        Deserialize::deserialize(e).unwrap(),
+                        Deserialize::deserialize(e).or_else(|_| {
+                            Err(Error::Deserialize(format!(
+                                "Cannot safely deserialize {:?}",
+                                edn
+                            )))
+                        }),
                     )
                 })
                 .fold(BTreeMap::new(), |mut acc, (key, e)| {
-                    acc.insert(key.to_string(), e);
+                    acc.insert(key.to_string(), e.unwrap());
                     acc
                 })),
             _ => Err(build_deserialize_error(
@@ -273,9 +303,16 @@ where
             Edn::Set(_) => Ok(edn
                 .set_iter()
                 .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
-                .map(|e| Deserialize::deserialize(e).unwrap())
+                .map(|e| {
+                    Deserialize::deserialize(e).or_else(|_| {
+                        Err(Error::Deserialize(format!(
+                            "Cannot safely deserialize {:?}",
+                            edn
+                        )))
+                    })
+                })
                 .fold(HashSet::new(), |mut acc, e| {
-                    acc.insert(e);
+                    acc.insert(e.unwrap());
                     acc
                 })),
             _ => Err(build_deserialize_error(
@@ -295,9 +332,16 @@ where
             Edn::Set(_) => Ok(edn
                 .set_iter()
                 .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
-                .map(|e| Deserialize::deserialize(e).unwrap())
+                .map(|e| {
+                    Deserialize::deserialize(e).or_else(|_| {
+                        Err(Error::Deserialize(format!(
+                            "Cannot safely deserialize {:?}",
+                            edn
+                        )))
+                    })
+                })
                 .fold(BTreeSet::new(), |mut acc, e| {
-                    acc.insert(e);
+                    acc.insert(e.unwrap());
                     acc
                 })),
             _ => Err(build_deserialize_error(
