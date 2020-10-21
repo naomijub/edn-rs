@@ -1,79 +1,99 @@
 use crate::edn::{Edn, Error, List, Map, Set, Vector};
 
-pub(crate) fn tokenize(edn: &str) -> std::str::Chars {
-    edn.chars()
+pub(crate) fn tokenize(edn: &str) -> std::iter::Enumerate<std::str::Chars> {
+    edn.chars().enumerate()
 }
 
-pub(crate) fn parse(c: Option<char>, chars: &mut std::str::Chars) -> Result<Edn, Error> {
+pub(crate) fn parse(
+    c: Option<(usize, char)>,
+    chars: &mut std::iter::Enumerate<std::str::Chars>,
+) -> Result<Edn, Error> {
     Ok(match c {
-        Some('[') => read_vec(chars)?,
-        Some('(') => read_list(chars)?,
-        Some('@') => read_set(chars)?,
-        Some('{') => read_map(chars)?,
+        Some((_, '[')) => read_vec(chars)?,
+        Some((_, '(')) => read_list(chars)?,
+        Some((_, '@')) => read_set(chars)?,
+        Some((_, '{')) => read_map(chars)?,
         edn => parse_edn(edn, chars)?,
     })
 }
 
-pub(crate) fn parse_edn(c: Option<char>, chars: &mut std::str::Chars) -> Result<Edn, Error> {
+pub(crate) fn parse_edn(
+    c: Option<(usize, char)>,
+    chars: &mut std::iter::Enumerate<std::str::Chars>,
+) -> Result<Edn, Error> {
     match c {
-        Some('\"') => Ok(read_str(chars)),
-        Some(':') => read_key_or_nsmap(chars),
-        Some('#') => Ok(read_tagged(chars)?),
-        Some('-') => Ok(read_number('-', chars)?),
-        Some('\\') => Ok(read_char(chars)?),
-        Some(b) if b == 't' || b == 'f' || b == 'n' => Ok(read_bool_or_nil(b, chars)?),
-        Some(n) if n.is_numeric() => Ok(read_number(n, chars)?),
-        Some(a) => Ok(read_symbol(a, chars)?),
+        Some((_, '\"')) => Ok(read_str(chars)),
+        Some((_, ':')) => read_key_or_nsmap(chars),
+        Some((_, '#')) => Ok(read_tagged(chars)?),
+        Some((_, '-')) => Ok(read_number('-', chars)?),
+        Some((_, '\\')) => Ok(read_char(chars)?),
+        Some((_, b)) if b == 't' || b == 'f' || b == 'n' => Ok(read_bool_or_nil(b, chars)?),
+        Some((_, n)) if n.is_numeric() => Ok(read_number(n, chars)?),
+        Some((_, a)) => Ok(read_symbol(a, chars)?),
         None => Err(Error::ParseEdn("Edn could not be parsed".to_string())),
     }
 }
 
-fn read_key_or_nsmap(chars: &mut std::str::Chars) -> Result<Edn, Error> {
-    let mut key_chars = chars
-        .clone()
-        .take_while(|c| !c.is_whitespace() && c != &',' && c != &')' && c != &']' && c != &'}');
+fn read_key_or_nsmap(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
+    let mut key_chars = chars.clone().take_while(|c| {
+        !c.1.is_whitespace() && c.1 != ',' && c.1 != ')' && c.1 != ']' && c.1 != '}'
+    });
     let c_len = key_chars.clone().count();
 
-    Ok(match key_chars.find(|c| c == &'{') {
+    Ok(match key_chars.find(|c| c.1 == '{') {
         Some(_) => read_namespaced_map(chars)?,
         None => read_key(chars, c_len),
     })
 }
 
-fn read_key(chars: &mut std::str::Chars, c_len: usize) -> Edn {
+fn read_key(chars: &mut std::iter::Enumerate<std::str::Chars>, c_len: usize) -> Edn {
     let mut key = String::from(":");
-    let key_chars = chars.take(c_len).collect::<String>();
+    let key_chars = chars.take(c_len).map(|c| c.1).collect::<String>();
     key.push_str(&key_chars);
     Edn::Key(key)
 }
 
-fn read_str(chars: &mut std::str::Chars) -> Edn {
-    let string = chars.take_while(|c| c != &'\"').collect::<String>();
+fn read_str(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Edn {
+    let string = chars
+        .take_while(|c| c.1 != '\"')
+        .map(|c| c.1)
+        .collect::<String>();
     Edn::Str(string)
 }
 
-fn read_symbol(a: char, chars: &mut std::str::Chars) -> Result<Edn, Error> {
+fn read_symbol(a: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
     let c_len = chars
         .clone()
         .enumerate()
-        .take_while(|&(i, c)| i <= 200 && !c.is_whitespace() && c != ')' && c != '}' && c != ']')
+        .take_while(|&(i, c)| {
+            i <= 200 && !c.1.is_whitespace() && c.1 != ')' && c.1 != '}' && c.1 != ']'
+        })
         .count();
+    let i = chars.clone().next().unwrap().0;
 
     if a.is_whitespace() {
-        return Err(Error::ParseEdn(format!("\"{}\" could not be parsed", a)));
+        return Err(Error::ParseEdn(format!(
+            "\"{}\" could not be parsed at char count {}",
+            a, i
+        )));
     }
 
     let mut symbol = String::from(a);
-    let symbol_chars = chars.take(c_len).collect::<String>();
+    let symbol_chars = chars.take(c_len).map(|c| c.1).collect::<String>();
     symbol.push_str(&symbol_chars);
     Ok(Edn::Symbol(symbol))
 }
 
-fn read_tagged(chars: &mut std::str::Chars) -> Result<Edn, Error> {
+fn read_tagged(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
+    let i = chars.clone().next().unwrap().0;
     let tag = chars
-        .take_while(|c| c != &'\"' || (*c).is_numeric())
+        .take_while(|c| c.1 != '\"' || c.1.is_numeric())
+        .map(|c| c.1)
         .collect::<String>();
-    let content = chars.take_while(|c| c != &'\"').collect::<String>();
+    let content = chars
+        .take_while(|c| c.1 != '\"')
+        .map(|c| c.1)
+        .collect::<String>();
 
     if tag.starts_with("inst ") {
         return Ok(Edn::Inst(content));
@@ -82,19 +102,21 @@ fn read_tagged(chars: &mut std::str::Chars) -> Result<Edn, Error> {
     if tag.starts_with("uuid ") {
         return Ok(Edn::Uuid(content));
     }
+
     Err(Error::ParseEdn(format!(
-        "{} {} could not be parsed",
-        tag, content
+        "{} {} could not be parsed at char count {}",
+        tag, content, i
     )))
 }
 
-fn read_number(n: char, chars: &mut std::str::Chars) -> Result<Edn, Error> {
+fn read_number(n: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
+    let i = chars.clone().next().unwrap().0;
     let c_len = chars
         .clone()
-        .take_while(|c| c.is_numeric() || c == &'.' || c == &'/')
+        .take_while(|c| c.1.is_numeric() || c.1 == '.' || c.1 == '/')
         .count();
     let mut number = String::new();
-    let string = chars.take(c_len).collect::<String>();
+    let string = chars.take(c_len).map(|c| c.1).collect::<String>();
     number.push(n);
     number.push_str(&string);
 
@@ -105,21 +127,30 @@ fn read_number(n: char, chars: &mut std::str::Chars) -> Result<Edn, Error> {
         n if n.contains('/') && n.split('/').all(|d| d.parse::<f64>().is_ok()) => {
             Ok(Edn::Rational(n))
         }
-        _ => Err(Error::ParseEdn(format!("{} could not be parsed", number))),
+        _ => Err(Error::ParseEdn(format!(
+            "{} could not be parsed at char count {}",
+            number, i
+        ))),
     }
 }
 
-fn read_char(chars: &mut std::str::Chars) -> Result<Edn, Error> {
+fn read_char(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
+    let i = chars.clone().next().unwrap().0;
     let c = chars.next();
-    c.ok_or(format!("{:?} could not be parsed", c))
+    c.ok_or(format!("{:?} could not be parsed at char count {}", c, i))
+        .map(|c| c.1)
         .map(Edn::Char)
         .map_err(Error::ParseEdn)
 }
 
-fn read_bool_or_nil(c: char, chars: &mut std::str::Chars) -> Result<Edn, Error> {
+fn read_bool_or_nil(
+    c: char,
+    chars: &mut std::iter::Enumerate<std::str::Chars>,
+) -> Result<Edn, Error> {
+    let i = chars.clone().next().unwrap().0;
     match c.clone() {
         't' if {
-            let val = chars.clone().take(4).collect::<String>();
+            let val = chars.clone().take(4).map(|c| c.1).collect::<String>();
             val.eq("rue ")
                 || val.eq("rue,")
                 || val.eq("rue]")
@@ -129,13 +160,13 @@ fn read_bool_or_nil(c: char, chars: &mut std::str::Chars) -> Result<Edn, Error> 
         } =>
         {
             let mut string = String::new();
-            let t = chars.take(3).collect::<String>();
+            let t = chars.take(3).map(|c| c.1).collect::<String>();
             string.push(c);
             string.push_str(&t);
             Ok(Edn::Bool(string.parse::<bool>()?))
         }
         'f' if {
-            let val = chars.clone().take(5).collect::<String>();
+            let val = chars.clone().take(5).map(|c| c.1).collect::<String>();
             val.eq("alse ")
                 || val.eq("alse,")
                 || val.eq("alse]")
@@ -145,13 +176,13 @@ fn read_bool_or_nil(c: char, chars: &mut std::str::Chars) -> Result<Edn, Error> 
         } =>
         {
             let mut string = String::new();
-            let f = chars.take(4).collect::<String>();
+            let f = chars.take(4).map(|c| c.1).collect::<String>();
             string.push(c);
             string.push_str(&f);
             Ok(Edn::Bool(string.parse::<bool>()?))
         }
         'n' if {
-            let val = chars.clone().take(3).collect::<String>();
+            let val = chars.clone().take(3).map(|c| c.1).collect::<String>();
             val.eq("il ")
                 || val.eq("il,")
                 || val.eq("il]")
@@ -161,80 +192,110 @@ fn read_bool_or_nil(c: char, chars: &mut std::str::Chars) -> Result<Edn, Error> 
         } =>
         {
             let mut string = String::new();
-            let n = chars.take(2).collect::<String>();
+            let n = chars.take(2).map(|c| c.1).collect::<String>();
             string.push(c);
             string.push_str(&n);
             match &string[..] {
                 "nil" => Ok(Edn::Nil),
-                _ => Err(Error::ParseEdn(format!("{} could not be parsed", string))),
+                _ => Err(Error::ParseEdn(format!(
+                    "{} could not be parsed at char count {}",
+                    string, i
+                ))),
             }
         }
         _ => read_symbol(c, chars),
     }
 }
 
-fn read_vec(chars: &mut std::str::Chars) -> Result<Edn, Error> {
+fn read_vec(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
+    let i = chars.clone().next().unwrap().0;
     let mut res: Vec<Edn> = vec![];
     loop {
         match chars.next() {
-            Some(']') => return Ok(Edn::Vector(Vector::new(res))),
-            Some(c) if !c.is_whitespace() && c != ',' => {
+            Some((_, ']')) => return Ok(Edn::Vector(Vector::new(res))),
+            Some(c) if !c.1.is_whitespace() && c.1 != ',' => {
                 res.push(parse(Some(c), chars)?);
             }
-            Some(c) if c.is_whitespace() || c == ',' => (),
-            err => return Err(Error::ParseEdn(format!("{:?} could not be parsed", err))),
+            Some(c) if c.1.is_whitespace() || c.1 == ',' => (),
+            err => {
+                return Err(Error::ParseEdn(format!(
+                    "{:?} could not be parsed at char count {}",
+                    err, i
+                )))
+            }
         }
     }
 }
 
-fn read_list(chars: &mut std::str::Chars) -> Result<Edn, Error> {
+fn read_list(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
+    let i = chars.clone().next().unwrap().0;
     let mut res: Vec<Edn> = vec![];
     loop {
         match chars.next() {
-            Some(')') => return Ok(Edn::List(List::new(res))),
-            Some(c) if !c.is_whitespace() && c != ',' => {
+            Some((_, ')')) => return Ok(Edn::List(List::new(res))),
+            Some(c) if !c.1.is_whitespace() && c.1 != ',' => {
                 res.push(parse(Some(c), chars)?);
             }
-            Some(c) if c.is_whitespace() || c == ',' => (),
-            err => return Err(Error::ParseEdn(format!("{:?} could not be parsed", err))),
+            Some(c) if c.1.is_whitespace() || c.1 == ',' => (),
+            err => {
+                return Err(Error::ParseEdn(format!(
+                    "{:?} could not be parsed at char count {}",
+                    err, i
+                )))
+            }
         }
     }
 }
 
-fn read_set(chars: &mut std::str::Chars) -> Result<Edn, Error> {
+fn read_set(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
+    let i = chars.clone().next().unwrap().0;
     use std::collections::BTreeSet;
     let mut res: BTreeSet<Edn> = BTreeSet::new();
     loop {
         match chars.next() {
-            Some('}') => return Ok(Edn::Set(Set::new(res))),
-            Some(c) if !c.is_whitespace() && c != ',' => {
+            Some((_, '}')) => return Ok(Edn::Set(Set::new(res))),
+            Some(c) if !c.1.is_whitespace() && c.1 != ',' => {
                 res.insert(parse(Some(c), chars)?);
             }
-            Some(c) if c.is_whitespace() || c == ',' => (),
-            err => return Err(Error::ParseEdn(format!("{:?} could not be parsed", err))),
+            Some(c) if c.1.is_whitespace() || c.1 == ',' => (),
+            err => {
+                return Err(Error::ParseEdn(format!(
+                    "{:?} could not be parsed at char count {}",
+                    err, i
+                )))
+            }
         }
     }
 }
 
-fn read_namespaced_map(chars: &mut std::str::Chars) -> Result<Edn, Error> {
+fn read_namespaced_map(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
+    let i = chars.clone().next().unwrap().0;
     use std::collections::BTreeMap;
     let mut res: BTreeMap<String, Edn> = BTreeMap::new();
     let mut key: Option<Edn> = None;
     let mut val: Option<Edn> = None;
-    let namespace = chars.take_while(|c| c != &'{').collect::<String>();
+    let namespace = chars
+        .take_while(|c| c.1 != '{')
+        .map(|c| c.1)
+        .collect::<String>();
 
     loop {
         match chars.next() {
-            Some('}') => return Ok(Edn::NamespacedMap(namespace, Map::new(res))),
-            Some(c) if !c.is_whitespace() && c != ',' => {
+            Some((_, '}')) => return Ok(Edn::NamespacedMap(namespace, Map::new(res))),
+            Some(c) if !c.1.is_whitespace() && c.1 != ',' => {
                 if key.is_some() {
                     val = Some(parse(Some(c), chars)?);
                 } else {
                     key = Some(parse(Some(c), chars)?);
                 }
             }
-            Some(c) if c.is_whitespace() || c == ',' => (),
-            err => return Err(Error::ParseEdn(format!("{:?} could not be parsed", err))),
+            Some(c) if c.1.is_whitespace() || c.1 == ',' => (),
+            err => {
+                return Err(Error::ParseEdn(format!(
+                    "{:?} could not be parsed at char count {}",
+                    err, i
+                )))
+            }
         }
 
         if key.is_some() && val.is_some() {
@@ -245,23 +306,29 @@ fn read_namespaced_map(chars: &mut std::str::Chars) -> Result<Edn, Error> {
     }
 }
 
-fn read_map(chars: &mut std::str::Chars) -> Result<Edn, Error> {
+fn read_map(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
+    let i = chars.clone().next().unwrap().0;
     use std::collections::BTreeMap;
     let mut res: BTreeMap<String, Edn> = BTreeMap::new();
     let mut key: Option<Edn> = None;
     let mut val: Option<Edn> = None;
     loop {
         match chars.next() {
-            Some('}') => return Ok(Edn::Map(Map::new(res))),
-            Some(c) if !c.is_whitespace() && c != ',' => {
+            Some((_, '}')) => return Ok(Edn::Map(Map::new(res))),
+            Some(c) if !c.1.is_whitespace() && c.1 != ',' => {
                 if key.is_some() {
                     val = Some(parse(Some(c), chars)?);
                 } else {
                     key = Some(parse(Some(c), chars)?);
                 }
             }
-            Some(c) if c.is_whitespace() || c == ',' => (),
-            err => return Err(Error::ParseEdn(format!("{:?} could not be parsed", err))),
+            Some(c) if c.1.is_whitespace() || c.1 == ',' => (),
+            err => {
+                return Err(Error::ParseEdn(format!(
+                    "{:?} could not be parsed at char count {}",
+                    err, i
+                )))
+            }
         }
 
         if key.is_some() && val.is_some() {
@@ -306,7 +373,7 @@ mod test {
 
     #[test]
     fn parse_keyword() {
-        let mut key = ":keyword".chars();
+        let mut key = ":keyword".chars().enumerate();
 
         assert_eq!(
             parse_edn(key.next(), &mut key).unwrap(),
@@ -316,7 +383,7 @@ mod test {
 
     #[test]
     fn parse_str() {
-        let mut string = "\"hello world, from      RUST\"".chars();
+        let mut string = "\"hello world, from      RUST\"".chars().enumerate();
 
         assert_eq!(
             parse_edn(string.next(), &mut string).unwrap(),
@@ -326,10 +393,10 @@ mod test {
 
     #[test]
     fn parse_number() {
-        let mut uint = "143".chars();
-        let mut int = "-435143".chars();
-        let mut f = "-43.5143".chars();
-        let mut r = "43/5143".chars();
+        let mut uint = "143".chars().enumerate();
+        let mut int = "-435143".chars().enumerate();
+        let mut f = "-43.5143".chars().enumerate();
+        let mut r = "43/5143".chars().enumerate();
         assert_eq!(parse_edn(uint.next(), &mut uint).unwrap(), Edn::UInt(143));
         assert_eq!(parse_edn(int.next(), &mut int).unwrap(), Edn::Int(-435143));
         assert_eq!(
@@ -344,17 +411,17 @@ mod test {
 
     #[test]
     fn parse_char() {
-        let mut c = "\\k".chars();
+        let mut c = "\\k".chars().enumerate();
 
         assert_eq!(parse_edn(c.next(), &mut c).unwrap(), Edn::Char('k'))
     }
 
     #[test]
     fn parse_bool_or_nil() {
-        let mut t = "true".chars();
-        let mut f = "false".chars();
-        let mut n = "nil".chars();
-        let mut s = "\"true\"".chars();
+        let mut t = "true".chars().enumerate();
+        let mut f = "false".chars().enumerate();
+        let mut n = "nil".chars().enumerate();
+        let mut s = "\"true\"".chars().enumerate();
         assert_eq!(parse_edn(t.next(), &mut t).unwrap(), Edn::Bool(true));
         assert_eq!(parse_edn(f.next(), &mut f).unwrap(), Edn::Bool(false));
         assert_eq!(parse_edn(n.next(), &mut n).unwrap(), Edn::Nil);
@@ -366,7 +433,7 @@ mod test {
 
     #[test]
     fn parse_simple_vec() {
-        let mut edn = "[11 \"2\" 3.3 :b true \\c]".chars();
+        let mut edn = "[11 \"2\" 3.3 :b true \\c]".chars().enumerate();
 
         assert_eq!(
             parse(edn.next(), &mut edn).unwrap(),
@@ -383,7 +450,7 @@ mod test {
 
     #[test]
     fn parse_list() {
-        let mut edn = "(1 \"2\" 3.3 :b )".chars();
+        let mut edn = "(1 \"2\" 3.3 :b )".chars().enumerate();
 
         assert_eq!(
             parse(edn.next(), &mut edn).unwrap(),
@@ -398,7 +465,7 @@ mod test {
 
     #[test]
     fn parse_set() {
-        let mut edn = "@true \\c 3 }".chars();
+        let mut edn = "@true \\c 3 }".chars().enumerate();
 
         assert_eq!(
             parse(edn.next(), &mut edn).unwrap(),
@@ -412,7 +479,7 @@ mod test {
 
     #[test]
     fn parse_complex() {
-        let mut edn = "[:b ( 5 \\c @true \\c 3 } ) ]".chars();
+        let mut edn = "[:b ( 5 \\c @true \\c 3 } ) ]".chars().enumerate();
 
         assert_eq!(
             parse(edn.next(), &mut edn).unwrap(),
@@ -433,7 +500,7 @@ mod test {
 
     #[test]
     fn parse_simple_map() {
-        let mut edn = "{:a \"2\" :b false :c nil }".chars();
+        let mut edn = "{:a \"2\" :b false :c nil }".chars().enumerate();
 
         assert_eq!(
             parse(edn.next(), &mut edn).unwrap(),
@@ -446,7 +513,9 @@ mod test {
 
     #[test]
     fn parse_inst() {
-        let mut edn = "{:date  #inst \"2020-07-16T21:53:14.628-00:00\"}".chars();
+        let mut edn = "{:date  #inst \"2020-07-16T21:53:14.628-00:00\"}"
+            .chars()
+            .enumerate();
 
         assert_eq!(
             parse(edn.next(), &mut edn).unwrap(),
@@ -458,8 +527,9 @@ mod test {
 
     #[test]
     fn parse_edn_with_inst() {
-        let mut edn =
-            "@ :a :b {:c :d :date  #inst \"2020-07-16T21:53:14.628-00:00\" ::c ::d} nil}".chars();
+        let mut edn = "@ :a :b {:c :d :date  #inst \"2020-07-16T21:53:14.628-00:00\" ::c ::d} nil}"
+            .chars()
+            .enumerate();
 
         assert_eq!(
             parse(edn.next(), &mut edn).unwrap(),
@@ -479,7 +549,7 @@ mod test {
     #[test]
     #[should_panic(expected = "iasdf 234  could not be parsed")]
     fn panic_for_wrong_inst() {
-        let mut edn = "#iasdf 234".chars();
+        let mut edn = "#iasdf 234".chars().enumerate();
         let a = parse(edn.next(), &mut edn);
 
         a.unwrap();
@@ -487,7 +557,7 @@ mod test {
 
     #[test]
     fn parse_map_keyword_with_commas() {
-        let mut edn = "{ :a :something, :b false, :c nil, }".chars();
+        let mut edn = "{ :a :something, :b false, :c nil, }".chars().enumerate();
 
         assert_eq!(
             parse(edn.next(), &mut edn).unwrap(),
