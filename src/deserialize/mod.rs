@@ -192,31 +192,39 @@ where
 {
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
         match edn {
-            Edn::Map(_) => Ok(edn
-                .map_iter()
-                .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
-                .map(|(key, e)| (key, Deserialize::deserialize(e).unwrap()))
-                .fold(HashMap::new(), |mut acc, (key, e)| {
-                    acc.insert(key.to_string(), e);
-                    acc
-                })),
-            Edn::NamespacedMap(ns, _) => Ok(edn
+            Edn::Map(_) => edn
                 .map_iter()
                 .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
                 .map(|(key, e)| {
-                    (
-                        if ns.starts_with(":") {
-                            ns.to_string() + "/" + key
-                        } else {
-                            String::from(":") + ns + "/" + key
-                        },
-                        Deserialize::deserialize(e).unwrap(),
-                    )
+                    Ok((
+                        key.to_string(),
+                        Deserialize::deserialize(e).or_else(|_| {
+                            Err(Error::Deserialize(format!(
+                                "Cannot safely deserialize {:?} to {}",
+                                edn, "HashMap"
+                            )))
+                        })?,
+                    ))
                 })
-                .fold(HashMap::new(), |mut acc, (key, e)| {
-                    acc.insert(key.to_string(), e);
-                    acc
-                })),
+                .collect::<Result<HashMap<String, T>, Error>>(),
+            Edn::NamespacedMap(ns, _) => edn
+                .map_iter()
+                .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
+                .map(|(key, e)| {
+                    let deser_element = Deserialize::deserialize(e).or_else(|_| {
+                        Err(Error::Deserialize(format!(
+                            "Cannot safely deserialize {:?} to {}",
+                            edn, "HashMap"
+                        )))
+                    });
+
+                    if ns.starts_with(":") {
+                        Ok((ns.to_string() + "/" + key, deser_element?))
+                    } else {
+                        Ok((String::from(":") + ns + "/" + key, deser_element?))
+                    }
+                })
+                .collect::<Result<HashMap<String, T>, Error>>(),
             _ => Err(build_deserialize_error(
                 &edn,
                 std::any::type_name::<HashMap<String, T>>(),
@@ -231,31 +239,39 @@ where
 {
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
         match edn {
-            Edn::Map(_) => Ok(edn
-                .map_iter()
-                .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
-                .map(|(key, e)| (key, Deserialize::deserialize(e).unwrap()))
-                .fold(BTreeMap::new(), |mut acc, (key, e)| {
-                    acc.insert(key.to_string(), e);
-                    acc
-                })),
-            Edn::NamespacedMap(ns, _) => Ok(edn
+            Edn::Map(_) => edn
                 .map_iter()
                 .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
                 .map(|(key, e)| {
-                    (
-                        if ns.starts_with(":") {
-                            ns.to_string() + "/" + key
-                        } else {
-                            String::from(":") + ns + "/" + key
-                        },
-                        Deserialize::deserialize(e).unwrap(),
-                    )
+                    Ok((
+                        key.to_string(),
+                        Deserialize::deserialize(e).or_else(|_| {
+                            Err(Error::Deserialize(format!(
+                                "Cannot safely deserialize {:?} to {}",
+                                edn, "BTreeMap"
+                            )))
+                        })?,
+                    ))
                 })
-                .fold(BTreeMap::new(), |mut acc, (key, e)| {
-                    acc.insert(key.to_string(), e);
-                    acc
-                })),
+                .collect::<Result<BTreeMap<String, T>, Error>>(),
+            Edn::NamespacedMap(ns, _) => edn
+                .map_iter()
+                .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
+                .map(|(key, e)| {
+                    let deser_element = Deserialize::deserialize(e).or_else(|_| {
+                        Err(Error::Deserialize(format!(
+                            "Cannot safely deserialize {:?} to {}",
+                            edn, "BTreeMap"
+                        )))
+                    });
+
+                    if ns.starts_with(":") {
+                        Ok((ns.to_string() + "/" + key, deser_element?))
+                    } else {
+                        Ok((String::from(":") + ns + "/" + key, deser_element?))
+                    }
+                })
+                .collect::<Result<BTreeMap<String, T>, Error>>(),
             _ => Err(build_deserialize_error(
                 &edn,
                 std::any::type_name::<BTreeMap<String, T>>(),
@@ -270,14 +286,18 @@ where
 {
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
         match edn {
-            Edn::Set(_) => Ok(edn
+            Edn::Set(_) => edn
                 .set_iter()
                 .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
-                .map(|e| Deserialize::deserialize(e).unwrap())
-                .fold(HashSet::new(), |mut acc, e| {
-                    acc.insert(e);
-                    acc
-                })),
+                .map(|e| {
+                    Deserialize::deserialize(e).or_else(|_| {
+                        Err(Error::Deserialize(format!(
+                            "Cannot safely deserialize {:?} to {}",
+                            edn, "HashSet"
+                        )))
+                    })
+                })
+                .collect::<Result<HashSet<T>, Error>>(),
             _ => Err(build_deserialize_error(
                 &edn,
                 std::any::type_name::<HashSet<T>>(),
@@ -292,14 +312,18 @@ where
 {
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
         match edn {
-            Edn::Set(_) => Ok(edn
+            Edn::Set(_) => edn
                 .set_iter()
                 .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
-                .map(|e| Deserialize::deserialize(e).unwrap())
-                .fold(BTreeSet::new(), |mut acc, e| {
-                    acc.insert(e);
-                    acc
-                })),
+                .map(|e| {
+                    Deserialize::deserialize(e).or_else(|_| {
+                        Err(Error::Deserialize(format!(
+                            "Cannot safely deserialize {:?} to {}",
+                            edn, "BTreeSet"
+                        )))
+                    })
+                })
+                .collect::<Result<BTreeSet<T>, Error>>(),
             _ => Err(build_deserialize_error(
                 &edn,
                 std::any::type_name::<BTreeSet<T>>(),
@@ -435,6 +459,19 @@ mod test {
         let unit: () = from_str(nil).unwrap();
 
         assert_eq!(unit, ())
+    }
+
+    #[test]
+    fn deser_btreeset_with_error() {
+        let edn = "#{\"a\", 5, \"b\"}";
+        let err: Result<BTreeSet<usize>, Error> = from_str(edn);
+        assert_eq!(
+            err,
+            Err(Error::Deserialize(
+                "Cannot safely deserialize Set(Set({Str(\"a\"), Str(\"b\"), UInt(5)})) to BTreeSet"
+                    .to_string()
+            ))
+        )
     }
 
     #[test]
