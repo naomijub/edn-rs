@@ -762,4 +762,28 @@ mod test {
         let deser_set: std::collections::HashSet<crate::Double> = from_edn(&set).unwrap();
         assert_eq!(deser_set, expected);
     }
+
+    #[test]
+    fn weird_input() {
+        let edn = "{:a]";
+
+        assert_eq!(
+            Edn::from_str(edn),
+            Err(Error::ParseEdn(
+                "Could not identify symbol index".to_string()
+            ))
+        );
+    }
+
+    #[test]
+    fn weird_input2() {
+        let edn = "@#{:error}";
+
+        assert_eq!(
+            Edn::from_str(edn),
+            Err(Error::ParseEdn(
+                "None could not be parsed at char count 1".to_string()
+            ))
+        );
+    }
 }
