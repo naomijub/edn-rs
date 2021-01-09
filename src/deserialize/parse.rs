@@ -677,4 +677,18 @@ mod test {
             ))
         );
     }
+
+    #[test]
+    fn parse_map_with_special_char_str1() {
+        let mut edn = "{ :a \"hello\n \r \t \\\"world\\\" with escaped \\\\ characters\" }"
+            .chars()
+            .enumerate();
+
+        assert_eq!(
+            parse(edn.next(), &mut edn).unwrap(),
+            Edn::Map(Map::new(
+                map! {":a".to_string() => Edn::Str("hello\n \r \t \"world\" with escaped \\ characters".to_string())}
+            ))
+        );
+    }
 }
