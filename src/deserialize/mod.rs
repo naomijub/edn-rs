@@ -555,6 +555,18 @@ mod test {
     }
 
     #[test]
+    fn from_str_map_with_special_chars_string() {
+        let edn = r#"{:a "hello\n \r \t \"world\" with escaped \\ characters :b [true false] :c #{:A {:a :b} nil}}"#;
+
+        assert_eq!(
+            Edn::from_str(edn),
+            Err(Error::ParseEdn(
+                "None could not be parsed at char count 1".to_string()
+            ))
+        );
+    }
+
+    #[test]
     fn from_str_wordy_str() {
         let edn = "[\"hello brave new world\"]";
 

@@ -1,4 +1,5 @@
 use crate::edn::{Edn, Error, List, Map, Set, Vector};
+use itertools::{FoldWhile, Itertools};
 
 pub(crate) fn tokenize(edn: &str) -> std::iter::Enumerate<std::str::Chars> {
     edn.chars().enumerate()
@@ -22,7 +23,7 @@ pub(crate) fn parse_edn(
     chars: &mut std::iter::Enumerate<std::str::Chars>,
 ) -> Result<Edn, Error> {
     match c {
-        Some((_, '\"')) => Ok(read_str(chars)),
+        Some((_, '\"')) => read_str(chars),
         Some((_, ':')) => read_key_or_nsmap(chars),
         Some((_, '#')) => Ok(read_tagged(chars)?),
         Some((_, '-')) => Ok(read_number('-', chars)?),
@@ -53,12 +54,57 @@ fn read_key(chars: &mut std::iter::Enumerate<std::str::Chars>, c_len: usize) -> 
     Edn::Key(key)
 }
 
-fn read_str(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Edn {
-    let string = chars
-        .take_while(|c| c.1 != '\"')
-        .map(|c| c.1)
-        .collect::<String>();
-    Edn::Str(string)
+fn read_str(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
+    let result = chars
+        .fold_while(
+            (false, String::new(), Ok::<(), Error>(())),
+            |(last_was_escape, mut s, _), (_, c)| {
+                if last_was_escape {
+                    let is_ok = match c {
+                        't' => {
+                            s.push('\t');
+                            Ok(())
+                        }
+                        'r' => {
+                            s.push('\r');
+                            Ok(())
+                        }
+                        'n' => {
+                            s.push('\n');
+                            Ok(())
+                        }
+                        '\\' => {
+                            s.push('\\');
+                            Ok(())
+                        }
+                        '\"' => {
+                            s.push('\"');
+                            Ok(())
+                        }
+                        _ => Err(Error::ParseEdn(format!("Invalid escape sequence \\{}", c))),
+                    };
+
+                    if is_ok.is_err() {
+                        FoldWhile::Done((false, s, is_ok))
+                    } else {
+                        FoldWhile::Continue((false, s, Ok(())))
+                    }
+                } else if c == '\"' {
+                    FoldWhile::Done((false, s, Ok(())))
+                } else if c == '\\' {
+                    FoldWhile::Continue((true, s, Ok(())))
+                } else {
+                    s.push(c);
+                    FoldWhile::Continue((false, s, Ok(())))
+                }
+            },
+        )
+        .into_inner();
+    if result.2.is_err() {
+        return Err(result.2.err().unwrap());
+    }
+
+    Ok(Edn::Str(result.1))
 }
 
 fn read_symbol(a: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
@@ -432,6 +478,30 @@ mod test {
     }
 
     #[test]
+    fn parse_str_with_escaped_characters() {
+        let mut string = r##""hello\n \r \t \"world\" with escaped \\ characters""##
+            .chars()
+            .enumerate();
+
+        assert_eq!(
+            parse_edn(string.next(), &mut string).unwrap(),
+            Edn::Str("hello\n \r \t \"world\" with escaped \\ characters".to_string())
+        )
+    }
+
+    #[test]
+    fn parse_str_with_invalid_escape() {
+        let mut string = r##""hello\n \r \t \"world\" with escaped \\ \g characters""##
+            .chars()
+            .enumerate();
+
+        assert_eq!(
+            parse_edn(string.next(), &mut string),
+            Err(Error::ParseEdn("Invalid escape sequence \\g".to_string()))
+        )
+    }
+
+    #[test]
     fn parse_number() {
         let mut uint = "143".chars().enumerate();
         let mut int = "-435143".chars().enumerate();
@@ -604,6 +674,20 @@ mod test {
             Edn::Map(Map::new(
                 map! {":a".to_string() => Edn::Key(":something".to_string()),
                 ":b".to_string() => Edn::Bool(false), ":c".to_string() => Edn::Nil}
+            ))
+        );
+    }
+
+    #[test]
+    fn parse_map_with_special_char_str1() {
+        let mut edn = "{ :a \"hello\n \r \t \\\"world\\\" with escaped \\\\ characters\" }"
+            .chars()
+            .enumerate();
+
+        assert_eq!(
+            parse(edn.next(), &mut edn).unwrap(),
+            Edn::Map(Map::new(
+                map! {":a".to_string() => Edn::Str("hello\n \r \t \"world\" with escaped \\ characters".to_string())}
             ))
         );
     }

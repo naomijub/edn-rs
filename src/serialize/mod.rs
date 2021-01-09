@@ -482,25 +482,6 @@ mod test {
     }
 
     #[test]
-    fn basic_struct_ser() {
-        ser_struct! {
-            #[derive(Debug)]
-            struct Foo {
-                foo: i32,
-                bar: String,
-                boz: char
-            }
-        }
-        let actual = Foo {
-            foo: 1,
-            bar: String::from("blahb"),
-            boz: 'c',
-        };
-
-        assert_eq!(actual.serialize(), "{ :foo 1, :bar \"blahb\", :boz \\c, }");
-    }
-
-    #[test]
     fn tuples() {
         let t2 = (12i32, 3.5f32);
         let t3 = (12i32, 3.5f32, "oi");
@@ -735,39 +716,6 @@ mod test {
                 && m_str.contains("{")
                 && m_str.contains("}")
         );
-    }
-
-    #[test]
-    fn out_pub_struct_ser() {
-        ser_struct! {
-            #[derive(Debug)]
-            pub struct Foo {
-                foo: i32,
-                bar: String,
-                boz: char
-            }
-        }
-        let actual = Foo {
-            foo: 1,
-            bar: String::from("blahb"),
-            boz: 'c',
-        };
-
-        assert_eq!(actual.serialize(), "{ :foo 1, :bar \"blahb\", :boz \\c, }");
-    }
-
-    #[test]
-    fn struct_fields_special_chars() {
-        ser_struct! {
-            #[derive(Debug)]
-            #[allow(non_snake_case)]
-            pub struct Foo {
-                foo__bar___boz: i32,
-            }
-        }
-
-        let foobar = Foo { foo__bar___boz: 3 };
-        assert_eq!(foobar.serialize(), "{ :foo.bar/boz 3, }")
     }
 
     #[test]

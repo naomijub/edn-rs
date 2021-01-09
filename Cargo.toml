@@ -1,6 +1,6 @@
 [package]
 name = "edn-rs"
-version = "0.16.11"
+version = "0.16.12"
 authors = ["Julia Naomi <jnboeira@outlook.com>",  "Otavio Pace <otaviopp8@gmail.com>"]
 description = "Crate to parse and emit EDN"
 readme = "README.md"
@@ -17,6 +17,7 @@ async = ["futures"]
 json = ["regex"]
 
 [dependencies]
+itertools = "0.10"
 regex = {version = "1", optional = true }
 futures = {version = "0.3.5", optional = true }
 
