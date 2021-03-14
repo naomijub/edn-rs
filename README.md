@@ -421,7 +421,7 @@ async fn foo() -> Edn {
 - [x] trait Serialize struct to EDN
 
 ## `edn-derive`
-`edn-derive` is a proc-macro crate to (De)serialize Edn values, currently it is **pre-alpha** and it can be found at [`crates.io`](https://crates.io/crates/edn-derive) or at [`github`](https://github.com/otaviopace/edn-derive).
+`edn-derive` is a proc-macro crate to (De)serialize Edn values, currently it is **beta** and it can be found at [`crates.io`](https://crates.io/crates/edn-derive) or at [`github`](https://github.com/otaviopace/edn-derive).
 
 ### Usage
 Just add to your `Cargo.toml` the following:
