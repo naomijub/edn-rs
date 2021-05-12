@@ -1,7 +1,7 @@
 # edn-rs
-**Near Stable** no breaking changes expected.
+[![Build Status](https://travis-ci.org/naomijub/edn-rs.svg?branch=master)](https://travis-ci.org/naomijub/edn-rs) [![codecov](https://codecov.io/gh/naomijub/edn-rs/branch/master/graph/badge.svg?token=4VMVTZTN8A)](https://codecov.io/gh/naomijub/edn-rs)
 
-Crate to parse and emit EDN [![Build Status](https://travis-ci.org/naomijub/edn-rs.svg?branch=master)](https://travis-ci.org/naomijub/edn-rs)
+Crate to parse and emit EDN 
 * **This lib does not make effort to conform the EDN received to EDN Spec.** The lib that generated this EDN should be responsible for this. For more information on Edn Spec please visit: https://github.com/edn-format/edn.
 
 Current example usage in:
