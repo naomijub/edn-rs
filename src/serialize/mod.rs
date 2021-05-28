@@ -1,5 +1,5 @@
 /// Trait that allows you to implement Serialization for each type of your choice.
-/// Exemple:
+/// Example:
 /// ```rust
 /// use edn_rs::serialize::Serialize;
 ///
