@@ -17,7 +17,7 @@ Current example usage in:
 edn-rs = "0.16.11"
 ```
 
-## Simple time-only benchmarks of `edn-rs` agains Clojure Edn
+## Simple time-only benchmarks of `edn-rs` against Clojure Edn
 * Link to benchmarks implementation [here](https://github.com/naomijub/edn-duration-benchmark/blob/master/README.md)
 
 | Method\Lang 	| Rust --release 	| Rust --debug 	| Clojure 	|

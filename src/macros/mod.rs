@@ -2,7 +2,7 @@
 /// Macro to parse `EDN` into Rust Spec:
 ///  
 /// ```rust
-/// #![recursion_limit="512"] //recomended recursion size
+/// #![recursion_limit="512"] //recommended recursion size
 ///
 /// #[macro_use]
 /// extern crate edn_rs;
@@ -58,7 +58,7 @@
 /// }
 /// ```
 ///
-/// A more complete exemple:
+/// A more complete example:
 /// ```rust
 /// #[macro_use]
 /// extern crate edn_rs;
