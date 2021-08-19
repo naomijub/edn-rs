@@ -3,6 +3,7 @@
 
 Crate to parse and emit EDN 
 * **This lib does not make effort to conform the EDN received to EDN Spec.** The lib that generated this EDN should be responsible for this. For more information on Edn Spec please visit: https://github.com/edn-format/edn.
+* Minimal Rust Version is 1.46+.
 
 Current example usage in:
 * [crate `transistor`](https://github.com/naomijub/transistor);
