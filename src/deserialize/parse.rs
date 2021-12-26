@@ -123,32 +123,44 @@ fn read_symbol(a: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Re
 }
 
 fn read_tagged(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
-    let i = chars
-        .clone()
-        .next()
-        .ok_or_else(|| Error::ParseEdn("Could not identify symbol index".to_string()))?
-        .0;
     let tag = chars
-        .take_while(|c| c.1 != '\"' || c.1.is_numeric())
-        .map(|c| c.1)
-        .collect::<String>();
-    let content = chars
-        .take_while(|c| c.1 != '\"')
+        .take_while(|c| !c.1.is_whitespace())
         .map(|c| c.1)
         .collect::<String>();
 
-    if tag.starts_with("inst ") {
-        return Ok(Edn::Inst(content));
+    if tag.starts_with("inst") {
+        return Ok(Edn::Inst(chars
+            .skip_while(|c| c.1 == '\"' || c.1.is_whitespace())
+            .take_while(|c| c.1 != '\"')
+            .map(|c| c.1)
+            .collect::<String>()));
     }
 
-    if tag.starts_with("uuid ") {
-        return Ok(Edn::Uuid(content));
+    if tag.starts_with("uuid") {
+        return Ok(Edn::Uuid(chars
+            .skip_while(|c| c.1 == '\"' || c.1.is_whitespace())
+            .take_while(|c| c.1 != '\"')
+            .map(|c| c.1)
+            .collect::<String>()));
     }
 
-    Err(Error::ParseEdn(format!(
-        "{} {} could not be parsed at char count {}",
-        tag, content, i
-    )))
+    let next_char = chars.next();
+    let content = read_tagged_chars(next_char, chars);
+    let mut next_chars = content.chars().enumerate();
+    
+    println!("{}", chars.clone().map(|ch| ch.1).collect::<String>());
+    Ok(Edn::Tagged(tag, Box::new(parse(chars.next(), &mut next_chars)?)))
+}
+
+fn read_tagged_chars(c: Option<(usize, char)>,
+chars: & mut std::iter::Enumerate<std::str::Chars>,) -> String {
+    match c {
+        Some((_, '[')) => chars.take_while(|ch| ch.1 != ']').map(|ch| ch.1).collect::<String>() + " ]",
+        Some((_, '(')) => chars.take_while(|ch| ch.1 != ')').map(|ch| ch.1).collect::<String>() + " )",
+        Some((_, '{')) |Some((_, '@')) => chars.take_while(|ch| ch.1 != '}').map(|ch| ch.1).collect::<String>() + " }",
+        Some((_, '\"')) => chars.take_while(|ch| ch.1 != '\"').map(|ch| ch.1).collect::<String>() + "\"",
+        _ => chars.take_while(|ch| !ch.1.is_whitespace()).map(|ch| ch.1).collect::<String>()
+    }
 }
 
 fn read_number(n: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
@@ -657,12 +669,14 @@ mod test {
     }
 
     #[test]
-    #[should_panic(expected = "iasdf 234  could not be parsed")]
-    fn panic_for_wrong_inst() {
+    fn parse_tagged_int() {
         let mut edn = "#iasdf 234".chars().enumerate();
-        let a = parse(edn.next(), &mut edn);
+        let res = parse(edn.next(), &mut edn).unwrap();
 
-        a.unwrap();
+        assert_eq!(
+            res,
+            Edn::Tagged(String::from("iasdf"), Box::new(Edn::UInt(234)))
+        )
     }
 
     #[test]
@@ -690,5 +704,41 @@ mod test {
                 map! {":a".to_string() => Edn::Str("hello\n \r \t \"world\" with escaped \\ characters".to_string())}
             ))
         );
+    }
+
+    #[test]
+    fn parse_tagged_vec() {
+        let mut edn = "#domain/model [1 2 3]".chars().enumerate();
+        let res = parse(edn.next(), &mut edn).unwrap();
+
+        assert_eq!(
+            res,
+            Edn::Tagged(
+                String::from("domain/model"),
+                Box::new(Edn::Vector(Vector::new(vec![
+                    Edn::UInt(1),
+                    Edn::UInt(2),
+                    Edn::UInt(3)
+                ])))
+            )
+        )
+    }
+
+    #[test]
+    fn parse_map_with_tagged_vec() {
+        let mut edn = "{ :model #domain/model [1 2 3] :int 2 }".chars().enumerate();
+        let res = parse(edn.next(), &mut edn).unwrap();
+
+        assert_eq!(
+            res,
+            Edn::Tagged(
+                String::from("domain/model"),
+                Box::new(Edn::Vector(Vector::new(vec![
+                    Edn::UInt(1),
+                    Edn::UInt(2),
+                    Edn::UInt(3)
+                ])))
+            )
+        )
     }
 }

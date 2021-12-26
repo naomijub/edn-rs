@@ -19,6 +19,7 @@ pub mod utils;
 /// String implementation of Edn can be obtained with `.to_string()`
 #[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub enum Edn {
+    Tagged(String, Box<Edn>),
     Vector(Vector),
     Set(Set),
     Map(Map),
@@ -323,6 +324,7 @@ impl core::fmt::Display for Edn {
             Edn::NamespacedMap(s, m) => format!(":{}{}", s, m),
             Edn::Nil => String::from("nil"),
             Edn::Empty => String::from(""),
+            Edn::Tagged(tag, edn) => format!("#{} {}", tag, edn),
         };
         write!(f, "{}", text)
     }
