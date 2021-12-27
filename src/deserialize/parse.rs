@@ -185,14 +185,14 @@ fn read_tagged_chars(
                 .collect::<String>()
         ),
         Some((_, '@')) => format!(
-            "@{{ {} }}",
+            "@ {} }}",
             chars
                 .take_while(|ch| ch.1 != '}')
                 .map(|ch| ch.1)
                 .collect::<String>()
         ),
         Some((_, '\"')) => format!(
-            "\" {} \"",
+            "\"{}\"",
             chars
                 .take_while(|ch| ch.1 != '\"')
                 .map(|ch| ch.1)
