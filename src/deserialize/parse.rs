@@ -791,4 +791,73 @@ mod test {
             )}))
         )
     }
+
+    #[test]
+    fn parse_tagged_list() {
+        let mut edn = "#domain/model (1 2 3)".chars().enumerate();
+        let res = parse(edn.next(), &mut edn).unwrap();
+
+        assert_eq!(
+            res,
+            Edn::Tagged(
+                String::from("domain/model"),
+                Box::new(Edn::List(List::new(vec![
+                    Edn::UInt(1),
+                    Edn::UInt(2),
+                    Edn::UInt(3)
+                ])))
+            )
+        )
+    }
+
+    #[test]
+    fn parse_tagged_str() {
+        let mut edn = "#domain/model \"hello\"".chars().enumerate();
+        let res = parse(edn.next(), &mut edn).unwrap();
+
+        assert_eq!(
+            res,
+            Edn::Tagged(
+                String::from("domain/model"),
+                Box::new(Edn::Str(String::from("hello")))
+            )
+        )
+    }
+
+    #[test]
+    fn parse_tagged_set() {
+        let mut edn = "#domain/model @1 2 3}".chars().enumerate();
+        let res = parse(edn.next(), &mut edn).unwrap();
+
+        assert_eq!(
+            res,
+            Edn::Tagged(
+                String::from("domain/model"),
+                Box::new(Edn::Set(Set::new(set![
+                    Edn::UInt(1),
+                    Edn::UInt(2),
+                    Edn::UInt(3)
+                ])))
+            )
+        )
+    }
+
+    #[test]
+    fn parse_tagged_map() {
+        let mut edn = "#domain/model {1 2 3 4}".chars().enumerate();
+        let res = parse(edn.next(), &mut edn).unwrap();
+
+        assert_eq!(
+            res,
+            Edn::Tagged(
+                String::from("domain/model"),
+                Box::new(Edn::Map(Map::new(map! {
+                    "1".to_string() =>
+                    Edn::UInt(2),
+                    "3".to_string() =>
+                    Edn::UInt(4)
+                })))
+            )
+        )
+    }
 }
