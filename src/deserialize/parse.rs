@@ -129,37 +129,79 @@ fn read_tagged(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn,
         .collect::<String>();
 
     if tag.starts_with("inst") {
-        return Ok(Edn::Inst(chars
-            .skip_while(|c| c.1 == '\"' || c.1.is_whitespace())
-            .take_while(|c| c.1 != '\"')
-            .map(|c| c.1)
-            .collect::<String>()));
+        return Ok(Edn::Inst(
+            chars
+                .skip_while(|c| c.1 == '\"' || c.1.is_whitespace())
+                .take_while(|c| c.1 != '\"')
+                .map(|c| c.1)
+                .collect::<String>(),
+        ));
     }
 
     if tag.starts_with("uuid") {
-        return Ok(Edn::Uuid(chars
-            .skip_while(|c| c.1 == '\"' || c.1.is_whitespace())
-            .take_while(|c| c.1 != '\"')
-            .map(|c| c.1)
-            .collect::<String>()));
+        return Ok(Edn::Uuid(
+            chars
+                .skip_while(|c| c.1 == '\"' || c.1.is_whitespace())
+                .take_while(|c| c.1 != '\"')
+                .map(|c| c.1)
+                .collect::<String>(),
+        ));
     }
 
     let next_char = chars.next();
     let content = read_tagged_chars(next_char, chars);
     let mut next_chars = content.chars().enumerate();
-    
-    println!("{}", chars.clone().map(|ch| ch.1).collect::<String>());
-    Ok(Edn::Tagged(tag, Box::new(parse(chars.next(), &mut next_chars)?)))
+
+    Ok(Edn::Tagged(
+        tag,
+        Box::new(parse(next_chars.next(), &mut next_chars)?),
+    ))
 }
 
-fn read_tagged_chars(c: Option<(usize, char)>,
-chars: & mut std::iter::Enumerate<std::str::Chars>,) -> String {
+fn read_tagged_chars(
+    c: Option<(usize, char)>,
+    chars: &mut std::iter::Enumerate<std::str::Chars>,
+) -> String {
     match c {
-        Some((_, '[')) => chars.take_while(|ch| ch.1 != ']').map(|ch| ch.1).collect::<String>() + " ]",
-        Some((_, '(')) => chars.take_while(|ch| ch.1 != ')').map(|ch| ch.1).collect::<String>() + " )",
-        Some((_, '{')) |Some((_, '@')) => chars.take_while(|ch| ch.1 != '}').map(|ch| ch.1).collect::<String>() + " }",
-        Some((_, '\"')) => chars.take_while(|ch| ch.1 != '\"').map(|ch| ch.1).collect::<String>() + "\"",
-        _ => chars.take_while(|ch| !ch.1.is_whitespace()).map(|ch| ch.1).collect::<String>()
+        Some((_, '[')) => format!(
+            "[ {} ]",
+            chars
+                .take_while(|ch| ch.1 != ']')
+                .map(|ch| ch.1)
+                .collect::<String>()
+        ),
+        Some((_, '(')) => format!(
+            "( {} )",
+            chars
+                .take_while(|ch| ch.1 != ')')
+                .map(|ch| ch.1)
+                .collect::<String>()
+        ),
+        Some((_, '{')) => format!(
+            "{{ {} }}",
+            chars
+                .take_while(|ch| ch.1 != '}')
+                .map(|ch| ch.1)
+                .collect::<String>()
+        ),
+        Some((_, '@')) => format!(
+            "@{{ {} }}",
+            chars
+                .take_while(|ch| ch.1 != '}')
+                .map(|ch| ch.1)
+                .collect::<String>()
+        ),
+        Some((_, '\"')) => format!(
+            "\" {} \"",
+            chars
+                .take_while(|ch| ch.1 != '\"')
+                .map(|ch| ch.1)
+                .collect::<String>()
+        ),
+        _ => chars
+            .take_while(|ch| !ch.1.is_whitespace())
+            .map(|ch| ch.1)
+            .collect::<String>(),
     }
 }
 
@@ -726,19 +768,23 @@ mod test {
 
     #[test]
     fn parse_map_with_tagged_vec() {
-        let mut edn = "{ :model #domain/model [1 2 3] :int 2 }".chars().enumerate();
+        let mut edn = "{ :model #domain/model [1 2 3] :int 2 }"
+            .chars()
+            .enumerate();
         let res = parse(edn.next(), &mut edn).unwrap();
 
         assert_eq!(
             res,
-            Edn::Tagged(
+            Edn::Map(Map::new(map! {
+                ":int".to_string() => Edn::UInt(2),
+                ":model".to_string() => Edn::Tagged(
                 String::from("domain/model"),
                 Box::new(Edn::Vector(Vector::new(vec![
                     Edn::UInt(1),
                     Edn::UInt(2),
                     Edn::UInt(3)
                 ])))
-            )
+            )}))
         )
     }
 }
