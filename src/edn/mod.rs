@@ -318,8 +318,8 @@ impl core::fmt::Display for Edn {
             Edn::Rational(r) => r.to_string(),
             Edn::Bool(b) => format!("{}", b),
             Edn::Char(c) => format!("{}", c),
-            Edn::Inst(t) => format!("{}", t),
-            Edn::Uuid(t) => format!("{}", t),
+            Edn::Inst(t) => format!("#inst \"{}\"", t),
+            Edn::Uuid(t) => format!("#uuid \"{}\"", t),
             Edn::NamespacedMap(s, m) => format!(":{}{}", s, m),
             Edn::Nil => String::from("nil"),
             Edn::Empty => String::from(""),
@@ -688,6 +688,26 @@ impl Edn {
         }
     }
 
+    /// `to_str_uuid` returns am `Option<String>` with `Some` containing the string representing the UUID for type `Edn::Uuid`
+    /// Other types return `None`
+    pub fn to_str_uuid(&self) -> Option<String> {
+        if let Edn::Uuid(uuid) = self {
+            Some(uuid.to_owned())
+        } else {
+            None
+        }
+    }
+
+    /// `to_str_INST` returns am `Option<String>` with `Some` containing the string representing the instant for type `Edn::Inst`
+    /// Other types return `None`
+    pub fn to_str_inst(&self) -> Option<String> {
+        if let Edn::Inst(inst) = self {
+            Some(inst.to_owned())
+        } else {
+            None
+        }
+    }
+
     /// Method `to_json` allows you to convert a `edn_rs::Edn` into a JSON string. Type convertions are:
     /// `Edn::Vector(v)` => a vector like `[value1, value2, ..., valueN]`
     /// `Edn::Set(s)` => a vector like `[value1, value2, ..., valueN]`
@@ -1001,17 +1021,43 @@ mod test {
     fn inst_to_string() {
         let inst = Edn::Inst("2020-09-18T01:16:25.909-00:00".to_string());
 
-        assert_eq!(inst.to_string(), "2020-09-18T01:16:25.909-00:00");
+        assert_eq!(inst.to_string(), "#inst \"2020-09-18T01:16:25.909-00:00\"");
         let str_inst: String = crate::deserialize::from_edn(&inst).unwrap();
-        assert_eq!(str_inst, "2020-09-18T01:16:25.909-00:00");
+        assert_eq!(str_inst, "#inst \"2020-09-18T01:16:25.909-00:00\"");
+    }
+
+    #[test]
+    fn inst_to_str_inst() {
+        let inst = Edn::Inst("2020-09-18T01:16:25.909-00:00".to_string());
+
+        assert_eq!(inst.to_str_inst().unwrap(), "2020-09-18T01:16:25.909-00:00");
+
+        let uuid = Edn::Uuid("af6d8699-f442-4dfd-8b26-37d80543186b".to_string());
+        assert_eq!(uuid.to_str_inst(), None);
     }
 
     #[test]
     fn uuid_to_string() {
         let uuid = Edn::Uuid("af6d8699-f442-4dfd-8b26-37d80543186b".to_string());
 
-        assert_eq!(uuid.to_string(), "af6d8699-f442-4dfd-8b26-37d80543186b");
+        assert_eq!(
+            uuid.to_string(),
+            "#uuid \"af6d8699-f442-4dfd-8b26-37d80543186b\""
+        );
         let str_uuid: String = crate::deserialize::from_edn(&uuid).unwrap();
-        assert_eq!(str_uuid, "af6d8699-f442-4dfd-8b26-37d80543186b");
+        assert_eq!(str_uuid, "#uuid \"af6d8699-f442-4dfd-8b26-37d80543186b\"");
+    }
+
+    #[test]
+    fn uuid_to_str_uuid() {
+        let uuid = Edn::Uuid("af6d8699-f442-4dfd-8b26-37d80543186b".to_string());
+
+        assert_eq!(
+            uuid.to_str_uuid().unwrap(),
+            "af6d8699-f442-4dfd-8b26-37d80543186b"
+        );
+
+        let inst = Edn::Inst("2020-09-18T01:16:25.909-00:00".to_string());
+        assert_eq!(inst.to_str_uuid(), None);
     }
 }
