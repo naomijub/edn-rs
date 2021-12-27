@@ -198,10 +198,14 @@ fn read_tagged_chars(
                 .map(|ch| ch.1)
                 .collect::<String>()
         ),
-        _ => chars
-            .take_while(|ch| !ch.1.is_whitespace())
-            .map(|ch| ch.1)
-            .collect::<String>(),
+        _ => format!(
+            "{}{}",
+            c.unwrap_or((0, ' ')).1,
+            chars
+                .take_while(|ch| !ch.1.is_whitespace())
+                .map(|ch| ch.1)
+                .collect::<String>()
+        ),
     }
 }
 
