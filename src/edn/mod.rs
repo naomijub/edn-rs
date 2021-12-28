@@ -1060,4 +1060,57 @@ mod test {
         let inst = Edn::Inst("2020-09-18T01:16:25.909-00:00".to_string());
         assert_eq!(inst.to_str_uuid(), None);
     }
+
+    #[test]
+    fn get_vec_at() {
+        let expected = &Edn::Key(":b".to_string());
+        let edn = Edn::Vector(Vector(vec![
+            Edn::Bool(true),
+            Edn::Key(":b".to_string()),
+            Edn::Str("test".to_string()),
+        ]));
+        let val = &edn[Edn::UInt(1)];
+
+        assert_eq!(val, expected);
+    }
+
+    #[test]
+    fn get_list_at() {
+        let expected = &Edn::Str("test".to_string());
+        let edn = Edn::Vector(Vector(vec![
+            Edn::Bool(true),
+            Edn::Key(":b".to_string()),
+            Edn::Str("test".to_string()),
+        ]));
+        let val = &edn[Edn::Int(2)];
+
+        assert_eq!(val, expected);
+    }
+
+    #[test]
+    fn get_namespaced_map() {
+        let expected = &Edn::Key(":val".to_string());
+        let ns_map = Edn::NamespacedMap(
+            "abc".to_string(),
+            Map::new(map! {
+                "0".to_string() => Edn::Key(":val".to_string()),
+                "1".to_string() => Edn::Key(":value".to_string())
+            }),
+        );
+
+        let val = &ns_map[Edn::UInt(0)];
+        assert_eq!(expected, val);
+    }
+
+    #[test]
+    fn get_map() {
+        let expected = &Edn::Key(":val".to_string());
+        let map = Edn::Map(Map::new(map! {
+            ":key".to_string() => Edn::Key(":val".to_string()),
+            "1".to_string() => Edn::Key(":value".to_string())
+        }));
+
+        let val = &map[Edn::Key(":key".to_owned())];
+        assert_eq!(expected, val);
+    }
 }
