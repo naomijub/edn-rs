@@ -87,6 +87,27 @@ impl Index for String {
     }
 }
 
+impl Index for Edn {
+    fn index_into<'v>(&self, v: &'v Edn) -> Option<&'v Edn> {
+        let key = self.to_string();
+        let index = self.to_uint();
+
+        match (v, index) {
+            (Edn::Map(ref map), _) => map.0.get(&key),
+            (Edn::NamespacedMap(_, ref map), _) => map.0.get(&key),
+            (Edn::List(_), Some(idx)) => idx.index_into(v),
+            (Edn::Vector(_), Some(idx)) => idx.index_into(v),
+            _ => None,
+        }
+    }
+    fn index_into_mut<'v>(&self, _: &'v mut Edn) -> Option<&'v mut Edn> {
+        panic!("index_into_mut not implemented for edn")
+    }
+    fn index_or_insert<'v>(&self, _: &'v mut Edn) -> &'v mut Edn {
+        panic!("index_or_insert not implemented for edn")
+    }
+}
+
 impl<'a, T: ?Sized> Index for &'a T
 where
     T: Index,
@@ -104,10 +125,13 @@ where
 
 // Prevent users from implementing the Index trait.
 mod private {
+    use crate::Edn;
+
     pub trait Sealed {}
     impl Sealed for usize {}
     impl Sealed for str {}
     impl Sealed for String {}
+    impl Sealed for Edn {}
     impl<'a, T: ?Sized> Sealed for &'a T where T: Sealed {}
 }
 struct Type<'a>(&'a Edn);
