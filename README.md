@@ -407,6 +407,7 @@ async fn foo() -> Edn {
     - [x] Set `"#{1 2 3}"`
     - [x] Map `"{:a 1 :b 2 }"`
     - [x] Inst `#inst \"yyyy-mm-ddTHH:MM:ss\"`
+    - [x] UUID `#uuid \"<some-uuid>\"`
     - [x] Nested structures `"{:a \"2\" :b [true false] :c #{:A {:a :b} nil}}"`
 - [ ] Simple data structures in one another [`edn!`](https://docs.rs/edn-rs/0.16.14/edn_rs/macro.edn.html):
     - [x] Vec in Vec `"[1 2 [:3 \"4\"]]"`
