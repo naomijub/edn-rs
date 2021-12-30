@@ -6,6 +6,7 @@ Crate to parse and emit EDN
 * Minimal Rust Version is 1.46+.
 
 Our **MTTA** (Mean time to acknowledge) is around `one day`; 
+<!---->
 and our **TTR** (Time To Resolve) can vary from a `few days to a couple of weeks` depending on the number of issues.
 
 Current example usage in:
