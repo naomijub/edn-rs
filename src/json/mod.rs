@@ -20,6 +20,7 @@ pub(crate) fn display_as_json(edn: &Edn) -> String {
         Edn::NamespacedMap(ns, map) => nsmap_to_json(ns, map.to_owned().to_map()),
         Edn::Nil => String::from("null"),
         Edn::Empty => String::from(""),
+        Edn::Tagged(tag, content) => format!("{{ \"{}\": {}}}", tag, display_as_json(&content)),
     }
 }
 
@@ -301,5 +302,25 @@ mod test {
             display_as_json(&map),
             "{\"thisIsANamespace\": {\"1.2\": false, \"beloMonte\": 0.75, \"true\": \'d\'}}"
         )
+    }
+
+    #[test]
+    fn tagged_vector() {
+        let edn = Edn::Tagged(
+            String::from("random/tag"),
+            Box::new(Edn::Vector(Vector::new(vec![
+                Edn::Bool(true),
+                Edn::Key(":b".to_string()),
+                Edn::Str("test".to_string()),
+                Edn::Char('4'),
+                Edn::Rational("-3/4".to_string()),
+                Edn::Double(4.5f64.into()),
+                Edn::UInt(4),
+            ]))),
+        );
+        assert_eq!(
+            display_as_json(&edn),
+            "{ \"random/tag\": [true, \"b\", \"test\", \'4\', -0.75, 4.5, 4]}".to_string()
+        );
     }
 }

@@ -156,6 +156,7 @@ impl<'a> fmt::Display for Type<'a> {
             Edn::Inst(_) => formatter.write_str("inst"),
             Edn::Uuid(_) => formatter.write_str("uuid"),
             Edn::Rational(_) => formatter.write_str("rational"),
+            Edn::Tagged(_, _) => formatter.write_str("tagged-element"),
         }
     }
 }
