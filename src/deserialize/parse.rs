@@ -148,65 +148,7 @@ fn read_tagged(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn,
         ));
     }
 
-    let next_char = chars.next();
-    let content = read_tagged_chars(next_char, chars);
-    let mut next_chars = content.chars().enumerate();
-
-    Ok(Edn::Tagged(
-        tag,
-        Box::new(parse(next_chars.next(), &mut next_chars)?),
-    ))
-}
-
-fn read_tagged_chars(
-    c: Option<(usize, char)>,
-    chars: &mut std::iter::Enumerate<std::str::Chars>,
-) -> String {
-    match c {
-        Some((_, '[')) => format!(
-            "[ {} ]",
-            chars
-                .take_while(|ch| ch.1 != ']')
-                .map(|ch| ch.1)
-                .collect::<String>()
-        ),
-        Some((_, '(')) => format!(
-            "( {} )",
-            chars
-                .take_while(|ch| ch.1 != ')')
-                .map(|ch| ch.1)
-                .collect::<String>()
-        ),
-        Some((_, '{')) => format!(
-            "{{ {} }}",
-            chars
-                .take_while(|ch| ch.1 != '}')
-                .map(|ch| ch.1)
-                .collect::<String>()
-        ),
-        Some((_, '@')) => format!(
-            "@ {} }}",
-            chars
-                .take_while(|ch| ch.1 != '}')
-                .map(|ch| ch.1)
-                .collect::<String>()
-        ),
-        Some((_, '\"')) => format!(
-            "\"{}\"",
-            chars
-                .take_while(|ch| ch.1 != '\"')
-                .map(|ch| ch.1)
-                .collect::<String>()
-        ),
-        _ => format!(
-            "{}{}",
-            c.unwrap_or((0, ' ')).1,
-            chars
-                .take_while(|ch| !ch.1.is_whitespace())
-                .map(|ch| ch.1)
-                .collect::<String>()
-        ),
-    }
+    Ok(Edn::Tagged(tag, Box::new(parse(chars.next(), chars)?)))
 }
 
 fn read_number(n: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
@@ -857,6 +799,98 @@ mod test {
                     "3".to_string() =>
                     Edn::UInt(4)
                 })))
+            )
+        )
+    }
+
+    #[test]
+    fn parse_tagged_map_anything() {
+        let mut edn = "#domain/model {1 \"hello\" 3 [[1 2] [2 3] [3 4]] #keyword :4 {:cool-tagged #yay {:stuff \"hehe\"}} 5 #wow {:a :b}}".chars().enumerate();
+        let res = parse(edn.next(), &mut edn).unwrap();
+
+        println!("{:#?}\n\n", res);
+
+        assert_eq!(
+            res,
+            Edn::Tagged(
+                "domain/model".to_string(),
+                Box::new(Edn::Map(Map::new(map! {
+                    "#keyword :4".to_string() => Edn::Map(
+                        Map::new(map!
+                            {
+                                ":cool-tagged".to_string() => Edn::Tagged(
+                                    "yay".to_string(),
+                                    Box::new(Edn::Map(
+                                        Map::new(
+                                            map!{
+                                                ":stuff".to_string() => Edn::Str(
+                                                    "hehe".to_string(),
+                                                )
+                                            },
+                                        ),
+                                    )),
+                                )
+                            },
+                        ),
+                    ),
+                    "1".to_string() => Edn::Str(
+                        "hello".to_string(),
+                    ),
+                    "3".to_string() => Edn::Vector(
+                        Vector::new(
+                            vec![
+                                Edn::Vector(
+                                    Vector::new(
+                                        vec![
+                                            Edn::UInt(
+                                                1,
+                                            ),
+                                            Edn::UInt(
+                                                2,
+                                            ),
+                                        ],
+                                    ),
+                                ),
+                                Edn::Vector(
+                                    Vector::new(
+                                        vec![
+                                            Edn::UInt(
+                                                2,
+                                            ),
+                                            Edn::UInt(
+                                                3,
+                                            ),
+                                        ],
+                                    ),
+                                ),
+                                Edn::Vector(
+                                    Vector::new(
+                                        vec![
+                                            Edn::UInt(
+                                                3,
+                                            ),
+                                            Edn::UInt(
+                                                4,
+                                            ),
+                                        ],
+                                    ),
+                                ),
+                            ],
+                        ),
+                    ),
+                    "5".to_string() => Edn::Tagged(
+                        "wow".to_string(),
+                        Box::new(Edn::Map(
+                            Map::new(map!
+                                {
+                                    ":a".to_string() => Edn::Key(
+                                        ":b".to_string(),
+                                    )
+                                },
+                            ),
+                        )),
+                    )
+                },),),)
             )
         )
     }
