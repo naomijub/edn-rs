@@ -130,7 +130,6 @@ fn read_symbol(a: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Re
 }
 
 fn read_tagged(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
-    println!("{:?}", chars);
     let tag = chars
         .take_while(|c| !c.1.is_whitespace())
         .map(|c| c.1)
