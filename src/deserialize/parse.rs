@@ -11,7 +11,7 @@ pub(crate) fn parse(
     Ok(match c {
         Some((_, '[')) => read_vec(chars)?,
         Some((_, '(')) => read_list(chars)?,
-        Some((_, '@')) => read_set(chars)?,
+        Some((_, '#')) => tagged_or_set(chars)?,
         Some((_, '{')) => read_map(chars)?,
         edn => parse_edn(edn, chars)?,
     })
@@ -24,13 +24,20 @@ pub(crate) fn parse_edn(
     match c {
         Some((_, '\"')) => read_str(chars),
         Some((_, ':')) => read_key_or_nsmap(chars),
-        Some((_, '#')) => Ok(read_tagged(chars)?),
         Some((_, '-')) => Ok(read_number('-', chars)?),
         Some((_, '\\')) => Ok(read_char(chars)?),
         Some((_, b)) if b == 't' || b == 'f' || b == 'n' => Ok(read_bool_or_nil(b, chars)?),
         Some((_, n)) if n.is_numeric() => Ok(read_number(n, chars)?),
         Some((_, a)) => Ok(read_symbol(a, chars)?),
         None => Err(Error::ParseEdn("Edn could not be parsed".to_string())),
+    }
+}
+
+fn tagged_or_set(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
+    if let Some((_, '{')) = chars.clone().next() {
+        read_set(chars)
+    } else {
+        read_tagged(chars)
     }
 }
 
@@ -123,6 +130,7 @@ fn read_symbol(a: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Re
 }
 
 fn read_tagged(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
+    println!("{:?}", chars);
     let tag = chars
         .take_while(|c| !c.1.is_whitespace())
         .map(|c| c.1)
@@ -310,6 +318,7 @@ fn read_list(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, E
 }
 
 fn read_set(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
+    let _discard_brackets = chars.next();
     let i = chars
         .clone()
         .next()
@@ -409,32 +418,6 @@ fn read_map(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Er
             res.insert(key.unwrap().to_string(), val.unwrap());
             key = None;
             val = None;
-        }
-    }
-}
-
-use std::borrow::Cow;
-
-pub trait MaybeReplaceExt<'a> {
-    fn maybe_replace(self, find: &str, replacement: &str) -> Cow<'a, str>;
-}
-
-impl<'a> MaybeReplaceExt<'a> for &'a str {
-    fn maybe_replace(self, find: &str, replacement: &str) -> Cow<'a, str> {
-        if self.contains(find) {
-            self.replace(find, replacement).into()
-        } else {
-            self.into()
-        }
-    }
-}
-
-impl<'a> MaybeReplaceExt<'a> for Cow<'a, str> {
-    fn maybe_replace(self, find: &str, replacement: &str) -> Cow<'a, str> {
-        if self.contains(find) {
-            self.replace(find, replacement).into()
-        } else {
-            self
         }
     }
 }
@@ -575,7 +558,7 @@ mod test {
 
     #[test]
     fn parse_set() {
-        let mut edn = "@true \\c 3 }".chars().enumerate();
+        let mut edn = "#{true \\c 3 }".chars().enumerate();
 
         assert_eq!(
             parse(edn.next(), &mut edn).unwrap(),
@@ -589,7 +572,7 @@ mod test {
 
     #[test]
     fn parse_complex() {
-        let mut edn = "[:b ( 5 \\c @true \\c 3 } ) ]".chars().enumerate();
+        let mut edn = "[:b ( 5 \\c #{true \\c 3 } ) ]".chars().enumerate();
 
         assert_eq!(
             parse(edn.next(), &mut edn).unwrap(),
@@ -637,9 +620,10 @@ mod test {
 
     #[test]
     fn parse_edn_with_inst() {
-        let mut edn = "@ :a :b {:c :d :date  #inst \"2020-07-16T21:53:14.628-00:00\" ::c ::d} nil}"
-            .chars()
-            .enumerate();
+        let mut edn =
+            "#{ :a :b {:c :d :date  #inst \"2020-07-16T21:53:14.628-00:00\" ::c ::d} nil}"
+                .chars()
+                .enumerate();
 
         assert_eq!(
             parse(edn.next(), &mut edn).unwrap(),
@@ -768,7 +752,7 @@ mod test {
 
     #[test]
     fn parse_tagged_set() {
-        let mut edn = "#domain/model @1 2 3}".chars().enumerate();
+        let mut edn = "#domain/model #{1 2 3}".chars().enumerate();
         let res = parse(edn.next(), &mut edn).unwrap();
 
         assert_eq!(

@@ -776,14 +776,7 @@ mod test {
     }
 
     #[test]
-    fn weird_input2() {
-        let edn = "@#{:error}";
-
-        assert_eq!(
-            Edn::from_str(edn),
-            Err(Error::ParseEdn(
-                "None could not be parsed at char count 1".to_string()
-            ))
-        );
+    fn string_with_empty_set() {
+        assert_eq!("\"#{}\"", format!("{}", Edn::from_str("\"#{}\"").unwrap()));
     }
 }
