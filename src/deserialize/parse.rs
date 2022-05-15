@@ -40,11 +40,11 @@ pub(crate) fn parse_edn(
         Some((_, '\\')) => Ok(read_char(chars)?),
         Some((_, ';')) => {
             read_comment(chars)?;
-            Ok(parse_edn(chars.next(), chars)?)
+            Ok(parse(chars.next(), chars)?)
         }
         Some((_, b)) if b == 't' || b == 'f' || b == 'n' => Ok(read_bool_or_nil(b, chars)?),
         Some((_, n)) if n.is_numeric() => Ok(read_number(n, chars)?),
-        Some((_, s)) if s.is_whitespace() => Ok(parse_edn(chars.next(), chars)?),
+        Some((_, s)) if s.is_whitespace() => Ok(parse(chars.next(), chars)?),
         Some((_, a)) => Ok(read_symbol(a, chars)?),
         None => Err(Error::ParseEdn("Edn could not be parsed".to_string())),
     }
