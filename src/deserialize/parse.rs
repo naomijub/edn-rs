@@ -38,13 +38,8 @@ pub(crate) fn parse_edn(
         Some((_, ':')) => read_key_or_nsmap(chars),
         Some((_, '-')) => Ok(read_number('-', chars)?),
         Some((_, '\\')) => Ok(read_char(chars)?),
-        Some((_, ';')) => {
-            read_comment(chars)?;
-            Ok(parse(chars.next(), chars)?)
-        }
         Some((_, b)) if b == 't' || b == 'f' || b == 'n' => Ok(read_bool_or_nil(b, chars)?),
         Some((_, n)) if n.is_numeric() => Ok(read_number(n, chars)?),
-        Some((_, s)) if s.is_whitespace() => Ok(parse(chars.next(), chars)?),
         Some((_, a)) => Ok(read_symbol(a, chars)?),
         None => Err(Error::ParseEdn("Edn could not be parsed".to_string())),
     }
@@ -503,10 +498,20 @@ mod test {
 
     #[test]
     fn parse_str_top_level_comment() {
+        let mut string = ";;; hello world string example\n\n;; deserialize the following string\n\n\"hello world, from      RUST\"".chars().enumerate();
+
+        assert_eq!(
+            parse(string.next(), &mut string).unwrap(),
+            Edn::Str("hello world, from      RUST".to_string())
+        )
+    }
+
+    #[test]
+    fn parse_str_top_level_comment_whitespace() {
         let mut string = "\n;;; hello world string example\n\n;; deserialize the following string\n\n\"hello world, from      RUST\"".chars().enumerate();
 
         assert_eq!(
-            parse_edn(string.next(), &mut string).unwrap(),
+            parse(string.next(), &mut string).unwrap(),
             Edn::Str("hello world, from      RUST".to_string())
         )
     }
