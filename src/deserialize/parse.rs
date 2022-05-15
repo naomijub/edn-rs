@@ -24,7 +24,7 @@ fn parse_internal(
         Some((_, '#')) => Some(tagged_or_set(chars)?),
         Some((_, '{')) => Some(read_map(chars)?),
         Some((_, ';')) => {
-            chars.skip_while(|c| c.1 != '\n').map(|c| c.1).next();
+            chars.skip_while(|c| c.1 != '\n').next();
             read_if_not_container_end(chars)?
         }
         Some((_, s)) if s.is_whitespace() => read_if_not_container_end(chars)?,
