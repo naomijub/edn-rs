@@ -13,6 +13,14 @@ pub(crate) fn parse(
         Some((_, '(')) => read_list(chars)?,
         Some((_, '#')) => tagged_or_set(chars)?,
         Some((_, '{')) => read_map(chars)?,
+        Some((_, ';')) => {
+            let cmt = read_comment(chars)?;
+            match chars.next() {
+                Some(c) => parse(Some(c), chars)?,
+                None => cmt,
+            }
+        }
+        Some((_, s)) if s.is_whitespace() => parse(chars.next(), chars)?,
         edn => parse_edn(edn, chars)?,
     })
 }
@@ -26,8 +34,13 @@ pub(crate) fn parse_edn(
         Some((_, ':')) => read_key_or_nsmap(chars),
         Some((_, '-')) => Ok(read_number('-', chars)?),
         Some((_, '\\')) => Ok(read_char(chars)?),
+        Some((_, ';')) => {
+            read_comment(chars)?;
+            Ok(parse_edn(chars.next(), chars)?)
+        }
         Some((_, b)) if b == 't' || b == 'f' || b == 'n' => Ok(read_bool_or_nil(b, chars)?),
         Some((_, n)) if n.is_numeric() => Ok(read_number(n, chars)?),
+        Some((_, s)) if s.is_whitespace() => Ok(parse_edn(chars.next(), chars)?),
         Some((_, a)) => Ok(read_symbol(a, chars)?),
         None => Err(Error::ParseEdn("Edn could not be parsed".to_string())),
     }
@@ -278,6 +291,10 @@ fn read_vec(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Er
     loop {
         match chars.next() {
             Some((_, ']')) => return Ok(Edn::Vector(Vector::new(res))),
+            Some((_, ';')) => {
+                read_comment(chars)?;
+                ()
+            }
             Some(c) if !c.1.is_whitespace() && c.1 != ',' => {
                 res.push(parse(Some(c), chars)?);
             }
@@ -302,6 +319,10 @@ fn read_list(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, E
     loop {
         match chars.next() {
             Some((_, ')')) => return Ok(Edn::List(List::new(res))),
+            Some((_, ';')) => {
+                read_comment(chars)?;
+                ()
+            }
             Some(c) if !c.1.is_whitespace() && c.1 != ',' => {
                 res.push(parse(Some(c), chars)?);
             }
@@ -328,6 +349,10 @@ fn read_set(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Er
     loop {
         match chars.next() {
             Some((_, '}')) => return Ok(Edn::Set(Set::new(res))),
+            Some((_, ';')) => {
+                read_comment(chars)?;
+                ()
+            }
             Some(c) if !c.1.is_whitespace() && c.1 != ',' => {
                 res.insert(parse(Some(c), chars)?);
             }
@@ -360,6 +385,10 @@ fn read_namespaced_map(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Res
     loop {
         match chars.next() {
             Some((_, '}')) => return Ok(Edn::NamespacedMap(namespace, Map::new(res))),
+            Some((_, ';')) => {
+                read_comment(chars)?;
+                ()
+            }
             Some(c) if !c.1.is_whitespace() && c.1 != ',' => {
                 if key.is_some() {
                     val = Some(parse(Some(c), chars)?);
@@ -397,6 +426,10 @@ fn read_map(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Er
     loop {
         match chars.next() {
             Some((_, '}')) => return Ok(Edn::Map(Map::new(res))),
+            Some((_, ';')) => {
+                read_comment(chars)?;
+                ()
+            }
             Some(c) if !c.1.is_whitespace() && c.1 != ',' => {
                 if key.is_some() {
                     val = Some(parse(Some(c), chars)?);
@@ -419,6 +452,17 @@ fn read_map(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Er
             val = None;
         }
     }
+}
+
+fn read_comment(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
+    loop {
+        match chars.next() {
+            Some((_, '\n')) => return Ok(Edn::Empty),
+            Some(_) => (),
+            None => break,
+        }
+    }
+    Ok(Edn::Empty)
 }
 
 #[cfg(test)]
@@ -444,6 +488,26 @@ mod test {
         assert_eq!(
             parse_edn(string.next(), &mut string).unwrap(),
             Edn::Str("hello world, from      RUST".to_string())
+        )
+    }
+
+    #[test]
+    fn parse_str_top_level_comment() {
+        let mut string = "\n;;; hello world string example\n\n;; deserialize the following string\n\n\"hello world, from      RUST\"".chars().enumerate();
+
+        assert_eq!(
+            parse_edn(string.next(), &mut string).unwrap(),
+            Edn::Str("hello world, from      RUST".to_string())
+        )
+    }
+
+    #[test]
+    fn parse_str_looks_like_comment() {
+        let mut string = "\";;; hello world, from      RUST\n\"".chars().enumerate();
+
+        assert_eq!(
+            parse_edn(string.next(), &mut string).unwrap(),
+            Edn::Str(";;; hello world, from      RUST\n".to_string())
         )
     }
 
@@ -541,8 +605,42 @@ mod test {
     }
 
     #[test]
+    fn parse_comment_in_simple_vec() {
+        let mut edn = "[11 \"2\" 3.3 ; float in simple vec\n:b true \\c]"
+            .chars()
+            .enumerate();
+
+        assert_eq!(
+            parse(edn.next(), &mut edn).unwrap(),
+            Edn::Vector(Vector::new(vec![
+                Edn::UInt(11),
+                Edn::Str("2".to_string()),
+                Edn::Double(3.3.into()),
+                Edn::Key(":b".to_string()),
+                Edn::Bool(true),
+                Edn::Char('c')
+            ]))
+        );
+    }
+
+    #[test]
     fn parse_list() {
         let mut edn = "(1 \"2\" 3.3 :b )".chars().enumerate();
+
+        assert_eq!(
+            parse(edn.next(), &mut edn).unwrap(),
+            Edn::List(List::new(vec![
+                Edn::UInt(1),
+                Edn::Str("2".to_string()),
+                Edn::Double(3.3.into()),
+                Edn::Key(":b".to_string()),
+            ]))
+        );
+    }
+
+    #[test]
+    fn parse_comment_in_list() {
+        let mut edn = "(1 \"2\" ; string in list\n3.3 :b )".chars().enumerate();
 
         assert_eq!(
             parse(edn.next(), &mut edn).unwrap(),
@@ -570,8 +668,45 @@ mod test {
     }
 
     #[test]
+    fn parse_comment_in_set() {
+        let mut edn = "#{true ; bool true in a set\n \\c 3 }".chars().enumerate();
+
+        assert_eq!(
+            parse(edn.next(), &mut edn).unwrap(),
+            Edn::Set(Set::new(set![
+                Edn::Bool(true),
+                Edn::Char('c'),
+                Edn::UInt(3)
+            ]))
+        )
+    }
+
+    #[test]
     fn parse_complex() {
         let mut edn = "[:b ( 5 \\c #{true \\c 3 } ) ]".chars().enumerate();
+
+        assert_eq!(
+            parse(edn.next(), &mut edn).unwrap(),
+            Edn::Vector(Vector::new(vec![
+                Edn::Key(":b".to_string()),
+                Edn::List(List::new(vec![
+                    Edn::UInt(5),
+                    Edn::Char('c'),
+                    Edn::Set(Set::new(set![
+                        Edn::Bool(true),
+                        Edn::Char('c'),
+                        Edn::UInt(3)
+                    ]))
+                ]))
+            ]))
+        )
+    }
+
+    #[test]
+    fn parse_comment_complex() {
+        let mut edn = "[:b ( 5 \\c #{true \\c; char c in a set\n3 } ) ]"
+            .chars()
+            .enumerate();
 
         assert_eq!(
             parse(edn.next(), &mut edn).unwrap(),
@@ -678,8 +813,108 @@ mod test {
     }
 
     #[test]
+    fn parse_comment_only() {
+        let mut edn = " ;;; this is a comment\n".chars().enumerate();
+
+        assert_eq!(parse(edn.next(), &mut edn).unwrap(), Edn::Empty);
+    }
+
+    #[test]
+    fn parse_comment_only_no_newline() {
+        let mut edn = " ;;; this is a comment".chars().enumerate();
+
+        assert_eq!(parse(edn.next(), &mut edn).unwrap(), Edn::Empty);
+    }
+
+    #[test]
+    fn parse_comment_multiple() {
+        let mut edn = " ;;; comment 1\n ;;; comment 2\n ;;; comment 3\n"
+            .chars()
+            .enumerate();
+
+        assert_eq!(parse(edn.next(), &mut edn).unwrap(), Edn::Empty);
+    }
+
+    #[test]
+    fn parse_comment_top_level() {
+        let mut edn = " ;; this is a map\n{ :a \"hello\n \r \t \\\"world\\\" with escaped \\\\ characters\" }"
+            .chars()
+            .enumerate();
+
+        assert_eq!(
+            parse(edn.next(), &mut edn).unwrap(),
+            Edn::Map(Map::new(
+                map! {":a".to_string() => Edn::Str("hello\n \r \t \"world\" with escaped \\ characters".to_string())}
+            ))
+        );
+    }
+
+    #[test]
+    fn parse_comment_inside_map() {
+        let mut edn =
+            "{ :a \"hello\n \r \t \\\"world\\\" with escaped \\\\ characters\" ; escaped chars\n }"
+                .chars()
+                .enumerate();
+
+        assert_eq!(
+            parse(edn.next(), &mut edn).unwrap(),
+            Edn::Map(Map::new(
+                map! {":a".to_string() => Edn::Str("hello\n \r \t \"world\" with escaped \\ characters".to_string())}
+            ))
+        );
+    }
+
+    #[test]
+    fn parse_comment_end_of_file() {
+        let mut edn = ";; this is a map\n{ :a \"hello\n \r \t \\\"world\\\" with escaped \\\\ characters\" }\n ;; end of file\n"
+            .chars()
+            .enumerate();
+
+        assert_eq!(
+            parse(edn.next(), &mut edn).unwrap(),
+            Edn::Map(Map::new(
+                map! {":a".to_string() => Edn::Str("hello\n \r \t \"world\" with escaped \\ characters".to_string())}
+            ))
+        );
+    }
+
+    #[test]
+    fn parse_comment_end_of_file_no_newline() {
+        let mut edn = ";; this is a map\n{ :a \"hello\n \r \t \\\"world\\\" with escaped \\\\ characters\" }\n ;; end of file"
+            .chars()
+            .enumerate();
+
+        assert_eq!(
+            parse(edn.next(), &mut edn).unwrap(),
+            Edn::Map(Map::new(
+                map! {":a".to_string() => Edn::Str("hello\n \r \t \"world\" with escaped \\ characters".to_string())}
+            ))
+        );
+    }
+
+    #[test]
     fn parse_tagged_vec() {
         let mut edn = "#domain/model [1 2 3]".chars().enumerate();
+        let res = parse(edn.next(), &mut edn).unwrap();
+
+        assert_eq!(
+            res,
+            Edn::Tagged(
+                String::from("domain/model"),
+                Box::new(Edn::Vector(Vector::new(vec![
+                    Edn::UInt(1),
+                    Edn::UInt(2),
+                    Edn::UInt(3)
+                ])))
+            )
+        )
+    }
+
+    #[test]
+    fn parse_tagged_vec_with_comment() {
+        let mut edn = "#domain/model ; tagging this vector\n [1 2 3]"
+            .chars()
+            .enumerate();
         let res = parse(edn.next(), &mut edn).unwrap();
 
         assert_eq!(
@@ -788,7 +1023,7 @@ mod test {
 
     #[test]
     fn parse_tagged_map_anything() {
-        let mut edn = "#domain/model {1 \"hello\" 3 [[1 2] [2 3] [3 4]] #keyword :4 {:cool-tagged #yay {:stuff \"hehe\"}} 5 #wow {:a :b}}".chars().enumerate();
+        let mut edn = "#domain/model \n;; cool a tagged map!!!\n {1 \"hello\" 3 [[1 2] [2 3] [3 4]] #keyword :4 {:cool-tagged #yay ;; what a tag inside a tagged map?!\n {:stuff \"hehe\"}} 5 #wow {:a :b}}".chars().enumerate();
         let res = parse(edn.next(), &mut edn).unwrap();
 
         println!("{:#?}\n\n", res);
