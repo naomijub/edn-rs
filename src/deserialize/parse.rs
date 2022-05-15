@@ -8,24 +8,28 @@ pub(crate) fn parse(
     c: Option<(usize, char)>,
     chars: &mut std::iter::Enumerate<std::str::Chars>,
 ) -> Result<Edn, Error> {
+    match parse_internal(c, chars)? {
+        Some(edn) => Ok(edn),
+        None => Ok(Edn::Empty),
+    }
+}
+
+fn parse_internal(
+    c: Option<(usize, char)>,
+    chars: &mut std::iter::Enumerate<std::str::Chars>,
+) -> Result<Option<Edn>, Error> {
     Ok(match c {
-        Some((_, '[')) => read_vec(chars)?,
-        Some((_, '(')) => read_list(chars)?,
-        Some((_, '#')) => tagged_or_set(chars)?,
-        Some((_, '{')) => read_map(chars)?,
+        Some((_, '[')) => Some(read_vec(chars)?),
+        Some((_, '(')) => Some(read_list(chars)?),
+        Some((_, '#')) => Some(tagged_or_set(chars)?),
+        Some((_, '{')) => Some(read_map(chars)?),
         Some((_, ';')) => {
-            let cmt = read_comment(chars)?;
-            match chars.next() {
-                Some(c) => parse(Some(c), chars)?,
-                None => cmt,
-            }
+            chars.skip_while(|c| c.1 != '\n').map(|c| c.1).next();
+            read_if_not_container_end(chars)?
         }
-        Some((_, s)) if s.is_whitespace() => match chars.next() {
-            Some(c) => parse(Some(c), chars)?,
-            None => Edn::Empty,
-        },
-        None => Edn::Empty,
-        edn => parse_edn(edn, chars)?,
+        Some((_, s)) if s.is_whitespace() => read_if_not_container_end(chars)?,
+        None => None,
+        edn => Some(parse_edn(edn, chars)?),
     })
 }
 
@@ -55,7 +59,7 @@ fn tagged_or_set(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Ed
 
 fn read_key_or_nsmap(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
     let mut key_chars = chars.clone().take_while(|c| {
-        !c.1.is_whitespace() && c.1 != ',' && c.1 != ')' && c.1 != ']' && c.1 != '}'
+        !c.1.is_whitespace() && c.1 != ',' && c.1 != ')' && c.1 != ']' && c.1 != '}' && c.1 != ';'
     });
     let c_len = key_chars.clone().count();
 
@@ -290,13 +294,12 @@ fn read_vec(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Er
     loop {
         match chars.next() {
             Some((_, ']')) => return Ok(Edn::Vector(Vector::new(res))),
-            Some((_, ';')) => {
-                read_comment(chars)?;
+            Some(c) if c.1 != ',' => {
+                if let Some(e) = parse_internal(Some(c), chars)? {
+                    res.push(e);
+                }
             }
-            Some(c) if !c.1.is_whitespace() && c.1 != ',' => {
-                res.push(parse(Some(c), chars)?);
-            }
-            Some(c) if c.1.is_whitespace() || c.1 == ',' => (),
+            Some(c) if c.1 == ',' => (),
             err => {
                 return Err(Error::ParseEdn(format!(
                     "{:?} could not be parsed at char count {}",
@@ -317,13 +320,12 @@ fn read_list(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, E
     loop {
         match chars.next() {
             Some((_, ')')) => return Ok(Edn::List(List::new(res))),
-            Some((_, ';')) => {
-                read_comment(chars)?;
+            Some(c) if c.1 != ',' => {
+                if let Some(e) = parse_internal(Some(c), chars)? {
+                    res.push(e);
+                }
             }
-            Some(c) if !c.1.is_whitespace() && c.1 != ',' => {
-                res.push(parse(Some(c), chars)?);
-            }
-            Some(c) if c.1.is_whitespace() || c.1 == ',' => (),
+            Some(c) if c.1 == ',' => (),
             err => {
                 return Err(Error::ParseEdn(format!(
                     "{:?} could not be parsed at char count {}",
@@ -346,13 +348,12 @@ fn read_set(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Er
     loop {
         match chars.next() {
             Some((_, '}')) => return Ok(Edn::Set(Set::new(res))),
-            Some((_, ';')) => {
-                read_comment(chars)?;
+            Some(c) if c.1 != ',' => {
+                if let Some(e) = parse_internal(Some(c), chars)? {
+                    res.insert(e);
+                }
             }
-            Some(c) if !c.1.is_whitespace() && c.1 != ',' => {
-                res.insert(parse(Some(c), chars)?);
-            }
-            Some(c) if c.1.is_whitespace() || c.1 == ',' => (),
+            Some(c) if c.1 == ',' => (),
             err => {
                 return Err(Error::ParseEdn(format!(
                     "{:?} could not be parsed at char count {}",
@@ -381,17 +382,14 @@ fn read_namespaced_map(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Res
     loop {
         match chars.next() {
             Some((_, '}')) => return Ok(Edn::NamespacedMap(namespace, Map::new(res))),
-            Some((_, ';')) => {
-                read_comment(chars)?;
-            }
-            Some(c) if !c.1.is_whitespace() && c.1 != ',' => {
+            Some(c) if c.1 != ',' => {
                 if key.is_some() {
                     val = Some(parse(Some(c), chars)?);
                 } else {
-                    key = Some(parse(Some(c), chars)?);
+                    key = parse_internal(Some(c), chars)?;
                 }
             }
-            Some(c) if c.1.is_whitespace() || c.1 == ',' => (),
+            Some(c) if c.1 == ',' => (),
             err => {
                 return Err(Error::ParseEdn(format!(
                     "{:?} could not be parsed at char count {}",
@@ -421,17 +419,14 @@ fn read_map(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Er
     loop {
         match chars.next() {
             Some((_, '}')) => return Ok(Edn::Map(Map::new(res))),
-            Some((_, ';')) => {
-                read_comment(chars)?;
-            }
-            Some(c) if !c.1.is_whitespace() && c.1 != ',' => {
+            Some(c) if c.1 != ',' => {
                 if key.is_some() {
                     val = Some(parse(Some(c), chars)?);
                 } else {
-                    key = Some(parse(Some(c), chars)?);
+                    key = parse_internal(Some(c), chars)?;
                 }
             }
-            Some(c) if c.1.is_whitespace() || c.1 == ',' => (),
+            Some(c) if c.1 == ',' => (),
             err => {
                 return Err(Error::ParseEdn(format!(
                     "{:?} could not be parsed at char count {}",
@@ -448,9 +443,14 @@ fn read_map(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Er
     }
 }
 
-fn read_comment(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
-    chars.skip_while(|c| c.1 != '\n').map(|c| c.1).next();
-    Ok(Edn::Empty)
+fn read_if_not_container_end(
+    chars: &mut std::iter::Enumerate<std::str::Chars>,
+) -> Result<Option<Edn>, Error> {
+    Ok(match chars.clone().next() {
+        Some(c) if c.1 == ']' || c.1 == ')' || c.1 == '}' => None,
+        Some(_) => parse_internal(chars.next(), chars)?,
+        None => None,
+    })
 }
 
 #[cfg(test)]
@@ -639,6 +639,25 @@ mod test {
     }
 
     #[test]
+    fn parse_comment_in_simple_vec_end() {
+        let mut edn = "[11 \"2\" 3.3 :b true \\c; char in simple vec\n]"
+            .chars()
+            .enumerate();
+
+        assert_eq!(
+            parse(edn.next(), &mut edn).unwrap(),
+            Edn::Vector(Vector::new(vec![
+                Edn::UInt(11),
+                Edn::Str("2".to_string()),
+                Edn::Double(3.3.into()),
+                Edn::Key(":b".to_string()),
+                Edn::Bool(true),
+                Edn::Char('c')
+            ]))
+        );
+    }
+
+    #[test]
     fn parse_comment_in_simple_vec_str_literal() {
         let mut edn = "[
                          11 
@@ -682,7 +701,22 @@ mod test {
 
     #[test]
     fn parse_comment_in_list() {
-        let mut edn = "(1 \"2\" ; string in list\n3.3 :b )".chars().enumerate();
+        let mut edn = "(1 \"2\"; string in list\n3.3 :b )".chars().enumerate();
+
+        assert_eq!(
+            parse(edn.next(), &mut edn).unwrap(),
+            Edn::List(List::new(vec![
+                Edn::UInt(1),
+                Edn::Str("2".to_string()),
+                Edn::Double(3.3.into()),
+                Edn::Key(":b".to_string()),
+            ]))
+        );
+    }
+
+    #[test]
+    fn parse_comment_in_list_end() {
+        let mut edn = "(1 \"2\" 3.3 :b; keyword in list\n)".chars().enumerate();
 
         assert_eq!(
             parse(edn.next(), &mut edn).unwrap(),
@@ -712,6 +746,20 @@ mod test {
     #[test]
     fn parse_comment_in_set() {
         let mut edn = "#{true ; bool true in a set\n \\c 3 }".chars().enumerate();
+
+        assert_eq!(
+            parse(edn.next(), &mut edn).unwrap(),
+            Edn::Set(Set::new(set![
+                Edn::Bool(true),
+                Edn::Char('c'),
+                Edn::UInt(3)
+            ]))
+        )
+    }
+
+    #[test]
+    fn parse_comment_in_set_end() {
+        let mut edn = "#{true \\c 3; int 3 in a set\n}".chars().enumerate();
 
         assert_eq!(
             parse(edn.next(), &mut edn).unwrap(),
