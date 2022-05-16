@@ -27,7 +27,7 @@ fn parse_internal(
             chars.skip_while(|c| c.1 != '\n').next();
             read_if_not_container_end(chars)?
         }
-        Some((_, s)) if s.is_whitespace() => read_if_not_container_end(chars)?,
+        Some((_, s)) if s.is_whitespace() || s == ',' => read_if_not_container_end(chars)?,
         None => None,
         edn => Some(parse_edn(edn, chars)?),
     })
@@ -123,7 +123,7 @@ fn read_symbol(a: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Re
         .clone()
         .enumerate()
         .take_while(|&(i, c)| {
-            i <= 200 && !c.1.is_whitespace() && c.1 != ')' && c.1 != '}' && c.1 != ']'
+            i <= 200 && !c.1.is_whitespace() && c.1 != ',' && c.1 != ')' && c.1 != '}' && c.1 != ']'
         })
         .count();
     let i = chars
@@ -147,7 +147,7 @@ fn read_symbol(a: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Re
 
 fn read_tagged(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
     let tag = chars
-        .take_while(|c| !c.1.is_whitespace())
+        .take_while(|c| !c.1.is_whitespace() && c.1 != ',')
         .map(|c| c.1)
         .collect::<String>();
 
@@ -294,12 +294,11 @@ fn read_vec(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Er
     loop {
         match chars.next() {
             Some((_, ']')) => return Ok(Edn::Vector(Vector::new(res))),
-            Some(c) if c.1 != ',' => {
+            Some(c) => {
                 if let Some(e) = parse_internal(Some(c), chars)? {
                     res.push(e);
                 }
             }
-            Some(c) if c.1 == ',' => (),
             err => {
                 return Err(Error::ParseEdn(format!(
                     "{:?} could not be parsed at char count {}",
@@ -320,12 +319,11 @@ fn read_list(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, E
     loop {
         match chars.next() {
             Some((_, ')')) => return Ok(Edn::List(List::new(res))),
-            Some(c) if c.1 != ',' => {
+            Some(c) => {
                 if let Some(e) = parse_internal(Some(c), chars)? {
                     res.push(e);
                 }
             }
-            Some(c) if c.1 == ',' => (),
             err => {
                 return Err(Error::ParseEdn(format!(
                     "{:?} could not be parsed at char count {}",
@@ -348,12 +346,11 @@ fn read_set(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Er
     loop {
         match chars.next() {
             Some((_, '}')) => return Ok(Edn::Set(Set::new(res))),
-            Some(c) if c.1 != ',' => {
+            Some(c) => {
                 if let Some(e) = parse_internal(Some(c), chars)? {
                     res.insert(e);
                 }
             }
-            Some(c) if c.1 == ',' => (),
             err => {
                 return Err(Error::ParseEdn(format!(
                     "{:?} could not be parsed at char count {}",
@@ -382,14 +379,13 @@ fn read_namespaced_map(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Res
     loop {
         match chars.next() {
             Some((_, '}')) => return Ok(Edn::NamespacedMap(namespace, Map::new(res))),
-            Some(c) if c.1 != ',' => {
+            Some(c) => {
                 if key.is_some() {
                     val = Some(parse(Some(c), chars)?);
                 } else {
                     key = parse_internal(Some(c), chars)?;
                 }
             }
-            Some(c) if c.1 == ',' => (),
             err => {
                 return Err(Error::ParseEdn(format!(
                     "{:?} could not be parsed at char count {}",
@@ -419,14 +415,13 @@ fn read_map(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Er
     loop {
         match chars.next() {
             Some((_, '}')) => return Ok(Edn::Map(Map::new(res))),
-            Some(c) if c.1 != ',' => {
+            Some(c) => {
                 if key.is_some() {
                     val = Some(parse(Some(c), chars)?);
                 } else {
                     key = parse_internal(Some(c), chars)?;
                 }
             }
-            Some(c) if c.1 == ',' => (),
             err => {
                 return Err(Error::ParseEdn(format!(
                     "{:?} could not be parsed at char count {}",
@@ -477,6 +472,13 @@ mod test {
     }
 
     #[test]
+    fn parse_commas_are_whitespace() {
+        let mut edn = ",,,,, \r\n,,,".chars().enumerate();
+
+        assert_eq!(parse(edn.next(), &mut edn).unwrap(), Edn::Empty);
+    }
+
+    #[test]
     fn parse_keyword() {
         let mut key = ":keyword".chars().enumerate();
 
@@ -508,7 +510,7 @@ mod test {
 
     #[test]
     fn parse_str_top_level_comment_whitespace() {
-        let mut string = "\n;;; hello world string example\n\n;; deserialize the following string\n\n\"hello world, from      RUST\"".chars().enumerate();
+        let mut string = "\n;;; hello world string example\n\n;; deserialize the following string\n\n,,\"hello world, from      RUST\"".chars().enumerate();
 
         assert_eq!(
             parse(string.next(), &mut string).unwrap(),
@@ -739,6 +741,21 @@ mod test {
                 Edn::Bool(true),
                 Edn::Char('c'),
                 Edn::UInt(3)
+            ]))
+        )
+    }
+
+    #[test]
+    fn parse_set_with_commas() {
+        let mut edn = "#{true, \\c, 3,four, }".chars().enumerate();
+
+        assert_eq!(
+            parse(edn.next(), &mut edn).unwrap(),
+            Edn::Set(Set::new(set![
+                Edn::Symbol("four".to_string()),
+                Edn::Bool(true),
+                Edn::Char('c'),
+                Edn::UInt(3),
             ]))
         )
     }
@@ -1113,7 +1130,7 @@ mod test {
 
     #[test]
     fn parse_tagged_map_anything() {
-        let mut edn = "#domain/model \n;; cool a tagged map!!!\n {1 \"hello\" 3 [[1 2] [2 3] [3 4]] #keyword :4 {:cool-tagged #yay ;; what a tag inside a tagged map?!\n {:stuff \"hehe\"}} 5 #wow {:a :b}}".chars().enumerate();
+        let mut edn = "#domain/model \n;; cool a tagged map!!!\n {1 \"hello\" 3 [[1 2] [2 3] [3,, 4]] #keyword, :4,,, {:cool-tagged #yay ;; what a tag inside a tagged map?!\n {:stuff \"hehe\"}}, 5 #wow {:a, :b}}".chars().enumerate();
         let res = parse(edn.next(), &mut edn).unwrap();
 
         println!("{:#?}\n\n", res);
