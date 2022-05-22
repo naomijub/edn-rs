@@ -4,9 +4,12 @@ use std::str::FromStr;
 
 pub(crate) mod parse;
 
-/// public trait to be used to `Deserialize` structs
+/// public trait to be used to `Deserialize` structs.
 ///
-/// Example:
+/// # Errors
+///
+/// Error will be like `EdnError::Deserialize("couldn't convert <value> into <type>")`
+///
 /// ```
 /// use crate::edn_rs::{Edn, EdnError, Deserialize};
 ///
@@ -49,6 +52,7 @@ pub(crate) mod parse;
 ///     ))
 /// );
 /// ```
+#[allow(clippy::missing_errors_doc)]
 pub trait Deserialize: Sized {
     fn deserialize(edn: &Edn) -> Result<Self, Error>;
 }
@@ -61,7 +65,7 @@ impl Deserialize for () {
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
         match edn {
             Edn::Nil => Ok(()),
-            _ => Err(build_deserialize_error(&edn, "unit")),
+            _ => Err(build_deserialize_error(edn, "unit")),
         }
     }
 }
@@ -87,8 +91,8 @@ impl_deserialize_float!(f32, f64);
 impl Deserialize for crate::Double {
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
         edn.to_float()
-            .ok_or_else(|| build_deserialize_error(&edn, "edn_rs::Double"))
-            .map(|u| u.into())
+            .ok_or_else(|| build_deserialize_error(edn, "edn_rs::Double"))
+            .map(std::convert::Into::into)
     }
 }
 
@@ -131,7 +135,7 @@ impl_deserialize_uint!(usize, u8, u16, u32, u64);
 impl Deserialize for bool {
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
         edn.to_bool()
-            .ok_or_else(|| build_deserialize_error(&edn, "bool"))
+            .ok_or_else(|| build_deserialize_error(edn, "bool"))
     }
 }
 
@@ -142,7 +146,7 @@ impl Deserialize for String {
                 if s.starts_with('\"') {
                     Ok(s.replace('\"', ""))
                 } else {
-                    Ok(s.to_owned())
+                    Ok(s.clone())
                 }
             }
             e => Ok(e.to_string()),
@@ -153,7 +157,7 @@ impl Deserialize for String {
 impl Deserialize for char {
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
         edn.to_char()
-            .ok_or_else(|| build_deserialize_error(&edn, "char"))
+            .ok_or_else(|| build_deserialize_error(edn, "char"))
     }
 }
 
@@ -164,28 +168,29 @@ where
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
         match edn {
             Edn::Vector(_) => Ok(edn
-                .iter()
+                .iter_some()
                 .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
                 .map(|e| Deserialize::deserialize(e))
                 .collect::<Result<Vec<T>, Error>>()?),
             Edn::List(_) => Ok(edn
-                .iter()
+                .iter_some()
                 .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
                 .map(|e| Deserialize::deserialize(e))
                 .collect::<Result<Vec<T>, Error>>()?),
             Edn::Set(_) => Ok(edn
-                .iter()
+                .iter_some()
                 .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
                 .map(|e| Deserialize::deserialize(e))
                 .collect::<Result<Vec<T>, Error>>()?),
             _ => Err(build_deserialize_error(
-                &edn,
+                edn,
                 std::any::type_name::<Vec<T>>(),
             )),
         }
     }
 }
 
+#[allow(clippy::implicit_hasher)]
 impl<T> Deserialize for HashMap<String, T>
 where
     T: Deserialize,
@@ -198,11 +203,11 @@ where
                 .map(|(key, e)| {
                     Ok((
                         key.to_string(),
-                        Deserialize::deserialize(e).or_else(|_| {
-                            Err(Error::Deserialize(format!(
+                        Deserialize::deserialize(e).map_err(|_| {
+                            Error::Deserialize(format!(
                                 "Cannot safely deserialize {:?} to {}",
                                 edn, "HashMap"
-                            )))
+                            ))
                         })?,
                     ))
                 })
@@ -211,22 +216,22 @@ where
                 .map_iter()
                 .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
                 .map(|(key, e)| {
-                    let deser_element = Deserialize::deserialize(e).or_else(|_| {
-                        Err(Error::Deserialize(format!(
+                    let deser_element = Deserialize::deserialize(e).map_err(|_| {
+                        Error::Deserialize(format!(
                             "Cannot safely deserialize {:?} to {}",
                             edn, "HashMap"
-                        )))
+                        ))
                     });
 
-                    if ns.starts_with(":") {
+                    if ns.starts_with(':') {
                         Ok((ns.to_string() + "/" + key, deser_element?))
                     } else {
-                        Ok((String::from(":") + ns + "/" + key, deser_element?))
+                        Ok((String::from(':') + ns + "/" + key, deser_element?))
                     }
                 })
                 .collect::<Result<HashMap<String, T>, Error>>(),
             _ => Err(build_deserialize_error(
-                &edn,
+                edn,
                 std::any::type_name::<HashMap<String, T>>(),
             )),
         }
@@ -245,11 +250,11 @@ where
                 .map(|(key, e)| {
                     Ok((
                         key.to_string(),
-                        Deserialize::deserialize(e).or_else(|_| {
-                            Err(Error::Deserialize(format!(
+                        Deserialize::deserialize(e).map_err(|_| {
+                            Error::Deserialize(format!(
                                 "Cannot safely deserialize {:?} to {}",
                                 edn, "BTreeMap"
-                            )))
+                            ))
                         })?,
                     ))
                 })
@@ -258,28 +263,29 @@ where
                 .map_iter()
                 .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
                 .map(|(key, e)| {
-                    let deser_element = Deserialize::deserialize(e).or_else(|_| {
-                        Err(Error::Deserialize(format!(
+                    let deser_element = Deserialize::deserialize(e).map_err(|_| {
+                        Error::Deserialize(format!(
                             "Cannot safely deserialize {:?} to {}",
                             edn, "BTreeMap"
-                        )))
+                        ))
                     });
 
-                    if ns.starts_with(":") {
+                    if ns.starts_with(':') {
                         Ok((ns.to_string() + "/" + key, deser_element?))
                     } else {
-                        Ok((String::from(":") + ns + "/" + key, deser_element?))
+                        Ok((String::from(':') + ns + "/" + key, deser_element?))
                     }
                 })
                 .collect::<Result<BTreeMap<String, T>, Error>>(),
             _ => Err(build_deserialize_error(
-                &edn,
+                edn,
                 std::any::type_name::<BTreeMap<String, T>>(),
             )),
         }
     }
 }
 
+#[allow(clippy::implicit_hasher)]
 impl<T: std::cmp::Eq + std::hash::Hash> Deserialize for HashSet<T>
 where
     T: Deserialize,
@@ -290,16 +296,16 @@ where
                 .set_iter()
                 .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
                 .map(|e| {
-                    Deserialize::deserialize(e).or_else(|_| {
-                        Err(Error::Deserialize(format!(
+                    Deserialize::deserialize(e).map_err(|_| {
+                        Error::Deserialize(format!(
                             "Cannot safely deserialize {:?} to {}",
                             edn, "HashSet"
-                        )))
+                        ))
                     })
                 })
                 .collect::<Result<HashSet<T>, Error>>(),
             _ => Err(build_deserialize_error(
-                &edn,
+                edn,
                 std::any::type_name::<HashSet<T>>(),
             )),
         }
@@ -316,16 +322,16 @@ where
                 .set_iter()
                 .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
                 .map(|e| {
-                    Deserialize::deserialize(e).or_else(|_| {
-                        Err(Error::Deserialize(format!(
+                    Deserialize::deserialize(e).map_err(|_| {
+                        Error::Deserialize(format!(
                             "Cannot safely deserialize {:?} to {}",
                             edn, "BTreeSet"
-                        )))
+                        ))
                     })
                 })
                 .collect::<Result<BTreeSet<T>, Error>>(),
             _ => Err(build_deserialize_error(
-                &edn,
+                edn,
                 std::any::type_name::<BTreeSet<T>>(),
             )),
         }
@@ -339,12 +345,16 @@ where
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
         match edn {
             Edn::Nil => Ok(None),
-            _ => Ok(Some(from_edn(&edn)?)),
+            _ => Ok(Some(from_edn(edn)?)),
         }
     }
 }
 
 /// `from_str` deserializes an EDN String into type `T` that implements `Deserialize`. Response is `Result<T, EdnError>`
+///
+/// # Errors
+///
+/// Error will be like `EdnError::Deserialize("couldn't convert <value> into <type>")`
 ///
 /// ```
 /// use edn_rs::{Deserialize, Edn, EdnError};
@@ -394,6 +404,10 @@ pub fn from_str<T: Deserialize>(s: &str) -> Result<T, Error> {
 }
 
 /// `from_edn` deserializes an EDN type into a `T` type that implements `Deserialize`. Response is `Result<T, EdnError>`
+///
+/// # Errors
+///
+/// Error will be like `EdnError::Deserialize("couldn't convert <value> into <type>")`
 ///
 /// ```
 /// use edn_rs::{map, Deserialize, Edn, EdnError, Map};

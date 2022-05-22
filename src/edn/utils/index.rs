@@ -2,7 +2,7 @@ use crate::edn::{Edn, Map};
 use std::fmt;
 use std::ops;
 
-/// This is a Copy of [Serde_json::index](https://docs.serde.rs/src/serde_json/value/index.rs.html)
+/// This is a Copy of [`Serde_json::index`](https://docs.serde.rs/src/serde_json/value/index.rs.html)
 pub trait Index: private::Sealed {
     #[doc(hidden)]
     fn index_into<'v>(&self, v: &'v Edn) -> Option<&'v Edn>;
@@ -51,15 +51,13 @@ impl Index for usize {
 impl Index for str {
     fn index_into<'v>(&self, v: &'v Edn) -> Option<&'v Edn> {
         match *v {
-            Edn::Map(ref map) => map.0.get(self),
-            Edn::NamespacedMap(_, ref map) => map.0.get(self),
+            Edn::Map(ref map) | Edn::NamespacedMap(_, ref map) => map.0.get(self),
             _ => None,
         }
     }
     fn index_into_mut<'v>(&self, v: &'v mut Edn) -> Option<&'v mut Edn> {
         match *v {
-            Edn::Map(ref mut map) => map.0.get_mut(self),
-            Edn::NamespacedMap(_, ref mut map) => map.0.get_mut(self),
+            Edn::Map(ref mut map) | Edn::NamespacedMap(_, ref mut map) => map.0.get_mut(self),
             _ => None,
         }
     }
@@ -68,8 +66,9 @@ impl Index for str {
             *v = Edn::Map(Map::new(std::collections::BTreeMap::new()));
         }
         match *v {
-            Edn::Map(ref mut map) => map.0.entry(self.to_owned()).or_insert(Edn::Nil),
-            Edn::NamespacedMap(_, ref mut map) => map.0.entry(self.to_owned()).or_insert(Edn::Nil),
+            Edn::Map(ref mut map) | Edn::NamespacedMap(_, ref mut map) => {
+                map.0.entry(self.to_owned()).or_insert(Edn::Nil)
+            }
             _ => panic!("cannot access key {:?} in EDN {}", self, Type(v)),
         }
     }
@@ -93,10 +92,8 @@ impl Index for Edn {
         let index = self.to_uint();
 
         match (v, index) {
-            (Edn::Map(ref map), _) => map.0.get(&key),
-            (Edn::NamespacedMap(_, ref map), _) => map.0.get(&key),
-            (Edn::List(_), Some(idx)) => idx.index_into(v),
-            (Edn::Vector(_), Some(idx)) => idx.index_into(v),
+            (Edn::Map(ref map) | Edn::NamespacedMap(_, ref map), _) => map.0.get(&key),
+            (Edn::List(_) | Edn::Vector(_), Some(idx)) => idx.index_into(v),
             _ => None,
         }
     }

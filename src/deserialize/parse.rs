@@ -1,4 +1,5 @@
 use crate::edn::{Edn, Error, List, Map, Set, Vector};
+use std::collections::{BTreeMap, BTreeSet};
 
 pub(crate) fn tokenize(edn: &str) -> std::iter::Enumerate<std::str::Chars> {
     edn.chars().enumerate()
@@ -24,6 +25,8 @@ fn parse_internal(
         Some((_, '#')) => Some(tagged_or_set(chars)?),
         Some((_, '{')) => Some(read_map(chars)?),
         Some((_, ';')) => {
+            // Consumes the content
+            #[allow(clippy::skip_while_next)]
             chars.skip_while(|c| c.1 != '\n').next();
             read_if_not_container_end(chars)?
         }
@@ -182,7 +185,15 @@ fn read_number(n: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Re
         .0;
     let c_len = chars
         .clone()
-        .take_while(|c| c.1.is_numeric() || c.1 == '.' || c.1 == '/')
+        .take_while(|c| {
+            c.1.is_numeric()
+                || c.1 == '.'
+                || c.1 == '/'
+                || c.1 == 'e'
+                || c.1 == 'E'
+                || c.1 == '+'
+                || c.1 == '-'
+        })
         .count();
     let mut number = String::new();
     let string = chars.take(c_len).map(|c| c.1).collect::<String>();
@@ -190,11 +201,18 @@ fn read_number(n: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Re
     number.push_str(&string);
 
     match number {
+        n if (n.contains('E') || n.contains('e')) && n.parse::<f64>().is_ok() => {
+            Ok(Edn::Double(n.parse::<f64>()?.into()))
+        }
         n if n.parse::<usize>().is_ok() => Ok(Edn::UInt(n.parse::<usize>()?)),
         n if n.parse::<isize>().is_ok() => Ok(Edn::Int(n.parse::<isize>()?)),
         n if n.parse::<f64>().is_ok() => Ok(Edn::Double(n.parse::<f64>()?.into())),
         n if n.contains('/') && n.split('/').all(|d| d.parse::<f64>().is_ok()) => {
             Ok(Edn::Rational(n))
+        }
+        n if n.to_uppercase().chars().filter(|c| c == &'E').count() > 1 => {
+            let mut n = n.chars();
+            read_symbol(n.next().unwrap_or(' '), &mut n.enumerate())
         }
         _ => Err(Error::ParseEdn(format!(
             "{} could not be parsed at char count {}",
@@ -225,7 +243,7 @@ fn read_bool_or_nil(
         .next()
         .ok_or_else(|| Error::ParseEdn("Could not identify symbol index".to_string()))?
         .0;
-    match c.clone() {
+    match c {
         't' if {
             let val = chars.clone().take(4).map(|c| c.1).collect::<String>();
             val.eq("rue ")
@@ -341,7 +359,6 @@ fn read_set(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Er
         .next()
         .ok_or_else(|| Error::ParseEdn("Could not identify symbol index".to_string()))?
         .0;
-    use std::collections::BTreeSet;
     let mut res: BTreeSet<Edn> = BTreeSet::new();
     loop {
         match chars.next() {
@@ -367,7 +384,6 @@ fn read_namespaced_map(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Res
         .next()
         .ok_or_else(|| Error::ParseEdn("Could not identify symbol index".to_string()))?
         .0;
-    use std::collections::BTreeMap;
     let mut res: BTreeMap<String, Edn> = BTreeMap::new();
     let mut key: Option<Edn> = None;
     let mut val: Option<Edn> = None;
@@ -408,7 +424,6 @@ fn read_map(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Er
         .next()
         .ok_or_else(|| Error::ParseEdn("Could not identify symbol index".to_string()))?
         .0;
-    use std::collections::BTreeMap;
     let mut res: BTreeMap<String, Edn> = BTreeMap::new();
     let mut key: Option<Edn> = None;
     let mut val: Option<Edn> = None;
@@ -1218,5 +1233,45 @@ mod test {
                 },),),)
             )
         )
+    }
+
+    #[test]
+    fn parse_exp() {
+        let mut edn = "5.01122771367421E15".chars().enumerate();
+        let res = parse(edn.next(), &mut edn).unwrap();
+
+        assert_eq!(res, Edn::Double(5011227713674210f64.into()))
+    }
+
+    #[test]
+    fn parse_numberic_symbol_with_doube_e() {
+        let mut edn = "5011227E71367421E12".chars().enumerate();
+        let res = parse(edn.next(), &mut edn).unwrap();
+
+        assert_eq!(res, Edn::Symbol("5011227E71367421E12".to_string()))
+    }
+
+    #[test]
+    fn parse_exp_plus_sign() {
+        let mut edn = "5.01122771367421E+12".chars().enumerate();
+        let res = parse(edn.next(), &mut edn).unwrap();
+
+        assert_eq!(res, Edn::Double(5011227713674.210f64.into()))
+    }
+
+    #[test]
+    fn parse_float_e_minus_12() {
+        let mut edn = "0.00000000000501122771367421".chars().enumerate();
+        let res = parse(edn.next(), &mut edn).unwrap();
+        assert_eq!(res, Edn::Double(5.01122771367421e-12.into()))
+    }
+
+    #[test]
+    fn parse_exp_minus_sign() {
+        let mut edn = "5.01122771367421e-12".chars().enumerate();
+        let res = parse(edn.next(), &mut edn).unwrap();
+
+        assert_eq!(res, Edn::Double(0.00000000000501122771367421.into()));
+        assert_eq!(res.to_string(), "0.00000000000501122771367421");
     }
 }
