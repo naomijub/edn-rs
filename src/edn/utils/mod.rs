@@ -37,49 +37,49 @@ pub trait Attribute {
 
 impl Attribute for f64 {
     fn process(&self) -> String {
-        format!("{:?}", self.to_owned())
+        format!("{:?}", self)
     }
 }
 
 impl Attribute for f32 {
     fn process(&self) -> String {
-        format!("{:?}", self.to_owned())
+        format!("{:?}", self)
     }
 }
 
 impl Attribute for isize {
     fn process(&self) -> String {
-        format!("{:?}", self.to_owned())
+        format!("{:?}", self)
     }
 }
 
 impl Attribute for i32 {
     fn process(&self) -> String {
-        format!("{:?}", self.to_owned())
+        format!("{:?}", self)
     }
 }
 
 impl Attribute for i64 {
     fn process(&self) -> String {
-        format!("{:?}", self.to_owned())
+        format!("{:?}", self)
     }
 }
 
 impl Attribute for usize {
     fn process(&self) -> String {
-        format!("{:?}", self.to_owned())
+        format!("{:?}", self)
     }
 }
 
 impl Attribute for u64 {
     fn process(&self) -> String {
-        format!("{:?}", self.to_owned())
+        format!("{:?}", self)
     }
 }
 
 impl Attribute for u32 {
     fn process(&self) -> String {
-        format!("{:?}", self.to_owned())
+        format!("{:?}", self)
     }
 }
 
@@ -91,6 +91,6 @@ impl Attribute for &str {
 
 impl Attribute for bool {
     fn process(&self) -> String {
-        format!("{}", self.to_owned())
+        format!("{}", self)
     }
 }
