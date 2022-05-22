@@ -19,15 +19,13 @@ pub trait Serialize {
 }
 
 #[doc(hidden)]
+#[must_use]
 pub fn field_names(id: Vec<String>) -> std::collections::HashMap<String, String> {
     let mut hashmap = std::collections::HashMap::new();
     for i in id {
-        let mut value = format!("{}", i)
-            .replace("___", "/")
-            .replace("__", ".")
-            .replace("_", "-");
+        let mut value = i.replace("___", "/").replace("__", ".").replace('_', "-");
         value.insert(0, ':');
-        hashmap.insert(format!("{}", i), value);
+        hashmap.insert(i.to_string(), value);
     }
     hashmap
 }
@@ -55,13 +53,14 @@ where
             .map(Serialize::serialize)
             .collect::<Vec<String>>();
         let mut s = String::new();
-        s.push_str("[");
+        s.push('[');
         s.push_str(&aux_vec.join(", "));
-        s.push_str("]");
+        s.push(']');
         s
     }
 }
 
+#[allow(clippy::implicit_hasher)]
 impl<T> Serialize for std::collections::HashSet<T>
 where
     T: Serialize,
@@ -72,9 +71,10 @@ where
             .map(Serialize::serialize)
             .collect::<Vec<String>>();
         let mut s = String::new();
-        s.push_str("#{");
+        s.push('#');
+        s.push('{');
         s.push_str(&aux_vec.join(", "));
-        s.push_str("}");
+        s.push('}');
         s
     }
 }
@@ -89,9 +89,10 @@ where
             .map(Serialize::serialize)
             .collect::<Vec<String>>();
         let mut s = String::new();
-        s.push_str("#{");
+        s.push('#');
+        s.push('{');
         s.push_str(&aux_vec.join(", "));
-        s.push_str("}");
+        s.push('}');
         s
     }
 }
@@ -106,13 +107,14 @@ where
             .map(Serialize::serialize)
             .collect::<Vec<String>>();
         let mut s = String::new();
-        s.push_str("(");
+        s.push('(');
         s.push_str(&aux_vec.join(", "));
-        s.push_str(")");
+        s.push(')');
         s
     }
 }
 
+#[allow(clippy::implicit_hasher)]
 impl<T> Serialize for std::collections::HashMap<String, T>
 where
     T: Serialize,
@@ -123,19 +125,20 @@ where
             .map(|(k, v)| {
                 format!(
                     ":{} {}",
-                    k.to_string().replace(" ", "-").replace("_", "-"),
+                    k.replace(' ', "-").replace('_', "-"),
                     v.serialize()
                 )
             })
             .collect::<Vec<String>>();
         let mut s = String::new();
-        s.push_str("{");
+        s.push('{');
         s.push_str(&aux_vec.join(", "));
-        s.push_str("}");
+        s.push('}');
         s
     }
 }
 
+#[allow(clippy::implicit_hasher)]
 impl<T> Serialize for std::collections::HashMap<&str, T>
 where
     T: Serialize,
@@ -146,15 +149,15 @@ where
             .map(|(k, v)| {
                 format!(
                     ":{} {}",
-                    k.replace(" ", "-").replace("_", "-"),
+                    k.replace(' ', "-").replace('_', "-"),
                     v.serialize()
                 )
             })
             .collect::<Vec<String>>();
         let mut s = String::new();
-        s.push_str("{");
+        s.push('{');
         s.push_str(&aux_vec.join(", "));
-        s.push_str("}");
+        s.push('}');
         s
     }
 }
@@ -169,15 +172,15 @@ where
             .map(|(k, v)| {
                 format!(
                     ":{} {}",
-                    k.replace(" ", "-").replace("_", "-"),
+                    k.replace(' ', "-").replace('_', "-"),
                     v.serialize()
                 )
             })
             .collect::<Vec<String>>();
         let mut s = String::new();
-        s.push_str("{");
+        s.push('{');
         s.push_str(&aux_vec.join(", "));
-        s.push_str("}");
+        s.push('}');
         s
     }
 }
@@ -192,15 +195,15 @@ where
             .map(|(k, v)| {
                 format!(
                     ":{} {}",
-                    k.to_string().replace(" ", "-").replace("_", "-"),
+                    k.to_string().replace(' ', "-").replace('_', "-"),
                     v.serialize()
                 )
             })
             .collect::<Vec<String>>();
         let mut s = String::new();
-        s.push_str("{");
+        s.push('{');
         s.push_str(&aux_vec.join(", "));
-        s.push_str("}");
+        s.push('}');
         s
     }
 }

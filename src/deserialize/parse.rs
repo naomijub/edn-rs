@@ -24,6 +24,8 @@ fn parse_internal(
         Some((_, '#')) => Some(tagged_or_set(chars)?),
         Some((_, '{')) => Some(read_map(chars)?),
         Some((_, ';')) => {
+            // Consumes the content
+            #[allow(clippy::skip_while_next)]
             chars.skip_while(|c| c.1 != '\n').next();
             read_if_not_container_end(chars)?
         }
@@ -240,7 +242,7 @@ fn read_bool_or_nil(
         .next()
         .ok_or_else(|| Error::ParseEdn("Could not identify symbol index".to_string()))?
         .0;
-    match c.clone() {
+    match c {
         't' if {
             let val = chars.clone().take(4).map(|c| c.1).collect::<String>();
             val.eq("rue ")
