@@ -57,14 +57,17 @@ impl futures::future::Future for Edn {
 #[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub struct Vector(Vec<Edn>);
 impl Vector {
+    #[must_use]
     pub fn new(v: Vec<Edn>) -> Vector {
         Vector(v)
     }
 
+    #[must_use]
     pub fn empty() -> Vector {
         Vector(Vec::new())
     }
 
+    #[must_use]
     pub fn to_vec(self) -> Vec<Edn> {
         self.0
     }
@@ -88,14 +91,17 @@ impl futures::future::Future for Vector {
 #[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub struct List(Vec<Edn>);
 impl List {
+    #[must_use]
     pub fn new(v: Vec<Edn>) -> List {
         List(v)
     }
 
+    #[must_use]
     pub fn empty() -> List {
         List(Vec::new())
     }
 
+    #[must_use]
     pub fn to_vec(self) -> Vec<Edn> {
         self.0
     }
@@ -119,14 +125,17 @@ impl futures::future::Future for List {
 #[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub struct Set(BTreeSet<Edn>);
 impl Set {
+    #[must_use]
     pub fn new(v: BTreeSet<Edn>) -> Set {
         Set(v)
     }
 
+    #[must_use]
     pub fn empty() -> Set {
         Set(BTreeSet::new())
     }
 
+    #[must_use]
     pub fn to_set(self) -> BTreeSet<Edn> {
         self.0
     }
@@ -150,14 +159,17 @@ impl futures::future::Future for Set {
 #[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub struct Map(BTreeMap<String, Edn>);
 impl Map {
+    #[must_use]
     pub fn new(m: BTreeMap<String, Edn>) -> Map {
         Map(m)
     }
 
+    #[must_use]
     pub fn empty() -> Map {
         Map(BTreeMap::new())
     }
 
+    #[must_use]
     pub fn to_map(self) -> BTreeMap<String, Edn> {
         self.0
     }

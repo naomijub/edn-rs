@@ -92,8 +92,8 @@ impl Index for Edn {
         let index = self.to_uint();
 
         match (v, index) {
-            (Edn::Map(ref map), _) | (Edn::NamespacedMap(_, ref map), _) => map.0.get(&key),
-            (Edn::List(_), Some(idx)) | (Edn::Vector(_), Some(idx)) => idx.index_into(v),
+            (Edn::Map(ref map) | Edn::NamespacedMap(_, ref map), _) => map.0.get(&key),
+            (Edn::List(_) | Edn::Vector(_), Some(idx)) => idx.index_into(v),
             _ => None,
         }
     }
