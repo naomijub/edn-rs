@@ -168,17 +168,17 @@ where
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
         match edn {
             Edn::Vector(_) => Ok(edn
-                .iter()
+                .iter_some()
                 .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
                 .map(|e| Deserialize::deserialize(e))
                 .collect::<Result<Vec<T>, Error>>()?),
             Edn::List(_) => Ok(edn
-                .iter()
+                .iter_some()
                 .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
                 .map(|e| Deserialize::deserialize(e))
                 .collect::<Result<Vec<T>, Error>>()?),
             Edn::Set(_) => Ok(edn
-                .iter()
+                .iter_some()
                 .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
                 .map(|e| Deserialize::deserialize(e))
                 .collect::<Result<Vec<T>, Error>>()?),

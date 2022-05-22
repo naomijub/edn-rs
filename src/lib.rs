@@ -34,6 +34,7 @@ pub mod edn;
 ///     // { :map {:this-is-a-key ["with", "many", "keys"]}, :set #{3, 4, 5}, :tuples (3, true, \d), }
 /// }
 ///```
+#[allow(clippy::needless_doctest_main)]
 pub mod serialize;
 
 #[cfg(feature = "json")]

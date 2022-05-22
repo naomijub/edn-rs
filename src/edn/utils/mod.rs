@@ -85,7 +85,7 @@ impl Attribute for u32 {
 
 impl Attribute for &str {
     fn process(&self) -> String {
-        format!("{}", self.to_string())
+        (*self).to_string()
     }
 }
 

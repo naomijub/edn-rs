@@ -1,4 +1,5 @@
 use crate::edn::{Edn, Error, List, Map, Set, Vector};
+use std::collections::{BTreeMap, BTreeSet};
 
 pub(crate) fn tokenize(edn: &str) -> std::iter::Enumerate<std::str::Chars> {
     edn.chars().enumerate()
@@ -358,7 +359,6 @@ fn read_set(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Er
         .next()
         .ok_or_else(|| Error::ParseEdn("Could not identify symbol index".to_string()))?
         .0;
-    use std::collections::BTreeSet;
     let mut res: BTreeSet<Edn> = BTreeSet::new();
     loop {
         match chars.next() {
@@ -384,7 +384,6 @@ fn read_namespaced_map(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Res
         .next()
         .ok_or_else(|| Error::ParseEdn("Could not identify symbol index".to_string()))?
         .0;
-    use std::collections::BTreeMap;
     let mut res: BTreeMap<String, Edn> = BTreeMap::new();
     let mut key: Option<Edn> = None;
     let mut val: Option<Edn> = None;
@@ -425,7 +424,6 @@ fn read_map(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Er
         .next()
         .ok_or_else(|| Error::ParseEdn("Could not identify symbol index".to_string()))?
         .0;
-    use std::collections::BTreeMap;
     let mut res: BTreeMap<String, Edn> = BTreeMap::new();
     let mut key: Option<Edn> = None;
     let mut val: Option<Edn> = None;
