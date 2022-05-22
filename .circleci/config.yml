@@ -65,7 +65,7 @@ jobs:
           command: rustup component add clippy
       - run:
           name: Run Clippy
-          command: cargo clippy -- -W clippy::pedantic
+          command: cargo clippy -- -W clippy::pedantic --deny "warnings"
 
 workflows:
   version: 2
