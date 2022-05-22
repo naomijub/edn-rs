@@ -179,7 +179,7 @@ impl futures::future::Future for Map {
 }
 
 #[derive(Clone, Ord, Debug, Eq, PartialEq, PartialOrd, Hash)]
-pub struct Double(i64, u64);
+pub struct Double(i64, u128);
 
 impl From<f64> for Double {
     fn from(f: f64) -> Double {
@@ -193,7 +193,7 @@ impl From<f64> for Double {
                 .chars()
                 .rev()
                 .collect::<String>()
-                .parse::<u64>()
+                .parse::<u128>()
                 .unwrap(),
         )
     }
@@ -215,24 +215,30 @@ impl futures::future::Future for Double {
 
 impl std::fmt::Display for Double {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}.{}",
-            self.0,
-            self.1.to_string().chars().rev().collect::<String>()
-        )
+        let floating = self.1.to_string();
+        if floating.starts_with('0') {
+            write!(f, "{}.{}", self.0, floating)
+        } else {
+            write!(
+                f,
+                "{}.{}",
+                self.0,
+                floating.chars().rev().collect::<String>()
+            )
+        }
     }
 }
 
 impl Double {
     fn to_float(&self) -> f64 {
-        format!(
-            "{}.{}",
-            self.0,
-            self.1.to_string().chars().rev().collect::<String>()
-        )
-        .parse::<f64>()
-        .unwrap()
+        let floating = self.1.to_string();
+        if floating.starts_with('0') {
+            format!("{}.{}", self.0, floating).parse::<f64>().unwrap()
+        } else {
+            format!("{}.{}", self.0, floating.chars().rev().collect::<String>())
+                .parse::<f64>()
+                .unwrap()
+        }
     }
 }
 
