@@ -22,7 +22,7 @@ fn parse_internal(
     Ok(match c {
         Some((_, '[')) => Some(read_vec(chars)?),
         Some((_, '(')) => Some(read_list(chars)?),
-        Some((_, '#')) => Some(tagged_or_set_or_discard(chars)?),
+        Some((_, '#')) => tagged_or_set_or_discard(chars)?,
         Some((_, '{')) => Some(read_map(chars)?),
         Some((_, ';')) => {
             // Consumes the content
@@ -54,11 +54,11 @@ pub(crate) fn parse_edn(
 
 fn tagged_or_set_or_discard(
     chars: &mut std::iter::Enumerate<std::str::Chars>,
-) -> Result<Edn, Error> {
+) -> Result<Option<Edn>, Error> {
     match chars.clone().next() {
-        Some((_, '{')) => read_set(chars),
+        Some((_, '{')) => read_set(chars).map(Some),
         Some((_, '_')) => read_discard(chars),
-        _ => read_tagged(chars),
+        _ => read_tagged(chars).map(Some),
     }
 }
 
@@ -179,7 +179,7 @@ fn read_tagged(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn,
     Ok(Edn::Tagged(tag, Box::new(parse(chars.next(), chars)?)))
 }
 
-fn read_discard(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
+fn read_discard(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Option<Edn>, Error> {
     let _discard_underscore = chars.next();
     let i = chars
         .clone()
@@ -192,7 +192,7 @@ fn read_discard(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn
             "Discard sequence must have a following element at char count {}",
             i
         ))),
-        _ => parse(chars.next(), chars),
+        _ => read_if_not_container_end(chars),
     }
 }
 
@@ -1012,6 +1012,30 @@ mod test {
             res,
             Err(Error::ParseEdn(
                 "Discard sequence must have a following element at char count 2".to_string()
+            ))
+        )
+    }
+
+    #[test]
+    fn parse_discard_end_of_seq() {
+        let mut edn = "[:foo #_ foo]".chars().enumerate();
+        let res = parse(edn.next(), &mut edn).unwrap();
+
+        assert_eq!(
+            res,
+            Edn::Vector(Vector::new(vec![Edn::Key(":foo".to_string())]))
+        );
+    }
+
+    #[test]
+    fn parse_discard_end_of_seq_no_follow() {
+        let mut edn = "[:foo #_ ]".chars().enumerate();
+        let res = parse(edn.next(), &mut edn);
+
+        assert_eq!(
+            res,
+            Err(Error::ParseEdn(
+                "Discard sequence must have a following element at char count 8".to_string()
             ))
         )
     }
