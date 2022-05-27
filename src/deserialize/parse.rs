@@ -22,7 +22,7 @@ fn parse_internal(
     Ok(match c {
         Some((_, '[')) => Some(read_vec(chars)?),
         Some((_, '(')) => Some(read_list(chars)?),
-        Some((_, '#')) => Some(tagged_or_set(chars)?),
+        Some((_, '#')) => Some(tagged_or_set_or_discard(chars)?),
         Some((_, '{')) => Some(read_map(chars)?),
         Some((_, ';')) => {
             // Consumes the content
@@ -52,11 +52,13 @@ pub(crate) fn parse_edn(
     }
 }
 
-fn tagged_or_set(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
-    if let Some((_, '{')) = chars.clone().next() {
-        read_set(chars)
-    } else {
-        read_tagged(chars)
+fn tagged_or_set_or_discard(
+    chars: &mut std::iter::Enumerate<std::str::Chars>,
+) -> Result<Edn, Error> {
+    match chars.clone().next() {
+        Some((_, '{')) => read_set(chars),
+        Some((_, '_')) => read_discard(chars),
+        _ => read_tagged(chars),
     }
 }
 
@@ -175,6 +177,23 @@ fn read_tagged(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn,
     }
 
     Ok(Edn::Tagged(tag, Box::new(parse(chars.next(), chars)?)))
+}
+
+fn read_discard(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
+    let _discard_underscore = chars.next();
+    let i = chars
+        .clone()
+        .next()
+        .ok_or_else(|| Error::ParseEdn("Could not identify symbol index".to_string()))?
+        .0;
+    match parse(chars.next(), chars) {
+        Err(e) => Err(e),
+        Ok(Edn::Empty) => Err(Error::ParseEdn(format!(
+            "Discard sequence must have a following element at char count {}",
+            i
+        ))),
+        _ => parse(chars.next(), chars),
+    }
 }
 
 fn read_number(n: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
@@ -905,6 +924,113 @@ mod test {
             res,
             Edn::Tagged(String::from("iasdf"), Box::new(Edn::UInt(234)))
         )
+    }
+
+    #[test]
+    fn parse_discard_valid() {
+        let mut edn = "#_iasdf 234".chars().enumerate();
+        let res = parse(edn.next(), &mut edn).unwrap();
+
+        assert_eq!(res, Edn::UInt(234))
+    }
+
+    #[test]
+    fn parse_discard_invalid() {
+        let mut edn = "#_{ 234".chars().enumerate();
+        let res = parse(edn.next(), &mut edn);
+
+        assert_eq!(
+            res,
+            Err(Error::ParseEdn(
+                "None could not be parsed at char count 3".to_string()
+            ))
+        )
+    }
+
+    #[test]
+    fn parse_discard_space_valid() {
+        let mut edn = "#_ ,, 234 567".chars().enumerate();
+        let res = parse(edn.next(), &mut edn).unwrap();
+
+        assert_eq!(res, Edn::UInt(567))
+    }
+
+    #[test]
+    fn parse_discard_space_invalid() {
+        let mut edn = "#_ ,, #{hello, this will be discarded} #_{so will this} #{this is invalid"
+            .chars()
+            .enumerate();
+        let res = parse(edn.next(), &mut edn);
+
+        assert_eq!(
+            res,
+            Err(Error::ParseEdn(
+                "None could not be parsed at char count 58".to_string()
+            ))
+        )
+    }
+
+    #[test]
+    fn parse_discard_empty() {
+        let mut edn = "#_ ,, foo".chars().enumerate();
+        let res = parse(edn.next(), &mut edn).unwrap();
+
+        assert_eq!(res, Edn::Empty)
+    }
+
+    #[test]
+    fn parse_discard_repeat_empty() {
+        let mut edn = "#_ ,, #_{discard again} #_ {:and :again} :okay"
+            .chars()
+            .enumerate();
+        let res = parse(edn.next(), &mut edn).unwrap();
+
+        assert_eq!(res, Edn::Empty)
+    }
+
+    #[test]
+    fn parse_discard_repeat_not_empty() {
+        let mut edn = "#_ ,, #_{discard again} #_ {:and :again} :okay {:a map}"
+            .chars()
+            .enumerate();
+        let res = parse(edn.next(), &mut edn).unwrap();
+
+        assert_eq!(
+            res,
+            Edn::Map(Map::new(
+                map! {":a".to_string() => Edn::Symbol("map".to_string())}
+            ))
+        )
+    }
+
+    #[test]
+    fn parse_discard_no_follow_element() {
+        let mut edn = "#_ ,, ".chars().enumerate();
+        let res = parse(edn.next(), &mut edn);
+
+        assert_eq!(
+            res,
+            Err(Error::ParseEdn(
+                "Discard sequence must have a following element at char count 2".to_string()
+            ))
+        )
+    }
+
+    #[test]
+    fn parse_discard_inside_seq() {
+        let mut edn = "#_\"random comment\" [:a :b :c #_(:hello :world) :d]"
+            .chars()
+            .enumerate();
+        let res = parse(edn.next(), &mut edn).unwrap();
+        assert_eq!(
+            res,
+            Edn::Vector(Vector::new(vec![
+                Edn::Key(":a".to_string()),
+                Edn::Key(":b".to_string()),
+                Edn::Key(":c".to_string()),
+                Edn::Key(":d".to_string())
+            ]))
+        );
     }
 
     #[test]
