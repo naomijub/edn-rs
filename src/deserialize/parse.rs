@@ -1017,6 +1017,23 @@ mod test {
     }
 
     #[test]
+    fn parse_discard_inside_seq() {
+        let mut edn = "#_\"random comment\" [:a :b :c #_(:hello :world) :d]"
+            .chars()
+            .enumerate();
+        let res = parse(edn.next(), &mut edn).unwrap();
+        assert_eq!(
+            res,
+            Edn::Vector(Vector::new(vec![
+                Edn::Key(":a".to_string()),
+                Edn::Key(":b".to_string()),
+                Edn::Key(":c".to_string()),
+                Edn::Key(":d".to_string())
+            ]))
+        );
+    }
+
+    #[test]
     fn parse_map_keyword_with_commas() {
         let mut edn = "{ :a :something, :b false, :c nil, }".chars().enumerate();
 
