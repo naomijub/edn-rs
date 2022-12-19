@@ -4,6 +4,7 @@
 Crate to parse and emit EDN 
 * **This lib does not make effort to conform the EDN received to EDN Spec.** The lib that generated this EDN should be responsible for this. For more information on Edn Spec please visit: https://github.com/edn-format/edn.
 * Minimal Rust Version is 1.46+.
+* Library is almost stable (1.0.0), just missing [issue-4](https://github.com/naomijub/edn-rs/issues/4) to reach feature stability and possible bugfix for [equality rules](https://github.com/naomijub/edn-rs/issues/95). **No breaking changes predicted**.
 
 Our **MTTA** (Mean time to acknowledge) is around `one day`; 
 <!---->
