@@ -77,7 +77,7 @@ impl Vector {
 impl futures::future::Future for Vector {
     type Output = Vector;
 
-    #[allow(unused_comparisons)]
+    #[allow(unused_comparisons, clippy::absurd_extreme_comparisons)]
     fn poll(self: Pin<&mut Self>, _cx: &mut task::Context) -> Poll<Self::Output> {
         if self.0.len() >= 0 {
             let pinned = self.to_owned();
@@ -111,7 +111,7 @@ impl List {
 impl futures::future::Future for List {
     type Output = List;
 
-    #[allow(unused_comparisons)]
+    #[allow(unused_comparisons, clippy::absurd_extreme_comparisons)]
     fn poll(self: Pin<&mut Self>, _cx: &mut task::Context) -> Poll<Self::Output> {
         if self.0.len() >= 0 {
             let pinned = self.to_owned();
@@ -145,7 +145,7 @@ impl Set {
 impl futures::future::Future for Set {
     type Output = Set;
 
-    #[allow(unused_comparisons)]
+    #[allow(unused_comparisons, clippy::absurd_extreme_comparisons)]
     fn poll(self: Pin<&mut Self>, _cx: &mut task::Context) -> Poll<Self::Output> {
         if self.0.len() >= 0 {
             let pinned = self.to_owned();
@@ -179,7 +179,7 @@ impl Map {
 impl futures::future::Future for Map {
     type Output = Map;
 
-    #[allow(unused_comparisons)]
+    #[allow(unused_comparisons, clippy::absurd_extreme_comparisons)]
     fn poll(self: Pin<&mut Self>, _cx: &mut task::Context) -> Poll<Self::Output> {
         if self.0.len() >= 0 {
             let pinned = self.to_owned();
@@ -393,7 +393,7 @@ impl Edn {
         match self {
             Edn::Key(k) => k.replace(':', "").parse::<isize>().ok(),
             Edn::Str(s) => s.parse::<isize>().ok(),
-            Edn::Int(i) => Some(*i as isize),
+            Edn::Int(i) => Some(*i),
             #[allow(clippy::cast_possible_wrap)]
             Edn::UInt(u) if isize::try_from(*u).is_ok() => Some(*u as isize),
             #[allow(clippy::cast_possible_truncation)]
@@ -475,7 +475,7 @@ impl Edn {
             Edn::Vector(_) => Some(
                 self.iter_some()?
                     .map(|e| match e {
-                        Edn::Str(s) => (s.clone()),
+                        Edn::Str(s) => s.clone(),
                         _ => e.to_string(),
                     })
                     .collect::<Vec<String>>(),
@@ -483,7 +483,7 @@ impl Edn {
             Edn::List(_) => Some(
                 self.iter_some()?
                     .map(|e| match e {
-                        Edn::Str(s) => (s.clone()),
+                        Edn::Str(s) => s.clone(),
                         _ => e.to_string(),
                     })
                     .collect::<Vec<String>>(),
@@ -491,7 +491,7 @@ impl Edn {
             Edn::Set(_) => Some(
                 self.iter_some()?
                     .map(|e| match e {
-                        Edn::Str(s) => (s.clone()),
+                        Edn::Str(s) => s.clone(),
                         _ => e.to_string(),
                     })
                     .collect::<Vec<String>>(),

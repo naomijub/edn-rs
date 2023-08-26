@@ -20,7 +20,7 @@ pub(crate) fn display_as_json(edn: &Edn) -> String {
         Edn::NamespacedMap(ns, map) => nsmap_to_json(ns, map.to_owned().to_map()),
         Edn::Nil => String::from("null"),
         Edn::Empty => String::from(""),
-        Edn::Tagged(tag, content) => format!("{{ \"{}\": {}}}", tag, display_as_json(&content)),
+        Edn::Tagged(tag, content) => format!("{{ \"{}\": {}}}", tag, display_as_json(content)),
     }
 }
 
@@ -48,30 +48,30 @@ fn kebab_to_camel(key: &str) -> String {
         })
         .collect::<String>();
 
-    keywrod.trim().replace("-", "").replace(".", "")
+    keywrod.trim().replace(['-', '.'], "")
 }
 
 fn vec_to_json(vec: Vec<Edn>) -> String {
     let vec_str = vec
         .iter()
-        .map(|e| display_as_json(e))
+        .map(display_as_json)
         .collect::<Vec<String>>()
         .join(", ");
     let mut s = String::from("[");
     s.push_str(&vec_str);
-    s.push_str("]");
+    s.push(']');
     s
 }
 
 fn set_to_json_vec(set: std::collections::BTreeSet<Edn>) -> String {
     let set_str = set
         .iter()
-        .map(|e| display_as_json(e))
+        .map(display_as_json)
         .collect::<Vec<String>>()
         .join(", ");
     let mut s = String::from("[");
     s.push_str(&set_str);
-    s.push_str("]");
+    s.push(']');
     s
 }
 
@@ -92,7 +92,7 @@ fn map_to_json(map: std::collections::BTreeMap<String, Edn>) -> String {
         .join(", ");
     let mut s = String::from("{");
     s.push_str(&map_str);
-    s.push_str("}");
+    s.push('}');
     s
 }
 
@@ -101,7 +101,7 @@ fn nsmap_to_json(ns: &str, map: std::collections::BTreeMap<String, Edn>) -> Stri
     let map_str = map_to_json(map);
     s.push_str(&format!("{:?}: ", kebab_to_camel(ns)));
     s.push_str(&map_str);
-    s.push_str("}");
+    s.push('}');
     s
 }
 
