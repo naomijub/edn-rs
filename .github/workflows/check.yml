@@ -1,0 +1,52 @@
+name: Check
+
+on:
+  push:
+    branches:
+  pull_request:
+    branches:
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: build
+        run: cargo build --verbose
+
+  cargo_test:
+    name: cargo test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: example_fast
+        run: cargo test --examples --no-fail-fast
+      - name: example_json_to_edn
+        run: cargo test --example json_to_edn --features "json"
+      - name: example_edn_to_json
+        run: cargo test --example edn_to_json --features "json"
+      - name: example_async
+        run: cargo run --example async --features "async"
+
+  fmt:
+      runs-on: ubuntu-latest
+      name: fmt
+      steps:
+        - uses: actions/checkout@v3
+        - uses: dtolnay/rust-toolchain@stable
+          with:
+            components: rustfmt
+        - run: cargo fmt --check
+
+  clippy_check:
+      name: clippy
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v3
+        - uses: dtolnay/rust-toolchain@stable
+          with:
+            components: clippy
+        - run: cargo clippy --all-features -- --deny warnings
