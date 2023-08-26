@@ -262,15 +262,15 @@ fn read_bool_or_nil(
         .next()
         .ok_or_else(|| Error::ParseEdn("Could not identify symbol index".to_string()))?
         .0;
+    let delimiters = [',', ']', '}', ')'];
     match c {
         't' if {
-            let val = chars.clone().take(4).map(|c| c.1).collect::<String>();
-            val.eq("rue ")
-                || val.eq("rue,")
-                || val.eq("rue]")
-                || val.eq("rue}")
-                || val.eq("rue)")
-                || val.eq("rue")
+            let val = chars
+                .clone()
+                .take_while(|(_, c)| !c.is_whitespace() && !delimiters.contains(c))
+                .map(|c| c.1)
+                .collect::<String>();
+            val.eq("rue")
         } =>
         {
             let mut string = String::new();
@@ -280,13 +280,12 @@ fn read_bool_or_nil(
             Ok(Edn::Bool(string.parse::<bool>()?))
         }
         'f' if {
-            let val = chars.clone().take(5).map(|c| c.1).collect::<String>();
-            val.eq("alse ")
-                || val.eq("alse,")
-                || val.eq("alse]")
-                || val.eq("alse}")
-                || val.eq("alse)")
-                || val.eq("alse")
+            let val = chars
+                .clone()
+                .take_while(|(_, c)| !c.is_whitespace() && !delimiters.contains(c))
+                .map(|c| c.1)
+                .collect::<String>();
+            val.eq("alse")
         } =>
         {
             let mut string = String::new();
@@ -296,13 +295,12 @@ fn read_bool_or_nil(
             Ok(Edn::Bool(string.parse::<bool>()?))
         }
         'n' if {
-            let val = chars.clone().take(3).map(|c| c.1).collect::<String>();
-            val.eq("il ")
-                || val.eq("il,")
-                || val.eq("il]")
-                || val.eq("il}")
-                || val.eq("il)")
-                || val.eq("il")
+            let val = chars
+                .clone()
+                .take_while(|(_, c)| !c.is_whitespace() && !delimiters.contains(c))
+                .map(|c| c.1)
+                .collect::<String>();
+            val.eq("il")
         } =>
         {
             let mut string = String::new();
@@ -716,6 +714,48 @@ mod test {
                 Edn::Key(":b".to_string()),
                 Edn::Bool(true),
                 Edn::Char('c')
+            ]))
+        );
+    }
+
+    #[test]
+    fn parse_bool_in_newline_simple_vec_str_literal() {
+        let mut edn = "[\ntrue\nfalse\nnil\n]".chars().enumerate();
+
+        assert_eq!(
+            parse(edn.next(), &mut edn).unwrap(),
+            Edn::Vector(Vector::new(vec![
+                Edn::Bool(true),
+                Edn::Bool(false),
+                Edn::Nil,
+            ]))
+        );
+    }
+
+    #[test]
+    fn parse_bool_in_tab_simple_vec_str_literal() {
+        let mut edn = "[\ttrue\tnil\tfalse\t]".chars().enumerate();
+
+        assert_eq!(
+            parse(edn.next(), &mut edn).unwrap(),
+            Edn::Vector(Vector::new(vec![
+                Edn::Bool(true),
+                Edn::Nil,
+                Edn::Bool(false),
+            ]))
+        );
+    }
+
+    #[test]
+    fn parse_bool_in_crlf_newline_simple_vec_str_literal() {
+        let mut edn = "[\r\nnil\r\nfalse\r\ntrue\r\n]".chars().enumerate();
+
+        assert_eq!(
+            parse(edn.next(), &mut edn).unwrap(),
+            Edn::Vector(Vector::new(vec![
+                Edn::Nil,
+                Edn::Bool(false),
+                Edn::Bool(true),
             ]))
         );
     }
