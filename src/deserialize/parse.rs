@@ -262,7 +262,7 @@ fn read_bool_or_nil(
         .next()
         .ok_or_else(|| Error::ParseEdn("Could not identify symbol index".to_string()))?
         .0;
-    let delimiters = [',', ']', '}', ')'];
+    let delimiters = [',', ']', '}', ')', ';'];
     match c {
         't' if {
             let val = chars
@@ -845,6 +845,18 @@ mod test {
                 Edn::Char('c'),
                 Edn::UInt(3)
             ]))
+        )
+    }
+
+    #[test]
+    fn parse_true_false_nil_with_comments_in_set() {
+        let mut edn = "#{true;this is true\nfalse;this is false\nnil;this is nil\n}"
+            .chars()
+            .enumerate();
+
+        assert_eq!(
+            parse(edn.next(), &mut edn).unwrap(),
+            Edn::Set(Set::new(set![Edn::Bool(true), Edn::Bool(false), Edn::Nil,]))
         )
     }
 
