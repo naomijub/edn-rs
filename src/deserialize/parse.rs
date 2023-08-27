@@ -206,27 +206,71 @@ fn read_number(n: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Re
         .0;
     let c_len = chars
         .clone()
-        .take_while(|c| {
-            c.1.is_numeric()
-                || c.1 == '.'
-                || c.1 == '/'
-                || c.1 == 'e'
-                || c.1 == 'E'
-                || c.1 == '+'
-                || c.1 == '-'
-        })
+        .take_while(|(_, c)| !c.is_whitespace() && !DELIMITERS.contains(c))
         .count();
-    let mut number = String::new();
-    let string = chars.take(c_len).map(|c| c.1).collect::<String>();
-    number.push(n);
-    number.push_str(&string);
+    let (number, radix) = {
+        let mut number = String::new();
+        number.push(n);
+        for (_, c) in chars.take(c_len) {
+            number.push(c)
+        }
+        if number.to_lowercase().starts_with("0x") {
+            number.remove(0);
+            number.remove(0);
+            (number, 16)
+        } else if number.to_lowercase().starts_with("-0x") {
+            number.remove(1);
+            number.remove(1);
+            (number, 16)
+        } else if let Some(index) = number.to_lowercase().find('r') {
+            let negative = number.starts_with('-');
+            let radix = {
+                if negative {
+                    (number[1..index]).parse::<u32>()
+                } else {
+                    (number[0..index]).parse::<u32>()
+                }
+            };
+            match radix {
+                Ok(r) => {
+                    // from_str_radix panics if radix is not in the range from 2 to 36
+                    if r > 36 || r < 2 {
+                        return Err(Error::ParseEdn(format!("Radix of {} is out of bounds", r)));
+                    }
+
+                    if negative {
+                        for _ in 0..(index) {
+                            number.remove(1);
+                        }
+                    } else {
+                        for _ in 0..(index + 1) {
+                            number.remove(0);
+                        }
+                    }
+                    (number, r)
+                }
+                Err(e) => {
+                    return Err(Error::ParseEdn(format!(
+                        "{} while trying to parse radix from {}",
+                        e, number
+                    )));
+                }
+            }
+        } else {
+            (number, 10)
+        }
+    };
 
     match number {
         n if (n.contains('E') || n.contains('e')) && n.parse::<f64>().is_ok() => {
             Ok(Edn::Double(n.parse::<f64>()?.into()))
         }
-        n if n.parse::<usize>().is_ok() => Ok(Edn::UInt(n.parse::<usize>()?)),
-        n if n.parse::<isize>().is_ok() => Ok(Edn::Int(n.parse::<isize>()?)),
+        n if usize::from_str_radix(&n, radix).is_ok() => {
+            Ok(Edn::UInt(usize::from_str_radix(&n, radix)?))
+        }
+        n if isize::from_str_radix(&n, radix).is_ok() => {
+            Ok(Edn::Int(isize::from_str_radix(&n, radix)?))
+        }
         n if n.parse::<f64>().is_ok() => Ok(Edn::Double(n.parse::<f64>()?.into())),
         n if n.contains('/') && n.split('/').all(|d| d.parse::<f64>().is_ok()) => {
             Ok(Edn::Rational(n))
@@ -236,8 +280,8 @@ fn read_number(n: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Re
             read_symbol(n.next().unwrap_or(' '), &mut n.enumerate())
         }
         _ => Err(Error::ParseEdn(format!(
-            "{} could not be parsed at char count {}",
-            number, i
+            "{} could not be parsed at char count {} with radix {}",
+            number, i, radix
         ))),
     }
 }
@@ -1476,5 +1520,73 @@ mod test {
 
         assert_eq!(res, Edn::Double(0.00000000000501122771367421.into()));
         assert_eq!(res.to_string(), "0.00000000000501122771367421");
+    }
+
+    #[test]
+    fn parse_0x_ints() {
+        let mut edn = "0x2a".chars().enumerate();
+        let res = parse(edn.next(), &mut edn).unwrap();
+        assert_eq!(res, Edn::UInt(42));
+
+        let mut edn = "-0X2A".chars().enumerate();
+        let res = parse(edn.next(), &mut edn).unwrap();
+        assert_eq!(res, Edn::Int(-42));
+    }
+
+    #[test]
+    fn parse_radix_ints() {
+        let mut edn = "16r2a".chars().enumerate();
+        let res = parse(edn.next(), &mut edn).unwrap();
+        assert_eq!(res, Edn::UInt(42));
+
+        let mut edn = "8r63".chars().enumerate();
+        let res = parse(edn.next(), &mut edn).unwrap();
+        assert_eq!(res, Edn::UInt(51));
+
+        let mut edn = "36rabcxyz".chars().enumerate();
+        let res = parse(edn.next(), &mut edn).unwrap();
+        assert_eq!(res, Edn::UInt(623741435));
+
+        let mut edn = "-16r2a".chars().enumerate();
+        let res = parse(edn.next(), &mut edn).unwrap();
+        assert_eq!(res, Edn::Int(-42));
+
+        let mut edn = "-32rFOObar".chars().enumerate();
+        let res = parse(edn.next(), &mut edn).unwrap();
+        assert_eq!(res, Edn::Int(-529280347));
+    }
+
+    #[test]
+    fn parse_invalid_ints() {
+        let mut edn = "42invalid123".chars().enumerate();
+        assert_eq!(
+            parse(edn.next(), &mut edn),
+            Err(Error::ParseEdn(
+                "42invalid123 could not be parsed at char count 1 with radix 10".to_string()
+            ))
+        );
+
+        let mut edn = "0xxyz123".chars().enumerate();
+        assert_eq!(
+            parse(edn.next(), &mut edn),
+            Err(Error::ParseEdn(
+                "xyz123 could not be parsed at char count 1 with radix 16".to_string()
+            ))
+        );
+
+        let mut edn = "42rabcxzy".chars().enumerate();
+        assert_eq!(
+            parse(edn.next(), &mut edn),
+            Err(Error::ParseEdn("Radix of 42 is out of bounds".to_string()))
+        );
+
+        let mut edn = "42crazyrabcxzy".chars().enumerate();
+        assert_eq!(
+            parse(edn.next(), &mut edn),
+            Err(Error::ParseEdn(
+                "invalid digit found in string while trying to parse radix from 42crazyrabcxzy"
+                    .to_string()
+            ))
+        );
     }
 }
