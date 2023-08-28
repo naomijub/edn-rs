@@ -1,10 +1,10 @@
-name: Check
+name: Rust
 
 on:
   push:
-    branches:
+    branches: [ "main" ]
   pull_request:
-    branches:
+    branches: [ "*" ]
 env:
   CARGO_TERM_COLOR: always
 
@@ -49,4 +49,4 @@ jobs:
         - uses: dtolnay/rust-toolchain@stable
           with:
             components: clippy
-        - run: cargo clippy --all-features -- --deny warnings
+        - run: cargo clippy --all-features -- -W clippy::all -W clippy::pedantic -W clippy::nursery --deny warnings
