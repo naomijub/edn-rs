@@ -1,6 +1,8 @@
 use crate::edn::{Edn, Error, List, Map, Set, Vector};
 use std::collections::{BTreeMap, BTreeSet};
 
+const DELIMITERS: [char; 5] = [',', ']', '}', ')', ';'];
+
 pub(crate) fn tokenize(edn: &str) -> std::iter::Enumerate<std::str::Chars> {
     edn.chars().enumerate()
 }
@@ -262,12 +264,11 @@ fn read_bool_or_nil(
         .next()
         .ok_or_else(|| Error::ParseEdn("Could not identify symbol index".to_string()))?
         .0;
-    let delimiters = [',', ']', '}', ')', ';'];
     match c {
         't' if {
             let val = chars
                 .clone()
-                .take_while(|(_, c)| !c.is_whitespace() && !delimiters.contains(c))
+                .take_while(|(_, c)| !c.is_whitespace() && !DELIMITERS.contains(c))
                 .map(|c| c.1)
                 .collect::<String>();
             val.eq("rue")
@@ -282,7 +283,7 @@ fn read_bool_or_nil(
         'f' if {
             let val = chars
                 .clone()
-                .take_while(|(_, c)| !c.is_whitespace() && !delimiters.contains(c))
+                .take_while(|(_, c)| !c.is_whitespace() && !DELIMITERS.contains(c))
                 .map(|c| c.1)
                 .collect::<String>();
             val.eq("alse")
@@ -297,7 +298,7 @@ fn read_bool_or_nil(
         'n' if {
             let val = chars
                 .clone()
-                .take_while(|(_, c)| !c.is_whitespace() && !delimiters.contains(c))
+                .take_while(|(_, c)| !c.is_whitespace() && !DELIMITERS.contains(c))
                 .map(|c| c.1)
                 .collect::<String>();
             val.eq("il")
