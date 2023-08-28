@@ -1,6 +1,8 @@
 use crate::edn::{Edn, Error, List, Map, Set, Vector};
 use std::collections::{BTreeMap, BTreeSet};
 
+const DELIMITERS: [char; 5] = [',', ']', '}', ')', ';'];
+
 pub(crate) fn tokenize(edn: &str) -> std::iter::Enumerate<std::str::Chars> {
     edn.chars().enumerate()
 }
@@ -264,13 +266,12 @@ fn read_bool_or_nil(
         .0;
     match c {
         't' if {
-            let val = chars.clone().take(4).map(|c| c.1).collect::<String>();
-            val.eq("rue ")
-                || val.eq("rue,")
-                || val.eq("rue]")
-                || val.eq("rue}")
-                || val.eq("rue)")
-                || val.eq("rue")
+            let val = chars
+                .clone()
+                .take_while(|(_, c)| !c.is_whitespace() && !DELIMITERS.contains(c))
+                .map(|c| c.1)
+                .collect::<String>();
+            val.eq("rue")
         } =>
         {
             let mut string = String::new();
@@ -280,13 +281,12 @@ fn read_bool_or_nil(
             Ok(Edn::Bool(string.parse::<bool>()?))
         }
         'f' if {
-            let val = chars.clone().take(5).map(|c| c.1).collect::<String>();
-            val.eq("alse ")
-                || val.eq("alse,")
-                || val.eq("alse]")
-                || val.eq("alse}")
-                || val.eq("alse)")
-                || val.eq("alse")
+            let val = chars
+                .clone()
+                .take_while(|(_, c)| !c.is_whitespace() && !DELIMITERS.contains(c))
+                .map(|c| c.1)
+                .collect::<String>();
+            val.eq("alse")
         } =>
         {
             let mut string = String::new();
@@ -296,13 +296,12 @@ fn read_bool_or_nil(
             Ok(Edn::Bool(string.parse::<bool>()?))
         }
         'n' if {
-            let val = chars.clone().take(3).map(|c| c.1).collect::<String>();
-            val.eq("il ")
-                || val.eq("il,")
-                || val.eq("il]")
-                || val.eq("il}")
-                || val.eq("il)")
-                || val.eq("il")
+            let val = chars
+                .clone()
+                .take_while(|(_, c)| !c.is_whitespace() && !DELIMITERS.contains(c))
+                .map(|c| c.1)
+                .collect::<String>();
+            val.eq("il")
         } =>
         {
             let mut string = String::new();
@@ -721,6 +720,48 @@ mod test {
     }
 
     #[test]
+    fn parse_bool_in_newline_simple_vec_str_literal() {
+        let mut edn = "[\ntrue\nfalse\nnil\n]".chars().enumerate();
+
+        assert_eq!(
+            parse(edn.next(), &mut edn).unwrap(),
+            Edn::Vector(Vector::new(vec![
+                Edn::Bool(true),
+                Edn::Bool(false),
+                Edn::Nil,
+            ]))
+        );
+    }
+
+    #[test]
+    fn parse_bool_in_tab_simple_vec_str_literal() {
+        let mut edn = "[\ttrue\tnil\tfalse\t]".chars().enumerate();
+
+        assert_eq!(
+            parse(edn.next(), &mut edn).unwrap(),
+            Edn::Vector(Vector::new(vec![
+                Edn::Bool(true),
+                Edn::Nil,
+                Edn::Bool(false),
+            ]))
+        );
+    }
+
+    #[test]
+    fn parse_bool_in_crlf_newline_simple_vec_str_literal() {
+        let mut edn = "[\r\nnil\r\nfalse\r\ntrue\r\n]".chars().enumerate();
+
+        assert_eq!(
+            parse(edn.next(), &mut edn).unwrap(),
+            Edn::Vector(Vector::new(vec![
+                Edn::Nil,
+                Edn::Bool(false),
+                Edn::Bool(true),
+            ]))
+        );
+    }
+
+    #[test]
     fn parse_list() {
         let mut edn = "(1 \"2\" 3.3 :b )".chars().enumerate();
 
@@ -805,6 +846,18 @@ mod test {
                 Edn::Char('c'),
                 Edn::UInt(3)
             ]))
+        )
+    }
+
+    #[test]
+    fn parse_true_false_nil_with_comments_in_set() {
+        let mut edn = "#{true;this is true\nfalse;this is false\nnil;this is nil\n}"
+            .chars()
+            .enumerate();
+
+        assert_eq!(
+            parse(edn.next(), &mut edn).unwrap(),
+            Edn::Set(Set::new(set![Edn::Bool(true), Edn::Bool(false), Edn::Nil,]))
         )
     }
 
