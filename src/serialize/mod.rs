@@ -122,13 +122,7 @@ where
     fn serialize(self) -> String {
         let aux_vec = self
             .into_iter()
-            .map(|(k, v)| {
-                format!(
-                    ":{} {}",
-                    k.replace(' ', "-").replace('_', "-"),
-                    v.serialize()
-                )
-            })
+            .map(|(k, v)| format!(":{} {}", k.replace([' ', '_'], "-"), v.serialize()))
             .collect::<Vec<String>>();
         let mut s = String::new();
         s.push('{');
@@ -146,13 +140,7 @@ where
     fn serialize(self) -> String {
         let aux_vec = self
             .into_iter()
-            .map(|(k, v)| {
-                format!(
-                    ":{} {}",
-                    k.replace(' ', "-").replace('_', "-"),
-                    v.serialize()
-                )
-            })
+            .map(|(k, v)| format!(":{} {}", k.replace([' ', '_'], "-"), v.serialize()))
             .collect::<Vec<String>>();
         let mut s = String::new();
         s.push('{');
@@ -169,13 +157,7 @@ where
     fn serialize(self) -> String {
         let aux_vec = self
             .into_iter()
-            .map(|(k, v)| {
-                format!(
-                    ":{} {}",
-                    k.replace(' ', "-").replace('_', "-"),
-                    v.serialize()
-                )
-            })
+            .map(|(k, v)| format!(":{} {}", k.replace([' ', '_'], "-"), v.serialize()))
             .collect::<Vec<String>>();
         let mut s = String::new();
         s.push('{');
@@ -195,7 +177,7 @@ where
             .map(|(k, v)| {
                 format!(
                     ":{} {}",
-                    k.to_string().replace(' ', "-").replace('_', "-"),
+                    k.to_string().replace([' ', '_'], "-"),
                     v.serialize()
                 )
             })
