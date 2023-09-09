@@ -15,7 +15,7 @@ fn tokenize() {
         Edn::Rational("3/4".to_string()),
     ]));
 
-    println!("{:?}", edn);
+    println!("{edn:?}");
     assert_eq!(edn, expected);
 }
 

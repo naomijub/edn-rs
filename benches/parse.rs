@@ -1,5 +1,5 @@
 use criterion::{criterion_group, criterion_main, Criterion};
-use edn_rs;
+
 use std::str::FromStr;
 
 fn criterion_benchmark(c: &mut Criterion) {

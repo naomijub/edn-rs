@@ -1,25 +1,25 @@
 use crate::edn::{rational_to_double, Edn};
 
-pub(crate) fn display_as_json(edn: &Edn) -> String {
+#[allow(clippy::module_name_repetitions)]
+pub fn display_as_json(edn: &Edn) -> String {
     match edn {
-        Edn::Vector(v) => vec_to_json(v.to_owned().to_vec()),
-        Edn::Set(s) => set_to_json_vec(s.to_owned().to_set()),
-        Edn::Map(map) => map_to_json(map.to_owned().to_map()),
-        Edn::List(l) => vec_to_json(l.to_owned().to_vec()),
+        Edn::Vector(v) => vec_to_json(&v.clone().to_vec()),
+        Edn::Set(s) => set_to_json_vec(&s.clone().to_set()),
+        Edn::Map(map) => map_to_json(&map.clone().to_map()),
+        Edn::List(l) => vec_to_json(&l.clone().to_vec()),
         Edn::Key(key) => format!("{:?}", kebab_to_camel(key)),
-        Edn::Symbol(s) => format!("{:?}", s),
-        Edn::Str(s) => format!("{:?}", s),
-        Edn::Int(n) => format!("{}", n),
-        Edn::UInt(n) => format!("{}", n),
-        Edn::Double(n) => format!("{}", n),
+        Edn::Symbol(s) | Edn::Str(s) => format!("{s:?}"),
+        Edn::Int(n) => format!("{n}"),
+        Edn::UInt(n) => format!("{n}"),
+        Edn::Double(n) => format!("{n}"),
         Edn::Rational(r) => format!("{}", rational_to_double(r).unwrap()),
-        Edn::Char(c) => format!("'{}'", c),
-        Edn::Bool(b) => format!("{}", b),
-        Edn::Inst(inst) => format!("{:?}", inst),
-        Edn::Uuid(uuid) => format!("{:?}", uuid),
-        Edn::NamespacedMap(ns, map) => nsmap_to_json(ns, map.to_owned().to_map()),
+        Edn::Char(c) => format!("'{c}'"),
+        Edn::Bool(b) => format!("{b}"),
+        Edn::Inst(inst) => format!("{inst:?}"),
+        Edn::Uuid(uuid) => format!("{uuid:?}"),
+        Edn::NamespacedMap(ns, map) => nsmap_to_json(ns, &map.clone().to_map()),
         Edn::Nil => String::from("null"),
-        Edn::Empty => String::from(""),
+        Edn::Empty => String::new(),
         Edn::Tagged(tag, content) => format!("{{ \"{}\": {}}}", tag, display_as_json(content)),
     }
 }
@@ -51,7 +51,7 @@ fn kebab_to_camel(key: &str) -> String {
     keywrod.trim().replace(['-', '.'], "")
 }
 
-fn vec_to_json(vec: Vec<Edn>) -> String {
+fn vec_to_json(vec: &[Edn]) -> String {
     let vec_str = vec
         .iter()
         .map(display_as_json)
@@ -63,7 +63,7 @@ fn vec_to_json(vec: Vec<Edn>) -> String {
     s
 }
 
-fn set_to_json_vec(set: std::collections::BTreeSet<Edn>) -> String {
+fn set_to_json_vec(set: &std::collections::BTreeSet<Edn>) -> String {
     let set_str = set
         .iter()
         .map(display_as_json)
@@ -75,7 +75,7 @@ fn set_to_json_vec(set: std::collections::BTreeSet<Edn>) -> String {
     s
 }
 
-fn map_to_json(map: std::collections::BTreeMap<String, Edn>) -> String {
+fn map_to_json(map: &std::collections::BTreeMap<String, Edn>) -> String {
     let map_str = map
         .iter()
         .map(|(k, e)| {
@@ -86,7 +86,7 @@ fn map_to_json(map: std::collections::BTreeMap<String, Edn>) -> String {
             };
             let edn = display_as_json(e);
 
-            format!("{:?}: {}", key, edn)
+            format!("{key:?}: {edn}")
         })
         .collect::<Vec<String>>()
         .join(", ");
@@ -96,7 +96,7 @@ fn map_to_json(map: std::collections::BTreeMap<String, Edn>) -> String {
     s
 }
 
-fn nsmap_to_json(ns: &str, map: std::collections::BTreeMap<String, Edn>) -> String {
+fn nsmap_to_json(ns: &str, map: &std::collections::BTreeMap<String, Edn>) -> String {
     let mut s = String::from("{");
     let map_str = map_to_json(map);
     s.push_str(&format!("{:?}: ", kebab_to_camel(ns)));

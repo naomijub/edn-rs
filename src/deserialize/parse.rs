@@ -3,18 +3,15 @@ use std::collections::{BTreeMap, BTreeSet};
 
 const DELIMITERS: [char; 5] = [',', ']', '}', ')', ';'];
 
-pub(crate) fn tokenize(edn: &str) -> std::iter::Enumerate<std::str::Chars> {
+pub fn tokenize(edn: &str) -> std::iter::Enumerate<std::str::Chars> {
     edn.chars().enumerate()
 }
 
-pub(crate) fn parse(
+pub fn parse(
     c: Option<(usize, char)>,
     chars: &mut std::iter::Enumerate<std::str::Chars>,
 ) -> Result<Edn, Error> {
-    match parse_internal(c, chars)? {
-        Some(edn) => Ok(edn),
-        None => Ok(Edn::Empty),
-    }
+    (parse_internal(c, chars)?).map_or_else(|| Ok(Edn::Empty), Ok)
 }
 
 fn parse_internal(
@@ -38,7 +35,8 @@ fn parse_internal(
     })
 }
 
-pub(crate) fn parse_edn(
+#[allow(clippy::module_name_repetitions)]
+pub fn parse_edn(
     c: Option<(usize, char)>,
     chars: &mut std::iter::Enumerate<std::str::Chars>,
 ) -> Result<Edn, Error> {
@@ -97,8 +95,7 @@ fn read_str(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Er
                     '\"' => s.push('\"'),
                     _ => {
                         return Err(Err(Error::ParseEdn(format!(
-                            "Invalid escape sequence \\{}",
-                            c
+                            "Invalid escape sequence \\{c}"
                         ))))
                     }
                 };
@@ -141,8 +138,7 @@ fn read_symbol(a: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Re
 
     if a.is_whitespace() {
         return Err(Error::ParseEdn(format!(
-            "\"{}\" could not be parsed at char count {}",
-            a, i
+            "\"{a}\" could not be parsed at char count {i}"
         )));
     }
 
@@ -191,8 +187,7 @@ fn read_discard(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Opt
     match parse(chars.next(), chars) {
         Err(e) => Err(e),
         Ok(Edn::Empty) => Err(Error::ParseEdn(format!(
-            "Discard sequence must have a following element at char count {}",
-            i
+            "Discard sequence must have a following element at char count {i}"
         ))),
         _ => read_if_not_container_end(chars),
     }
@@ -212,7 +207,7 @@ fn read_number(n: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Re
         let mut number = String::new();
         number.push(n);
         for (_, c) in chars.take(c_len) {
-            number.push(c)
+            number.push(c);
         }
         if number.to_lowercase().starts_with("0x") {
             number.remove(0);
@@ -234,8 +229,8 @@ fn read_number(n: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Re
             match radix {
                 Ok(r) => {
                     // from_str_radix panics if radix is not in the range from 2 to 36
-                    if r > 36 || r < 2 {
-                        return Err(Error::ParseEdn(format!("Radix of {} is out of bounds", r)));
+                    if !(2..=36).contains(&r) {
+                        return Err(Error::ParseEdn(format!("Radix of {r} is out of bounds")));
                     }
 
                     if negative {
@@ -243,7 +238,7 @@ fn read_number(n: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Re
                             number.remove(1);
                         }
                     } else {
-                        for _ in 0..(index + 1) {
+                        for _ in 0..=index {
                             number.remove(0);
                         }
                     }
@@ -251,8 +246,7 @@ fn read_number(n: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Re
                 }
                 Err(e) => {
                     return Err(Error::ParseEdn(format!(
-                        "{} while trying to parse radix from {}",
-                        e, number
+                        "{e} while trying to parse radix from {number}"
                     )));
                 }
             }
@@ -280,8 +274,7 @@ fn read_number(n: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Re
             read_symbol(n.next().unwrap_or(' '), &mut n.enumerate())
         }
         _ => Err(Error::ParseEdn(format!(
-            "{} could not be parsed at char count {} with radix {}",
-            number, i, radix
+            "{number} could not be parsed at char count {i} with radix {radix}"
         ))),
     }
 }
@@ -293,7 +286,7 @@ fn read_char(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, E
         .ok_or_else(|| Error::ParseEdn("Could not identify symbol index".to_string()))?
         .0;
     let c = chars.next();
-    c.ok_or(format!("{:?} could not be parsed at char count {}", c, i))
+    c.ok_or(format!("{c:?} could not be parsed at char count {i}"))
         .map(|c| c.1)
         .map(Edn::Char)
         .map_err(Error::ParseEdn)
@@ -355,8 +348,7 @@ fn read_bool_or_nil(
             match &string[..] {
                 "nil" => Ok(Edn::Nil),
                 _ => Err(Error::ParseEdn(format!(
-                    "{} could not be parsed at char count {}",
-                    string, i
+                    "{string} could not be parsed at char count {i}"
                 ))),
             }
         }
@@ -381,8 +373,7 @@ fn read_vec(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Er
             }
             err => {
                 return Err(Error::ParseEdn(format!(
-                    "{:?} could not be parsed at char count {}",
-                    err, i
+                    "{err:?} could not be parsed at char count {i}"
                 )))
             }
         }
@@ -406,8 +397,7 @@ fn read_list(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, E
             }
             err => {
                 return Err(Error::ParseEdn(format!(
-                    "{:?} could not be parsed at char count {}",
-                    err, i
+                    "{err:?} could not be parsed at char count {i}"
                 )))
             }
         }
@@ -432,8 +422,7 @@ fn read_set(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Er
             }
             err => {
                 return Err(Error::ParseEdn(format!(
-                    "{:?} could not be parsed at char count {}",
-                    err, i
+                    "{err:?} could not be parsed at char count {i}"
                 )))
             }
         }
@@ -466,8 +455,7 @@ fn read_namespaced_map(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Res
             }
             err => {
                 return Err(Error::ParseEdn(format!(
-                    "{:?} could not be parsed at char count {}",
-                    err, i
+                    "{err:?} could not be parsed at char count {i}"
                 )))
             }
         }
@@ -501,8 +489,7 @@ fn read_map(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Er
             }
             err => {
                 return Err(Error::ParseEdn(format!(
-                    "{:?} could not be parsed at char count {}",
-                    err, i
+                    "{err:?} could not be parsed at char count {i}"
                 )))
             }
         }

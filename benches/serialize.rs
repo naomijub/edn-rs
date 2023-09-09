@@ -45,7 +45,7 @@ mod serde {
 mod edn {
     use criterion::Criterion;
     use edn_derive::Serialize;
-    use edn_rs;
+
     use edn_rs::{map, set};
     use std::collections::{BTreeMap, BTreeSet};
 

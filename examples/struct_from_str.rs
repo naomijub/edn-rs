@@ -19,7 +19,7 @@ fn person_ok() -> Result<(), EdnError> {
     let edn_str = "  {:name \"rose\" :age 66  }  ";
     let person: Person = edn_rs::from_str(edn_str)?;
 
-    println!("{:?}", person);
+    println!("{person:?}");
     // Person { name: "rose", age: 66 }
 
     assert_eq!(

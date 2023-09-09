@@ -42,14 +42,14 @@ pub enum Edn {
 
 #[cfg(feature = "async")]
 impl futures::future::Future for Edn {
-    type Output = Edn;
+    type Output = Self;
 
     fn poll(self: Pin<&mut Self>, _cx: &mut task::Context) -> Poll<Self::Output> {
-        if !self.to_string().is_empty() {
+        if self.to_string().is_empty() {
+            Poll::Pending
+        } else {
             let pinned = self.to_owned();
             Poll::Ready(pinned)
-        } else {
-            Poll::Pending
         }
     }
 }
@@ -58,13 +58,13 @@ impl futures::future::Future for Edn {
 pub struct Vector(Vec<Edn>);
 impl Vector {
     #[must_use]
-    pub fn new(v: Vec<Edn>) -> Vector {
-        Vector(v)
+    pub const fn new(v: Vec<Edn>) -> Self {
+        Self(v)
     }
 
     #[must_use]
-    pub fn empty() -> Vector {
-        Vector(Vec::new())
+    pub const fn empty() -> Self {
+        Self(Vec::new())
     }
 
     #[must_use]
@@ -75,7 +75,7 @@ impl Vector {
 
 #[cfg(feature = "async")]
 impl futures::future::Future for Vector {
-    type Output = Vector;
+    type Output = Self;
 
     #[allow(unused_comparisons, clippy::absurd_extreme_comparisons)]
     fn poll(self: Pin<&mut Self>, _cx: &mut task::Context) -> Poll<Self::Output> {
@@ -92,13 +92,13 @@ impl futures::future::Future for Vector {
 pub struct List(Vec<Edn>);
 impl List {
     #[must_use]
-    pub fn new(v: Vec<Edn>) -> List {
-        List(v)
+    pub fn new(v: Vec<Edn>) -> Self {
+        Self(v)
     }
 
     #[must_use]
-    pub fn empty() -> List {
-        List(Vec::new())
+    pub const fn empty() -> Self {
+        Self(Vec::new())
     }
 
     #[must_use]
@@ -109,7 +109,7 @@ impl List {
 
 #[cfg(feature = "async")]
 impl futures::future::Future for List {
-    type Output = List;
+    type Output = Self;
 
     #[allow(unused_comparisons, clippy::absurd_extreme_comparisons)]
     fn poll(self: Pin<&mut Self>, _cx: &mut task::Context) -> Poll<Self::Output> {
@@ -126,13 +126,13 @@ impl futures::future::Future for List {
 pub struct Set(BTreeSet<Edn>);
 impl Set {
     #[must_use]
-    pub fn new(v: BTreeSet<Edn>) -> Set {
-        Set(v)
+    pub const fn new(v: BTreeSet<Edn>) -> Self {
+        Self(v)
     }
 
     #[must_use]
-    pub fn empty() -> Set {
-        Set(BTreeSet::new())
+    pub const fn empty() -> Self {
+        Self(BTreeSet::new())
     }
 
     #[must_use]
@@ -143,7 +143,7 @@ impl Set {
 
 #[cfg(feature = "async")]
 impl futures::future::Future for Set {
-    type Output = Set;
+    type Output = Self;
 
     #[allow(unused_comparisons, clippy::absurd_extreme_comparisons)]
     fn poll(self: Pin<&mut Self>, _cx: &mut task::Context) -> Poll<Self::Output> {
@@ -160,13 +160,13 @@ impl futures::future::Future for Set {
 pub struct Map(BTreeMap<String, Edn>);
 impl Map {
     #[must_use]
-    pub fn new(m: BTreeMap<String, Edn>) -> Map {
-        Map(m)
+    pub fn new(m: BTreeMap<String, Edn>) -> Self {
+        Self(m)
     }
 
     #[must_use]
-    pub fn empty() -> Map {
-        Map(BTreeMap::new())
+    pub const fn empty() -> Self {
+        Self(BTreeMap::new())
     }
 
     #[must_use]
@@ -177,7 +177,7 @@ impl Map {
 
 #[cfg(feature = "async")]
 impl futures::future::Future for Map {
-    type Output = Map;
+    type Output = Self;
 
     #[allow(unused_comparisons, clippy::absurd_extreme_comparisons)]
     fn poll(self: Pin<&mut Self>, _cx: &mut task::Context) -> Poll<Self::Output> {
@@ -193,11 +193,12 @@ impl futures::future::Future for Map {
 #[derive(Clone, Ord, Debug, Eq, PartialEq, PartialOrd, Hash)]
 pub struct Double(i64, u128);
 
+#[allow(clippy::fallible_impl_from)]
 impl From<f64> for Double {
-    fn from(f: f64) -> Double {
-        let f_as_str = format!("{}", f);
+    fn from(f: f64) -> Self {
+        let f_as_str = format!("{f}");
         let f_split = f_as_str.split('.').collect::<Vec<&str>>();
-        Double(
+        Self(
             f_split[0].parse::<i64>().unwrap(),
             f_split
                 .get(1)
@@ -213,14 +214,14 @@ impl From<f64> for Double {
 
 #[cfg(feature = "async")]
 impl futures::future::Future for Double {
-    type Output = Double;
+    type Output = Self;
 
     fn poll(self: Pin<&mut Self>, _cx: &mut task::Context) -> Poll<Self::Output> {
-        if !self.to_string().is_empty() {
+        if self.to_string().is_empty() {
+            Poll::Pending
+        } else {
             let pinned = self.to_owned();
             Poll::Ready(pinned)
-        } else {
-            Poll::Pending
         }
     }
 }
@@ -310,13 +311,13 @@ impl core::fmt::Display for Map {
         write!(
             f,
             "{{{}}}",
-            self.0.iter().map(|(k, v)| format!("{} {}, ", k, v)).fold(
-                String::new(),
-                |mut acc, i| {
+            self.0
+                .iter()
+                .map(|(k, v)| format!("{k} {v}, "))
+                .fold(String::new(), |mut acc, i| {
                     acc.push_str(&i);
                     acc
-                }
-            )
+                })
         )
     }
 }
@@ -324,27 +325,27 @@ impl core::fmt::Display for Map {
 impl core::fmt::Display for Edn {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let text = match self {
-            Edn::Vector(v) => format!("{}", v),
-            Edn::Set(s) => format!("{}", s),
-            Edn::Map(m) => format!("{}", m),
-            Edn::List(l) => format!("{}", l),
-            Edn::Symbol(sy) => sy.to_string(),
-            Edn::Key(k) => k.to_string(),
-            Edn::Str(s) => format!("{:?}", s),
-            Edn::Int(i) => format!("{}", i),
-            Edn::UInt(u) => format!("{}", u),
-            Edn::Double(d) => format!("{}", d),
-            Edn::Rational(r) => r.to_string(),
-            Edn::Bool(b) => format!("{}", b),
-            Edn::Char(c) => format!("{}", c),
-            Edn::Inst(t) => format!("#inst \"{}\"", t),
-            Edn::Uuid(t) => format!("#uuid \"{}\"", t),
-            Edn::NamespacedMap(s, m) => format!(":{}{}", s, m),
-            Edn::Nil => String::from("nil"),
-            Edn::Empty => String::from(""),
-            Edn::Tagged(tag, edn) => format!("#{} {}", tag, edn),
+            Self::Vector(v) => format!("{v}"),
+            Self::Set(s) => format!("{s}"),
+            Self::Map(m) => format!("{m}"),
+            Self::List(l) => format!("{l}"),
+            Self::Symbol(sy) => sy.to_string(),
+            Self::Key(k) => k.to_string(),
+            Self::Str(s) => format!("{s:?}"),
+            Self::Int(i) => format!("{i}"),
+            Self::UInt(u) => format!("{u}"),
+            Self::Double(d) => format!("{d}"),
+            Self::Rational(r) => r.to_string(),
+            Self::Bool(b) => format!("{b}"),
+            Self::Char(c) => format!("{c}"),
+            Self::Inst(t) => format!("#inst \"{t}\""),
+            Self::Uuid(t) => format!("#uuid \"{t}\""),
+            Self::NamespacedMap(s, m) => format!(":{s}{m}"),
+            Self::Nil => String::from("nil"),
+            Self::Empty => String::new(),
+            Self::Tagged(tag, edn) => format!("#{tag} {edn}"),
         };
-        write!(f, "{}", text)
+        write!(f, "{text}")
     }
 }
 
@@ -365,12 +366,12 @@ impl Edn {
     #[must_use]
     pub fn to_float(&self) -> Option<f64> {
         match self {
-            Edn::Key(k) => k.replace(':', "").parse::<f64>().ok(),
-            Edn::Str(s) => s.parse::<f64>().ok(),
-            Edn::Int(i) => to_double(i).ok(),
-            Edn::UInt(u) => to_double(u).ok(),
-            Edn::Double(d) => Some(d.to_float()),
-            Edn::Rational(r) => rational_to_double(r),
+            Self::Key(k) => k.replace(':', "").parse::<f64>().ok(),
+            Self::Str(s) => s.parse::<f64>().ok(),
+            Self::Int(i) => to_double(i).ok(),
+            Self::UInt(u) => to_double(u).ok(),
+            Self::Double(d) => Some(d.to_float()),
+            Self::Rational(r) => rational_to_double(r),
             _ => None,
         }
     }
@@ -391,15 +392,15 @@ impl Edn {
     #[must_use]
     pub fn to_int(&self) -> Option<isize> {
         match self {
-            Edn::Key(k) => k.replace(':', "").parse::<isize>().ok(),
-            Edn::Str(s) => s.parse::<isize>().ok(),
-            Edn::Int(i) => Some(*i),
+            Self::Key(k) => k.replace(':', "").parse::<isize>().ok(),
+            Self::Str(s) => s.parse::<isize>().ok(),
+            Self::Int(i) => Some(*i),
             #[allow(clippy::cast_possible_wrap)]
-            Edn::UInt(u) if isize::try_from(*u).is_ok() => Some(*u as isize),
+            Self::UInt(u) if isize::try_from(*u).is_ok() => Some(*u as isize),
             #[allow(clippy::cast_possible_truncation)]
-            Edn::Double(d) => Some(d.clone().to_float().round() as isize),
+            Self::Double(d) => Some(d.clone().to_float().round() as isize),
             #[allow(clippy::cast_possible_truncation)]
-            Edn::Rational(r) => Some(rational_to_double(r).unwrap_or(0f64).round() as isize),
+            Self::Rational(r) => Some(rational_to_double(r).unwrap_or(0f64).round() as isize),
             _ => None,
         }
     }
@@ -408,17 +409,17 @@ impl Edn {
     #[must_use]
     pub fn to_uint(&self) -> Option<usize> {
         match self {
-            Edn::Str(s) => s.parse::<usize>().ok(),
+            Self::Str(s) => s.parse::<usize>().ok(),
             #[allow(clippy::cast_sign_loss)]
-            Edn::Int(i) if i > &0 => Some(*i as usize),
-            Edn::UInt(i) => Some(*i),
-            Edn::Double(d) if d.to_float() > 0f64 =>
+            Self::Int(i) if i > &0 => Some(*i as usize),
+            Self::UInt(i) => Some(*i),
+            Self::Double(d) if d.to_float() > 0f64 =>
             {
                 #[allow(clippy::cast_sign_loss)]
                 #[allow(clippy::cast_possible_truncation)]
                 Some(d.clone().to_float().round() as usize)
             }
-            Edn::Rational(r) if !r.contains('-') =>
+            Self::Rational(r) if !r.contains('-') =>
             {
                 #[allow(clippy::cast_sign_loss)]
                 #[allow(clippy::cast_possible_truncation)]
@@ -443,8 +444,8 @@ impl Edn {
     #[must_use]
     pub fn to_bool(&self) -> Option<bool> {
         match self {
-            Edn::Bool(b) => Some(*b),
-            Edn::Str(s) | Edn::Symbol(s) => s.parse::<bool>().ok(),
+            Self::Bool(b) => Some(*b),
+            Self::Str(s) | Self::Symbol(s) => s.parse::<bool>().ok(),
             _ => None,
         }
     }
@@ -460,9 +461,9 @@ impl Edn {
     /// assert_eq!(symbol.to_char(), None);
     /// ```
     #[must_use]
-    pub fn to_char(&self) -> Option<char> {
+    pub const fn to_char(&self) -> Option<char> {
         match self {
-            Edn::Char(c) => Some(*c),
+            Self::Char(c) => Some(*c),
             _ => None,
         }
     }
@@ -472,26 +473,26 @@ impl Edn {
     #[must_use]
     pub fn to_vec(&self) -> Option<Vec<String>> {
         match self {
-            Edn::Vector(_) => Some(
+            Self::Vector(_) => Some(
                 self.iter_some()?
                     .map(|e| match e {
-                        Edn::Str(s) => s.clone(),
+                        Self::Str(s) => s.clone(),
                         _ => e.to_string(),
                     })
                     .collect::<Vec<String>>(),
             ),
-            Edn::List(_) => Some(
+            Self::List(_) => Some(
                 self.iter_some()?
                     .map(|e| match e {
-                        Edn::Str(s) => s.clone(),
+                        Self::Str(s) => s.clone(),
                         _ => e.to_string(),
                     })
                     .collect::<Vec<String>>(),
             ),
-            Edn::Set(_) => Some(
+            Self::Set(_) => Some(
                 self.iter_some()?
                     .map(|e| match e {
-                        Edn::Str(s) => s.clone(),
+                        Self::Str(s) => s.clone(),
                         _ => e.to_string(),
                     })
                     .collect::<Vec<String>>(),
@@ -505,19 +506,19 @@ impl Edn {
     #[must_use]
     pub fn to_int_vec(&self) -> Option<Vec<isize>> {
         match self {
-            Edn::Vector(_) if !self.iter_some()?.any(|e| e.to_int().is_none()) => Some(
+            Self::Vector(_) if !self.iter_some()?.any(|e| e.to_int().is_none()) => Some(
                 self.iter_some()?
-                    .map(Edn::to_int)
+                    .map(Self::to_int)
                     .collect::<Option<Vec<isize>>>()?,
             ),
-            Edn::List(_) if !self.iter_some()?.any(|e| e.to_int().is_none()) => Some(
+            Self::List(_) if !self.iter_some()?.any(|e| e.to_int().is_none()) => Some(
                 self.iter_some()?
-                    .map(Edn::to_int)
+                    .map(Self::to_int)
                     .collect::<Option<Vec<isize>>>()?,
             ),
-            Edn::Set(_) if !self.iter_some()?.any(|e| e.to_int().is_none()) => Some(
+            Self::Set(_) if !self.iter_some()?.any(|e| e.to_int().is_none()) => Some(
                 self.iter_some()?
-                    .map(Edn::to_int)
+                    .map(Self::to_int)
                     .collect::<Option<Vec<isize>>>()?,
             ),
             _ => None,
@@ -529,19 +530,19 @@ impl Edn {
     #[must_use]
     pub fn to_uint_vec(&self) -> Option<Vec<usize>> {
         match self {
-            Edn::Vector(_) if !self.iter_some()?.any(|e| e.to_uint().is_none()) => Some(
+            Self::Vector(_) if !self.iter_some()?.any(|e| e.to_uint().is_none()) => Some(
                 self.iter_some()?
-                    .map(Edn::to_uint)
+                    .map(Self::to_uint)
                     .collect::<Option<Vec<usize>>>()?,
             ),
-            Edn::List(_) if !self.iter_some()?.any(|e| e.to_uint().is_none()) => Some(
+            Self::List(_) if !self.iter_some()?.any(|e| e.to_uint().is_none()) => Some(
                 self.iter_some()?
-                    .map(Edn::to_uint)
+                    .map(Self::to_uint)
                     .collect::<Option<Vec<usize>>>()?,
             ),
-            Edn::Set(_) if !self.iter_some()?.any(|e| e.to_uint().is_none()) => Some(
+            Self::Set(_) if !self.iter_some()?.any(|e| e.to_uint().is_none()) => Some(
                 self.iter_some()?
-                    .map(Edn::to_uint)
+                    .map(Self::to_uint)
                     .collect::<Option<Vec<usize>>>()?,
             ),
             _ => None,
@@ -553,19 +554,19 @@ impl Edn {
     #[must_use]
     pub fn to_float_vec(&self) -> Option<Vec<f64>> {
         match self {
-            Edn::Vector(_) if !self.iter_some()?.any(|e| e.to_float().is_none()) => Some(
+            Self::Vector(_) if !self.iter_some()?.any(|e| e.to_float().is_none()) => Some(
                 self.iter_some()?
-                    .map(Edn::to_float)
+                    .map(Self::to_float)
                     .collect::<Option<Vec<f64>>>()?,
             ),
-            Edn::List(_) if !self.iter_some()?.any(|e| e.to_float().is_none()) => Some(
+            Self::List(_) if !self.iter_some()?.any(|e| e.to_float().is_none()) => Some(
                 self.iter_some()?
-                    .map(Edn::to_float)
+                    .map(Self::to_float)
                     .collect::<Option<Vec<f64>>>()?,
             ),
-            Edn::Set(_) if !self.iter_some()?.any(|e| e.to_float().is_none()) => Some(
+            Self::Set(_) if !self.iter_some()?.any(|e| e.to_float().is_none()) => Some(
                 self.iter_some()?
-                    .map(Edn::to_float)
+                    .map(Self::to_float)
                     .collect::<Option<Vec<f64>>>()?,
             ),
             _ => None,
@@ -577,19 +578,19 @@ impl Edn {
     #[must_use]
     pub fn to_bool_vec(&self) -> Option<Vec<bool>> {
         match self {
-            Edn::Vector(_) if !self.iter_some()?.any(|e| e.to_bool().is_none()) => Some(
+            Self::Vector(_) if !self.iter_some()?.any(|e| e.to_bool().is_none()) => Some(
                 self.iter_some()?
-                    .map(Edn::to_bool)
+                    .map(Self::to_bool)
                     .collect::<Option<Vec<bool>>>()?,
             ),
-            Edn::List(_) if !self.iter_some()?.any(|e| e.to_bool().is_none()) => Some(
+            Self::List(_) if !self.iter_some()?.any(|e| e.to_bool().is_none()) => Some(
                 self.iter_some()?
-                    .map(Edn::to_bool)
+                    .map(Self::to_bool)
                     .collect::<Option<Vec<bool>>>()?,
             ),
-            Edn::Set(_) if !self.iter_some()?.any(|e| e.to_bool().is_none()) => Some(
+            Self::Set(_) if !self.iter_some()?.any(|e| e.to_bool().is_none()) => Some(
                 self.iter_some()?
-                    .map(Edn::to_bool)
+                    .map(Self::to_bool)
                     .collect::<Option<Vec<bool>>>()?,
             ),
             _ => None,
@@ -620,7 +621,7 @@ impl Edn {
     ///
     #[allow(clippy::must_use_candidate)]
     pub fn to_debug(&self) -> String {
-        format!("{:?}", self)
+        format!("{self:?}")
     }
 
     /// Index into a EDN vector, list, set or map. A string index can be used to access a
@@ -647,7 +648,7 @@ impl Edn {
     /// }
     /// ```
     #[must_use]
-    pub fn get<I: Index>(&self, index: I) -> Option<&Edn> {
+    pub fn get<I: Index>(&self, index: I) -> Option<&Self> {
         index.index_into(self)
     }
 
@@ -675,7 +676,7 @@ impl Edn {
     /// }
     /// ```
     #[must_use]
-    pub fn get_mut<I: Index>(&mut self, index: I) -> Option<&mut Edn> {
+    pub fn get_mut<I: Index>(&mut self, index: I) -> Option<&mut Self> {
         index.index_into_mut(self)
     }
 
@@ -693,10 +694,10 @@ impl Edn {
     /// ```
     #[allow(clippy::needless_doctest_main)]
     #[must_use]
-    pub fn iter_some(&self) -> Option<std::slice::Iter<'_, Edn>> {
+    pub fn iter_some(&self) -> Option<std::slice::Iter<'_, Self>> {
         match self {
-            Edn::Vector(v) => Some(v.0.iter()),
-            Edn::List(l) => Some(l.0.iter()),
+            Self::Vector(v) => Some(v.0.iter()),
+            Self::List(l) => Some(l.0.iter()),
             _ => None,
         }
     }
@@ -704,9 +705,9 @@ impl Edn {
     /// `set_iter` returns am `Option<btree_set::Iter<Edn>>` with `Some` for type `Edn::Set`
     /// Other types return `None`
     #[must_use]
-    pub fn set_iter(&self) -> Option<std::collections::btree_set::Iter<'_, Edn>> {
+    pub fn set_iter(&self) -> Option<std::collections::btree_set::Iter<'_, Self>> {
         match self {
-            Edn::Set(s) => Some(s.0.iter()),
+            Self::Set(s) => Some(s.0.iter()),
             _ => None,
         }
     }
@@ -714,9 +715,9 @@ impl Edn {
     /// `map_iter` returns am `Option<btree_map::Iter<String, Edn>>` with `Some` for type `Edn::Map`
     /// Other types return `None`
     #[must_use]
-    pub fn map_iter(&self) -> Option<std::collections::btree_map::Iter<'_, String, Edn>> {
+    pub fn map_iter(&self) -> Option<std::collections::btree_map::Iter<'_, String, Self>> {
         match self {
-            Edn::Map(m) | Edn::NamespacedMap(_, m) => Some(m.0.iter()),
+            Self::Map(m) | Self::NamespacedMap(_, m) => Some(m.0.iter()),
             _ => None,
         }
     }
@@ -725,7 +726,7 @@ impl Edn {
     /// Other types return `None`
     #[must_use]
     pub fn to_str_uuid(&self) -> Option<String> {
-        if let Edn::Uuid(uuid) = self {
+        if let Self::Uuid(uuid) = self {
             Some(uuid.clone())
         } else {
             None
@@ -736,7 +737,7 @@ impl Edn {
     /// Other types return `None`
     #[must_use]
     pub fn to_str_inst(&self) -> Option<String> {
-        if let Edn::Inst(inst) = self {
+        if let Self::Inst(inst) = self {
             Some(inst.clone())
         } else {
             None
@@ -757,7 +758,7 @@ impl Edn {
     /// `Edn::Rational(r)` => a number like `0.25` for `1/4`.
     /// `Edn::Char(c)` => a simple char `\'c\'`
     /// `Edn::Bool(b)` => boolean options, `true` and `false`
-    /// `Edn::Inst(inst)` => a DateTime string like `\"2020-10-21T00:00:00.000-00:00\"`
+    /// `Edn::Inst(inst)` => a `DateTime` string like `\"2020-10-21T00:00:00.000-00:00\"`
     /// `Edn::Uuid(uuid)` => a UUID string like `\"7a6b6722-0221-4280-865e-ad41060d53b2\"`
     /// `Edn::NamespacedMap(ns, map)` => a namespaced map like `{\"nameSpace\": {\"key1\": value1, ..., \"keyN\": valueN}}`
     /// `Edn::Nil` => `null`
@@ -781,6 +782,7 @@ impl Edn {
     /// }
     /// ```
     #[cfg(feature = "json")]
+    #[must_use]
     pub fn to_json(&self) -> String {
         crate::json::display_as_json(self)
     }
@@ -802,7 +804,7 @@ fn to_double<T>(i: T) -> Result<f64, std::num::ParseFloatError>
 where
     T: std::fmt::Debug,
 {
-    format!("{:?}", i).parse::<f64>()
+    format!("{i:?}").parse::<f64>()
 }
 
 pub(crate) fn rational_to_double(r: &str) -> Option<f64> {
@@ -818,7 +820,7 @@ pub(crate) fn rational_to_double(r: &str) -> Option<f64> {
     None
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Error {
     ParseEdn(String),
     Deserialize(String),
@@ -827,32 +829,32 @@ pub enum Error {
 
 impl From<String> for Error {
     fn from(s: String) -> Self {
-        Error::ParseEdn(s)
+        Self::ParseEdn(s)
     }
 }
 
 impl From<std::num::ParseIntError> for Error {
     fn from(s: std::num::ParseIntError) -> Self {
-        Error::ParseEdn(s.to_string())
+        Self::ParseEdn(s.to_string())
     }
 }
 
 impl From<std::num::ParseFloatError> for Error {
     fn from(s: std::num::ParseFloatError) -> Self {
-        Error::ParseEdn(s.to_string())
+        Self::ParseEdn(s.to_string())
     }
 }
 
 impl From<std::str::ParseBoolError> for Error {
     fn from(s: std::str::ParseBoolError) -> Self {
-        Error::ParseEdn(s.to_string())
+        Self::ParseEdn(s.to_string())
     }
 }
 
 impl std::error::Error for Error {
     fn description(&self) -> &str {
         match self {
-            Error::ParseEdn(s) | Error::Deserialize(s) | Error::Iter(s) => s,
+            Self::ParseEdn(s) | Self::Deserialize(s) | Self::Iter(s) => s,
         }
     }
 
@@ -864,7 +866,7 @@ impl std::error::Error for Error {
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Error::ParseEdn(s) | Error::Deserialize(s) | Error::Iter(s) => write!(f, "{}", &s),
+            Self::ParseEdn(s) | Self::Deserialize(s) | Self::Iter(s) => write!(f, "{}", &s),
         }
     }
 }

@@ -201,19 +201,19 @@ impl Serialize for () {
 
 impl Serialize for String {
     fn serialize(self) -> String {
-        format!("{:?}", self)
+        format!("{self:?}")
     }
 }
 
 impl Serialize for &str {
     fn serialize(self) -> String {
-        format!("{:?}", self)
+        format!("{self:?}")
     }
 }
 
 impl Serialize for char {
     fn serialize(self) -> String {
-        format!("\\{}", self)
+        format!("\\{self}")
     }
 }
 
@@ -222,11 +222,10 @@ where
     T: Serialize,
 {
     fn serialize(self) -> String {
-        if let Some(t) = self {
-            t.serialize()
-        } else {
-            String::from("nil")
-        }
+        self.map_or_else(
+            || String::from("nil"),
+            crate::serialize::Serialize::serialize,
+        )
     }
 }
 

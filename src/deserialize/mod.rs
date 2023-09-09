@@ -2,7 +2,7 @@ use crate::edn::{Edn, Error};
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::str::FromStr;
 
-pub(crate) mod parse;
+pub mod parse;
 
 /// public trait to be used to `Deserialize` structs.
 ///
@@ -58,7 +58,7 @@ pub trait Deserialize: Sized {
 }
 
 fn build_deserialize_error(edn: &Edn, type_: &str) -> Error {
-    Error::Deserialize(format!("couldn't convert `{}` into `{}`", edn, type_))
+    Error::Deserialize(format!("couldn't convert `{edn}` into `{type_}`"))
 }
 
 impl Deserialize for () {
@@ -169,23 +169,20 @@ where
         match edn {
             Edn::Vector(_) => Ok(edn
                 .iter_some()
-                .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
+                .ok_or_else(|| Error::Iter(format!("Could not create iter from {edn:?}")))?
                 .map(|e| Deserialize::deserialize(e))
-                .collect::<Result<Vec<T>, Error>>()?),
+                .collect::<Result<Self, Error>>()?),
             Edn::List(_) => Ok(edn
                 .iter_some()
-                .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
+                .ok_or_else(|| Error::Iter(format!("Could not create iter from {edn:?}")))?
                 .map(|e| Deserialize::deserialize(e))
-                .collect::<Result<Vec<T>, Error>>()?),
+                .collect::<Result<Self, Error>>()?),
             Edn::Set(_) => Ok(edn
                 .iter_some()
-                .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
+                .ok_or_else(|| Error::Iter(format!("Could not create iter from {edn:?}")))?
                 .map(|e| Deserialize::deserialize(e))
-                .collect::<Result<Vec<T>, Error>>()?),
-            _ => Err(build_deserialize_error(
-                edn,
-                std::any::type_name::<Vec<T>>(),
-            )),
+                .collect::<Result<Self, Error>>()?),
+            _ => Err(build_deserialize_error(edn, std::any::type_name::<Self>())),
         }
     }
 }
@@ -199,7 +196,7 @@ where
         match edn {
             Edn::Map(_) => edn
                 .map_iter()
-                .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
+                .ok_or_else(|| Error::Iter(format!("Could not create iter from {edn:?}")))?
                 .map(|(key, e)| {
                     Ok((
                         key.to_string(),
@@ -211,10 +208,10 @@ where
                         })?,
                     ))
                 })
-                .collect::<Result<HashMap<String, T>, Error>>(),
+                .collect::<Result<Self, Error>>(),
             Edn::NamespacedMap(ns, _) => edn
                 .map_iter()
-                .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
+                .ok_or_else(|| Error::Iter(format!("Could not create iter from {edn:?}")))?
                 .map(|(key, e)| {
                     let deser_element = Deserialize::deserialize(e).map_err(|_| {
                         Error::Deserialize(format!(
@@ -229,11 +226,8 @@ where
                         Ok((String::from(':') + ns + "/" + key, deser_element?))
                     }
                 })
-                .collect::<Result<HashMap<String, T>, Error>>(),
-            _ => Err(build_deserialize_error(
-                edn,
-                std::any::type_name::<HashMap<String, T>>(),
-            )),
+                .collect::<Result<Self, Error>>(),
+            _ => Err(build_deserialize_error(edn, std::any::type_name::<Self>())),
         }
     }
 }
@@ -246,7 +240,7 @@ where
         match edn {
             Edn::Map(_) => edn
                 .map_iter()
-                .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
+                .ok_or_else(|| Error::Iter(format!("Could not create iter from {edn:?}")))?
                 .map(|(key, e)| {
                     Ok((
                         key.to_string(),
@@ -258,10 +252,10 @@ where
                         })?,
                     ))
                 })
-                .collect::<Result<BTreeMap<String, T>, Error>>(),
+                .collect::<Result<Self, Error>>(),
             Edn::NamespacedMap(ns, _) => edn
                 .map_iter()
-                .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
+                .ok_or_else(|| Error::Iter(format!("Could not create iter from {edn:?}")))?
                 .map(|(key, e)| {
                     let deser_element = Deserialize::deserialize(e).map_err(|_| {
                         Error::Deserialize(format!(
@@ -276,25 +270,22 @@ where
                         Ok((String::from(':') + ns + "/" + key, deser_element?))
                     }
                 })
-                .collect::<Result<BTreeMap<String, T>, Error>>(),
-            _ => Err(build_deserialize_error(
-                edn,
-                std::any::type_name::<BTreeMap<String, T>>(),
-            )),
+                .collect::<Result<Self, Error>>(),
+            _ => Err(build_deserialize_error(edn, std::any::type_name::<Self>())),
         }
     }
 }
 
 #[allow(clippy::implicit_hasher)]
-impl<T: std::cmp::Eq + std::hash::Hash> Deserialize for HashSet<T>
+impl<T> Deserialize for HashSet<T>
 where
-    T: Deserialize,
+    T: std::cmp::Eq + std::hash::Hash + Deserialize,
 {
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
         match edn {
             Edn::Set(_) => edn
                 .set_iter()
-                .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
+                .ok_or_else(|| Error::Iter(format!("Could not create iter from {edn:?}")))?
                 .map(|e| {
                     Deserialize::deserialize(e).map_err(|_| {
                         Error::Deserialize(format!(
@@ -303,24 +294,21 @@ where
                         ))
                     })
                 })
-                .collect::<Result<HashSet<T>, Error>>(),
-            _ => Err(build_deserialize_error(
-                edn,
-                std::any::type_name::<HashSet<T>>(),
-            )),
+                .collect::<Result<Self, Error>>(),
+            _ => Err(build_deserialize_error(edn, std::any::type_name::<Self>())),
         }
     }
 }
 
-impl<T: std::cmp::Eq + std::hash::Hash + std::cmp::Ord> Deserialize for BTreeSet<T>
+impl<T> Deserialize for BTreeSet<T>
 where
-    T: Deserialize,
+    T: std::cmp::Eq + std::hash::Hash + std::cmp::Ord + Deserialize,
 {
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
         match edn {
             Edn::Set(_) => edn
                 .set_iter()
-                .ok_or_else(|| Error::Iter(format!("Could not create iter from {:?}", edn)))?
+                .ok_or_else(|| Error::Iter(format!("Could not create iter from {edn:?}")))?
                 .map(|e| {
                     Deserialize::deserialize(e).map_err(|_| {
                         Error::Deserialize(format!(
@@ -329,11 +317,8 @@ where
                         ))
                     })
                 })
-                .collect::<Result<BTreeSet<T>, Error>>(),
-            _ => Err(build_deserialize_error(
-                edn,
-                std::any::type_name::<BTreeSet<T>>(),
-            )),
+                .collect::<Result<Self, Error>>(),
+            _ => Err(build_deserialize_error(edn, std::any::type_name::<Self>())),
         }
     }
 }
