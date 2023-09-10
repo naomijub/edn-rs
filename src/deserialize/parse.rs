@@ -1472,75 +1472,73 @@ mod test {
     #[test]
     fn parse_exp() {
         let mut edn = "5.01122771367421E15".chars().enumerate();
-        let res = parse(edn.next(), &mut edn).unwrap();
-
-        assert_eq!(res, Edn::Double(5011227713674210f64.into()))
+        assert_eq!(
+            parse(edn.next(), &mut edn),
+            Ok(Edn::Double(5011227713674210f64.into()))
+        );
     }
 
     #[test]
     fn parse_numberic_symbol_with_doube_e() {
         let mut edn = "5011227E71367421E12".chars().enumerate();
-        let res = parse(edn.next(), &mut edn).unwrap();
-
-        assert_eq!(res, Edn::Symbol("5011227E71367421E12".to_string()))
+        assert_eq!(
+            parse(edn.next(), &mut edn),
+            Ok(Edn::Symbol("5011227E71367421E12".to_string()))
+        );
     }
 
     #[test]
     fn parse_exp_plus_sign() {
         let mut edn = "5.01122771367421E+12".chars().enumerate();
-        let res = parse(edn.next(), &mut edn).unwrap();
-
-        assert_eq!(res, Edn::Double(5011227713674.210f64.into()))
+        assert_eq!(
+            parse(edn.next(), &mut edn),
+            Ok(Edn::Double(5011227713674.210f64.into()))
+        );
     }
 
     #[test]
     fn parse_float_e_minus_12() {
         let mut edn = "0.00000000000501122771367421".chars().enumerate();
-        let res = parse(edn.next(), &mut edn).unwrap();
-        assert_eq!(res, Edn::Double(5.01122771367421e-12.into()))
+        assert_eq!(
+            parse(edn.next(), &mut edn),
+            Ok(Edn::Double(5.01122771367421e-12.into()))
+        );
     }
 
     #[test]
     fn parse_exp_minus_sign() {
         let mut edn = "5.01122771367421e-12".chars().enumerate();
-        let res = parse(edn.next(), &mut edn).unwrap();
+        let res = parse(edn.next(), &mut edn);
 
-        assert_eq!(res, Edn::Double(0.00000000000501122771367421.into()));
-        assert_eq!(res.to_string(), "0.00000000000501122771367421");
+        assert_eq!(res, Ok(Edn::Double(0.00000000000501122771367421.into())));
+        assert_eq!(res.unwrap().to_string(), "0.00000000000501122771367421");
     }
 
     #[test]
     fn parse_0x_ints() {
         let mut edn = "0x2a".chars().enumerate();
-        let res = parse(edn.next(), &mut edn).unwrap();
-        assert_eq!(res, Edn::UInt(42));
+        assert_eq!(parse(edn.next(), &mut edn), Ok(Edn::UInt(42)));
 
         let mut edn = "-0X2A".chars().enumerate();
-        let res = parse(edn.next(), &mut edn).unwrap();
-        assert_eq!(res, Edn::Int(-42));
+        assert_eq!(parse(edn.next(), &mut edn), Ok(Edn::Int(-42)));
     }
 
     #[test]
     fn parse_radix_ints() {
         let mut edn = "16r2a".chars().enumerate();
-        let res = parse(edn.next(), &mut edn).unwrap();
-        assert_eq!(res, Edn::UInt(42));
+        assert_eq!(parse(edn.next(), &mut edn), Ok(Edn::UInt(42)));
 
         let mut edn = "8r63".chars().enumerate();
-        let res = parse(edn.next(), &mut edn).unwrap();
-        assert_eq!(res, Edn::UInt(51));
+        assert_eq!(parse(edn.next(), &mut edn), Ok(Edn::UInt(51)));
 
         let mut edn = "36rabcxyz".chars().enumerate();
-        let res = parse(edn.next(), &mut edn).unwrap();
-        assert_eq!(res, Edn::UInt(623741435));
+        assert_eq!(parse(edn.next(), &mut edn), Ok(Edn::UInt(623741435)));
 
         let mut edn = "-16r2a".chars().enumerate();
-        let res = parse(edn.next(), &mut edn).unwrap();
-        assert_eq!(res, Edn::Int(-42));
+        assert_eq!(parse(edn.next(), &mut edn), Ok(Edn::Int(-42)));
 
         let mut edn = "-32rFOObar".chars().enumerate();
-        let res = parse(edn.next(), &mut edn).unwrap();
-        assert_eq!(res, Edn::Int(-529280347));
+        assert_eq!(parse(edn.next(), &mut edn), Ok(Edn::Int(-529280347)));
     }
 
     #[test]
