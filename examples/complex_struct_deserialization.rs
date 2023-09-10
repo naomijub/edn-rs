@@ -36,7 +36,7 @@ fn complex_ok() -> Result<(), EdnError> {
     let edn_str = "{ :list [{:name \"rose\" :age 66 :cool true}, {:name \"josh\" :age 33 :cool false}, {:name \"eva\" :age 296 :cool true}] :nothing nil }";
     let complex: Complex = edn_rs::from_str(edn_str)?;
 
-    println!("{:?}", complex);
+    println!("{complex:?}");
     // Complex { list: [Another { name: "rose", age: 66, cool: true }, Another { name: "josh", age: 33, cool: false }, Another { name: "eva", age: 296, cool: true }] }
 
     assert_eq!(

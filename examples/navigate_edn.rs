@@ -5,7 +5,7 @@ use edn_rs::{
 
 fn navigate() {
     let edn = edn!((sym 1.2 3 {false :f nil 3/4}));
-    println!("{:?}", edn);
+    println!("{edn:?}");
 
     assert_eq!(edn[1], edn!(1.2));
     assert_eq!(edn[1], Edn::Double(1.2f64.into()));

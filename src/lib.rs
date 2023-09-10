@@ -66,6 +66,7 @@ mod deserialize;
 /// }
 /// ```
 #[cfg(feature = "json")]
+#[must_use]
 pub fn json_to_edn(json: String) -> String {
     use edn::utils::{replace_char, replace_keywords};
     let edn_aux = replace_keywords(json);

@@ -62,7 +62,7 @@ impl Index for str {
         }
     }
     fn index_or_insert<'v>(&self, v: &'v mut Edn) -> &'v mut Edn {
-        if let Edn::Nil = *v {
+        if *v == Edn::Nil {
             *v = Edn::Map(Map::new(std::collections::BTreeMap::new()));
         }
         match *v {
@@ -92,8 +92,8 @@ impl Index for Edn {
         let index = self.to_uint();
 
         match (v, index) {
-            (Edn::Map(ref map) | Edn::NamespacedMap(_, ref map), _) => map.0.get(&key),
-            (Edn::List(_) | Edn::Vector(_), Some(idx)) => idx.index_into(v),
+            (Self::Map(ref map) | Self::NamespacedMap(_, ref map), _) => map.0.get(&key),
+            (Self::List(_) | Self::Vector(_), Some(idx)) => idx.index_into(v),
             _ => None,
         }
     }
@@ -105,9 +105,9 @@ impl Index for Edn {
     }
 }
 
-impl<'a, T: ?Sized> Index for &'a T
+impl<'a, T> Index for &'a T
 where
-    T: Index,
+    T: ?Sized + Index,
 {
     fn index_into<'v>(&self, v: &'v Edn) -> Option<&'v Edn> {
         (**self).index_into(v)
@@ -129,7 +129,7 @@ mod private {
     impl Sealed for str {}
     impl Sealed for String {}
     impl Sealed for Edn {}
-    impl<'a, T: ?Sized> Sealed for &'a T where T: Sealed {}
+    impl<'a, T> Sealed for &'a T where T: ?Sized + Sealed {}
 }
 struct Type<'a>(&'a Edn);
 
@@ -162,8 +162,8 @@ impl<I> ops::Index<I> for Edn
 where
     I: Index,
 {
-    type Output = Edn;
-    fn index(&self, index: I) -> &Edn {
+    type Output = Self;
+    fn index(&self, index: I) -> &Self {
         static NULL: Edn = Edn::Nil;
         index.index_into(self).unwrap_or(&NULL)
     }
@@ -173,7 +173,7 @@ impl<I> ops::IndexMut<I> for Edn
 where
     I: Index,
 {
-    fn index_mut(&mut self, index: I) -> &mut Edn {
+    fn index_mut(&mut self, index: I) -> &mut Self {
         index.index_or_insert(self)
     }
 }

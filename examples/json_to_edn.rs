@@ -31,9 +31,9 @@ fn complex_json() {
 
     assert_eq!(
         edn,
-        json_to_edn(complex_json.clone())
+        json_to_edn(complex_json)
             .replace("  ", "")
-            .replace("\n", " ")
+            .replace('\n', " ")
     );
 }
 

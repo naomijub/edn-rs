@@ -9,7 +9,7 @@ fn edn_from_str() -> Result<Edn, EdnError> {
 fn main() -> Result<(), EdnError> {
     let edn = edn_from_str()?;
 
-    println!("{:?}", edn);
+    println!("{edn:?}");
 
     Ok(())
 }

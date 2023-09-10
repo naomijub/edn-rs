@@ -22,7 +22,7 @@ fn person_ok() -> Result<(), EdnError> {
     }));
     let person: Person = edn_rs::from_edn(&edn)?;
 
-    println!("{:?}", person);
+    println!("{person:?}");
     // Person { name: "rose", age: 66 }
 
     assert_eq!(

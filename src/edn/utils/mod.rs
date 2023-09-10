@@ -4,6 +4,8 @@ use regex::{Captures, Regex};
 pub mod index;
 
 #[cfg(feature = "json")]
+#[must_use]
+#[allow(clippy::needless_pass_by_value)]
 pub fn replace_keywords(json: String) -> String {
     let re = Regex::new(r#""\w*(\s\w*)*":"#).unwrap();
 
@@ -16,6 +18,8 @@ pub fn replace_keywords(json: String) -> String {
 }
 
 #[cfg(feature = "json")]
+#[must_use]
+#[allow(clippy::needless_pass_by_value)]
 pub fn replace_char(json: String) -> String {
     let c_re = Regex::new(r#"'.'"#).unwrap();
 
@@ -33,49 +37,49 @@ pub trait Attribute {
 
 impl Attribute for f64 {
     fn process(&self) -> String {
-        format!("{:?}", self)
+        format!("{self:?}")
     }
 }
 
 impl Attribute for f32 {
     fn process(&self) -> String {
-        format!("{:?}", self)
+        format!("{self:?}")
     }
 }
 
 impl Attribute for isize {
     fn process(&self) -> String {
-        format!("{:?}", self)
+        format!("{self:?}")
     }
 }
 
 impl Attribute for i32 {
     fn process(&self) -> String {
-        format!("{:?}", self)
+        format!("{self:?}")
     }
 }
 
 impl Attribute for i64 {
     fn process(&self) -> String {
-        format!("{:?}", self)
+        format!("{self:?}")
     }
 }
 
 impl Attribute for usize {
     fn process(&self) -> String {
-        format!("{:?}", self)
+        format!("{self:?}")
     }
 }
 
 impl Attribute for u64 {
     fn process(&self) -> String {
-        format!("{:?}", self)
+        format!("{self:?}")
     }
 }
 
 impl Attribute for u32 {
     fn process(&self) -> String {
-        format!("{:?}", self)
+        format!("{self:?}")
     }
 }
 
@@ -87,6 +91,6 @@ impl Attribute for &str {
 
 impl Attribute for bool {
     fn process(&self) -> String {
-        format!("{}", self)
+        format!("{self}")
     }
 }
