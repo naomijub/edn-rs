@@ -44,7 +44,14 @@ pub fn parse_edn(
         Some((_, '\"')) => read_str(chars),
         Some((_, ':')) => read_key_or_nsmap(chars),
         Some((_, n)) if n.is_numeric() => Ok(read_number(n, chars)?),
-        Some((_, n)) if (n == '-' || n == '+') && read_number(n, &mut chars.clone()).is_ok() => {
+        Some((_, n))
+            if (n == '-' || n == '+')
+                && chars
+                    .clone()
+                    .peekable()
+                    .peek()
+                    .is_some_and(|n| n.1.is_numeric()) =>
+        {
             Ok(read_number(n, chars)?)
         }
         Some((_, '\\')) => Ok(read_char(chars)?),
