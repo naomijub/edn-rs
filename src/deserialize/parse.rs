@@ -1,7 +1,7 @@
 use crate::edn::{Edn, Error, List, Map, Set, Vector};
 use std::collections::{BTreeMap, BTreeSet};
 
-const DELIMITERS: [char; 5] = [',', ']', '}', ')', ';'];
+const DELIMITERS: [char; 8] = [',', ']', '}', ')', ';', '(', '[', '{'];
 
 pub fn tokenize(edn: &str) -> std::iter::Enumerate<std::str::Chars> {
     edn.chars().enumerate()
@@ -43,10 +43,19 @@ pub fn parse_edn(
     match c {
         Some((_, '\"')) => read_str(chars),
         Some((_, ':')) => read_key_or_nsmap(chars),
-        Some((_, '-')) => Ok(read_number('-', chars)?),
+        Some((_, n)) if n.is_numeric() => Ok(read_number(n, chars)?),
+        Some((_, n))
+            if (n == '-' || n == '+')
+                && chars
+                    .clone()
+                    .peekable()
+                    .peek()
+                    .is_some_and(|n| n.1.is_numeric()) =>
+        {
+            Ok(read_number(n, chars)?)
+        }
         Some((_, '\\')) => Ok(read_char(chars)?),
         Some((_, b)) if b == 't' || b == 'f' || b == 'n' => Ok(read_bool_or_nil(b, chars)?),
-        Some((_, n)) if n.is_numeric() => Ok(read_number(n, chars)?),
         Some((_, a)) => Ok(read_symbol(a, chars)?),
         None => Err(Error::ParseEdn("Edn could not be parsed".to_string())),
     }
@@ -126,9 +135,7 @@ fn read_symbol(a: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Re
     let c_len = chars
         .clone()
         .enumerate()
-        .take_while(|&(i, c)| {
-            i <= 200 && !c.1.is_whitespace() && c.1 != ',' && c.1 != ')' && c.1 != '}' && c.1 != ']'
-        })
+        .take_while(|&(i, c)| i <= 200 && !c.1.is_whitespace() && !DELIMITERS.contains(&c.1))
         .count();
     let i = chars
         .clone()
@@ -205,7 +212,10 @@ fn read_number(n: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Re
         .count();
     let (number, radix) = {
         let mut number = String::new();
-        number.push(n);
+        // The EDN spec allows for a redundant '+' symbol, we just ignore it.
+        if n != '+' {
+            number.push(n);
+        }
         for (_, c) in chars.take(c_len) {
             number.push(c);
         }
@@ -1472,75 +1482,73 @@ mod test {
     #[test]
     fn parse_exp() {
         let mut edn = "5.01122771367421E15".chars().enumerate();
-        let res = parse(edn.next(), &mut edn).unwrap();
-
-        assert_eq!(res, Edn::Double(5011227713674210f64.into()))
+        assert_eq!(
+            parse(edn.next(), &mut edn),
+            Ok(Edn::Double(5011227713674210f64.into()))
+        );
     }
 
     #[test]
     fn parse_numberic_symbol_with_doube_e() {
         let mut edn = "5011227E71367421E12".chars().enumerate();
-        let res = parse(edn.next(), &mut edn).unwrap();
-
-        assert_eq!(res, Edn::Symbol("5011227E71367421E12".to_string()))
+        assert_eq!(
+            parse(edn.next(), &mut edn),
+            Ok(Edn::Symbol("5011227E71367421E12".to_string()))
+        );
     }
 
     #[test]
     fn parse_exp_plus_sign() {
         let mut edn = "5.01122771367421E+12".chars().enumerate();
-        let res = parse(edn.next(), &mut edn).unwrap();
-
-        assert_eq!(res, Edn::Double(5011227713674.210f64.into()))
+        assert_eq!(
+            parse(edn.next(), &mut edn),
+            Ok(Edn::Double(5011227713674.210f64.into()))
+        );
     }
 
     #[test]
     fn parse_float_e_minus_12() {
         let mut edn = "0.00000000000501122771367421".chars().enumerate();
-        let res = parse(edn.next(), &mut edn).unwrap();
-        assert_eq!(res, Edn::Double(5.01122771367421e-12.into()))
+        assert_eq!(
+            parse(edn.next(), &mut edn),
+            Ok(Edn::Double(5.01122771367421e-12.into()))
+        );
     }
 
     #[test]
     fn parse_exp_minus_sign() {
         let mut edn = "5.01122771367421e-12".chars().enumerate();
-        let res = parse(edn.next(), &mut edn).unwrap();
+        let res = parse(edn.next(), &mut edn);
 
-        assert_eq!(res, Edn::Double(0.00000000000501122771367421.into()));
-        assert_eq!(res.to_string(), "0.00000000000501122771367421");
+        assert_eq!(res, Ok(Edn::Double(0.00000000000501122771367421.into())));
+        assert_eq!(res.unwrap().to_string(), "0.00000000000501122771367421");
     }
 
     #[test]
     fn parse_0x_ints() {
         let mut edn = "0x2a".chars().enumerate();
-        let res = parse(edn.next(), &mut edn).unwrap();
-        assert_eq!(res, Edn::UInt(42));
+        assert_eq!(parse(edn.next(), &mut edn), Ok(Edn::UInt(42)));
 
         let mut edn = "-0X2A".chars().enumerate();
-        let res = parse(edn.next(), &mut edn).unwrap();
-        assert_eq!(res, Edn::Int(-42));
+        assert_eq!(parse(edn.next(), &mut edn), Ok(Edn::Int(-42)));
     }
 
     #[test]
     fn parse_radix_ints() {
         let mut edn = "16r2a".chars().enumerate();
-        let res = parse(edn.next(), &mut edn).unwrap();
-        assert_eq!(res, Edn::UInt(42));
+        assert_eq!(parse(edn.next(), &mut edn), Ok(Edn::UInt(42)));
 
         let mut edn = "8r63".chars().enumerate();
-        let res = parse(edn.next(), &mut edn).unwrap();
-        assert_eq!(res, Edn::UInt(51));
+        assert_eq!(parse(edn.next(), &mut edn), Ok(Edn::UInt(51)));
 
         let mut edn = "36rabcxyz".chars().enumerate();
-        let res = parse(edn.next(), &mut edn).unwrap();
-        assert_eq!(res, Edn::UInt(623741435));
+        assert_eq!(parse(edn.next(), &mut edn), Ok(Edn::UInt(623741435)));
 
         let mut edn = "-16r2a".chars().enumerate();
-        let res = parse(edn.next(), &mut edn).unwrap();
-        assert_eq!(res, Edn::Int(-42));
+        assert_eq!(parse(edn.next(), &mut edn), Ok(Edn::Int(-42)));
 
         let mut edn = "-32rFOObar".chars().enumerate();
-        let res = parse(edn.next(), &mut edn).unwrap();
-        assert_eq!(res, Edn::Int(-529280347));
+        assert_eq!(parse(edn.next(), &mut edn), Ok(Edn::Int(-529280347)));
     }
 
     #[test]
@@ -1575,5 +1583,71 @@ mod test {
                     .to_string()
             ))
         );
+    }
+
+    #[test]
+    fn leading_plus_symbol_int() {
+        let mut edn = "+42".chars().enumerate();
+        assert_eq!(parse(edn.next(), &mut edn), Ok(Edn::UInt(42)));
+
+        let mut edn = "+0x2a".chars().enumerate();
+        assert_eq!(parse(edn.next(), &mut edn), Ok(Edn::UInt(42)));
+    }
+
+    #[test]
+    fn lisp_quoted() {
+        let mut edn = "('(symbol))".chars().enumerate();
+        assert_eq!(
+            parse(edn.next(), &mut edn),
+            Ok(Edn::List(List::new(vec![
+                Edn::Symbol("'".to_string()),
+                Edn::List(List::new(vec![Edn::Symbol("symbol".to_string()),]))
+            ])))
+        );
+
+        let mut edn = "(apply + '(1 2 3))".chars().enumerate();
+        assert_eq!(
+            parse(edn.next(), &mut edn),
+            Ok(Edn::List(List::new(vec![
+                Edn::Symbol("apply".to_string()),
+                Edn::Symbol("+".to_string()),
+                Edn::Symbol("'".to_string()),
+                Edn::List(List::new(vec![Edn::UInt(1), Edn::UInt(2), Edn::UInt(3),]))
+            ])))
+        );
+
+        let mut edn = "('(''symbol'foo''bar''))".chars().enumerate();
+        assert_eq!(
+            parse(edn.next(), &mut edn),
+            Ok(Edn::List(List::new(vec![
+                Edn::Symbol("'".to_string()),
+                Edn::List(List::new(vec![Edn::Symbol(
+                    "''symbol'foo''bar''".to_string()
+                ),]))
+            ])))
+        );
+    }
+
+    #[test]
+    fn minus_char_symbol() {
+        let mut edn = "-foobar".chars().enumerate();
+        assert_eq!(
+            parse(edn.next(), &mut edn),
+            Ok(Edn::Symbol("-foobar".to_string()))
+        );
+
+        let mut edn = "(+foobar +foo+bar+ +'- '-+)".chars().enumerate();
+        assert_eq!(
+            parse(edn.next(), &mut edn),
+            Ok(Edn::List(List::new(vec![
+                Edn::Symbol("+foobar".to_string()),
+                Edn::Symbol("+foo+bar+".to_string()),
+                Edn::Symbol("+'-".to_string()),
+                Edn::Symbol("'-+".to_string()),
+            ])))
+        );
+
+        let mut edn = "(-foo( ba".chars().enumerate();
+        assert!(parse(edn.next(), &mut edn).is_err());
     }
 }
