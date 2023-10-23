@@ -80,7 +80,7 @@
 ///                     String::from("nil") => Edn::Vector(
 ///                         Vector::new( vec![
 ///                             Edn::Rational("3/4".to_string()),
-///                             Edn::Int(1isize)
+///                             Edn::Int(1i64)
 ///                         ]))
 ///             ]))
 ///         ]
@@ -247,12 +247,10 @@ macro_rules! edn_internal {
 
     ($e:expr) => {
         match $crate::edn::utils::Attribute::process(&$e) {
-            el if el.parse::<i32>().is_ok() => Edn::Int(el.parse::<isize>().unwrap()),
-            el if el.parse::<i64>().is_ok() => Edn::Int(el.parse::<isize>().unwrap()),
-            el if el.parse::<isize>().is_ok() => Edn::Int(el.parse::<isize>().unwrap()),
-            el if el.parse::<u32>().is_ok() => Edn::UInt(el.parse::<usize>().unwrap()),
-            el if el.parse::<u64>().is_ok() => Edn::UInt(el.parse::<usize>().unwrap()),
-            el if el.parse::<usize>().is_ok() => Edn::UInt(el.parse::<usize>().unwrap()),
+            el if el.parse::<i32>().is_ok() => Edn::Int(el.parse::<i64>().unwrap()),
+            el if el.parse::<i64>().is_ok() => Edn::Int(el.parse::<i64>().unwrap()),
+            el if el.parse::<u32>().is_ok() => Edn::UInt(el.parse::<u64>().unwrap()),
+            el if el.parse::<u64>().is_ok() => Edn::UInt(el.parse::<u64>().unwrap()),
             el if el.parse::<f32>().is_ok() => Edn::Double(el.parse::<f64>().unwrap().into()),
             el if el.parse::<f64>().is_ok() => Edn::Double(el.parse::<f64>().unwrap().into()),
             el if el.parse::<bool>().is_ok() => Edn::Bool(el.parse::<bool>().unwrap()),

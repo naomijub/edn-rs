@@ -5,7 +5,7 @@ fn iterator() {
     let sum = v.iter_some().unwrap().filter_map(edn_rs::Edn::to_int).sum();
 
     println!("{sum:?}");
-    assert_eq!(18isize, sum);
+    assert_eq!(18i64, sum);
 }
 
 fn main() {

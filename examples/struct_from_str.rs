@@ -3,7 +3,7 @@ use edn_rs::{Deserialize, Edn, EdnError};
 #[derive(Debug, PartialEq)]
 struct Person {
     name: String,
-    age: usize,
+    age: u64,
 }
 
 impl Deserialize for Person {

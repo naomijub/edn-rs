@@ -84,7 +84,7 @@ mod tests {
         use edn_rs::EdnError;
         #[derive(Deserialize, Debug, PartialEq)]
         struct A {
-            amount: usize,
+            amount: u64,
         }
 
         let a: Result<A, EdnError> = edn_rs::from_str("{ :amount \"123\" }");
@@ -120,7 +120,7 @@ mod tests {
                         String::from("nil") => Edn::Vector(
                             Vector::new( vec![
                                 Edn::Rational("3/4".to_string()),
-                                Edn::Int(1isize)
+                                Edn::Int(1i64)
                             ]))
                 ]))
             ])),

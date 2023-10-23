@@ -3,7 +3,7 @@ use edn_rs::{Deserialize, Edn, EdnError};
 #[derive(Debug, PartialEq)]
 struct Another {
     name: String,
-    age: usize,
+    age: u64,
     cool: bool,
 }
 
@@ -19,7 +19,7 @@ impl Deserialize for Another {
 
 #[derive(Debug, PartialEq)]
 struct Complex {
-    id: usize,
+    id: u64,
     maybe: Option<Another>,
 }
 

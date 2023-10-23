@@ -188,7 +188,7 @@ where
 }
 
 // Primitive Types
-ser_primitives![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool];
+ser_primitives![i8, i16, i32, i64, u8, u16, u32, u64, f32, f64, bool];
 
 impl Serialize for () {
     fn serialize(self) -> String {
@@ -311,12 +311,12 @@ mod test {
         assert_eq!(8i16.serialize(), String::from("8"));
         assert_eq!(8i32.serialize(), String::from("8"));
         assert_eq!(8i64.serialize(), String::from("8"));
-        assert_eq!(8isize.serialize(), String::from("8"));
+        assert_eq!(8i64.serialize(), String::from("8"));
         assert_eq!(128u8.serialize(), String::from("128"));
         assert_eq!(128u16.serialize(), String::from("128"));
         assert_eq!(128u32.serialize(), String::from("128"));
         assert_eq!(128u64.serialize(), String::from("128"));
-        assert_eq!(128usize.serialize(), String::from("128"));
+        assert_eq!(128u64.serialize(), String::from("128"));
         assert_eq!(true.serialize(), String::from("true"));
     }
 
@@ -337,14 +337,14 @@ mod test {
         let v_u16 = vec![3u16, 12u16, 24u16, 72u16];
         let v_f32 = vec![3.0f32, 12.1f32, 24.2f32, 72.3f32];
         let v_i64 = vec![3i64, 12i64, 24i64, 72i64];
-        let v_usize = vec![3usize, 12usize, 24usize, 72usize];
+        let v_u64 = vec![3u64, 12u64, 24u64, 72u64];
         let v_bool = vec![true, false];
 
         assert_eq!(v_i8.serialize(), "[3, 12, 24, 72]");
         assert_eq!(v_u16.serialize(), "[3, 12, 24, 72]");
         assert_eq!(v_f32.serialize(), "[3.0, 12.1, 24.2, 72.3]");
         assert_eq!(v_i64.serialize(), "[3, 12, 24, 72]");
-        assert_eq!(v_usize.serialize(), "[3, 12, 24, 72]");
+        assert_eq!(v_u64.serialize(), "[3, 12, 24, 72]");
         assert_eq!(v_bool.serialize(), "[true, false]")
     }
 

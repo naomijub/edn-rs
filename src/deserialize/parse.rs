@@ -268,11 +268,11 @@ fn read_number(n: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Re
         n if (n.contains('E') || n.contains('e')) && n.parse::<f64>().is_ok() => {
             Ok(Edn::Double(n.parse::<f64>()?.into()))
         }
-        n if usize::from_str_radix(&n, radix).is_ok() => {
-            Ok(Edn::UInt(usize::from_str_radix(&n, radix)?))
+        n if u64::from_str_radix(&n, radix).is_ok() => {
+            Ok(Edn::UInt(u64::from_str_radix(&n, radix)?))
         }
-        n if isize::from_str_radix(&n, radix).is_ok() => {
-            Ok(Edn::Int(isize::from_str_radix(&n, radix)?))
+        n if i64::from_str_radix(&n, radix).is_ok() => {
+            Ok(Edn::Int(i64::from_str_radix(&n, radix)?))
         }
         n if n.parse::<f64>().is_ok() => Ok(Edn::Double(n.parse::<f64>()?.into())),
         n if n.contains('/') && n.split('/').all(|d| d.parse::<f64>().is_ok()) => {
