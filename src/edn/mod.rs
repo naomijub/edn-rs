@@ -18,6 +18,7 @@ pub mod utils;
 /// Symbol and Char are not yet implemented
 /// String implementation of Edn can be obtained with `.to_string()`
 #[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone)]
+#[non_exhaustive]
 pub enum Edn {
     Tagged(String, Box<Edn>),
     Vector(Vector),
@@ -821,6 +822,7 @@ pub(crate) fn rational_to_double(r: &str) -> Option<f64> {
 }
 
 #[derive(Debug, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum Error {
     ParseEdn(String),
     Deserialize(String),
