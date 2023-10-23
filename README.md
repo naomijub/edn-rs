@@ -156,7 +156,7 @@ use edn_rs::{Deserialize, Edn, EdnError};
 #[derive(Debug, PartialEq)]
 struct Person {
     name: String,
-    age: usize,
+    age: u64,
 }
 
 impl Deserialize for Person {
@@ -207,7 +207,7 @@ use edn_rs::{map, Deserialize, Edn, EdnError, Map};
 #[derive(Debug, PartialEq)]
 struct Person {
     name: String,
-    age: usize,
+    age: u64,
 }
 
 impl Deserialize for Person {
@@ -448,7 +448,7 @@ use edn_derive::Serialize;
 #[derive(Serialize)]
 pub struct Person {
     name: String,
-    age: usize,
+    age: u64,
 }
 
 fn main() {
@@ -472,7 +472,7 @@ use edn_rs::EdnError;
 #[derive(Deserialize, Debug, PartialEq)]
 pub struct Person {
     name: String,
-    age: usize,
+    age: u64,
 }
 
 fn main() -> Result<(), EdnError> {

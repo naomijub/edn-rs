@@ -174,7 +174,7 @@ mod tests {
                     String::from("nil") => Edn::Vector(
                         Vector::new( vec![
                             Edn::Rational("3/4".to_string()),
-                            Edn::Int(1isize)
+                            Edn::Int(1i64)
                         ]))
             ])),
         ]));

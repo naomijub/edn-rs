@@ -119,8 +119,8 @@ mod test {
 
     #[test]
     fn numbers() {
-        assert_eq!(display_as_json(&Edn::UInt(34usize)), String::from("34"));
-        assert_eq!(display_as_json(&Edn::Int(-25isize)), String::from("-25"));
+        assert_eq!(display_as_json(&Edn::UInt(34u64)), String::from("34"));
+        assert_eq!(display_as_json(&Edn::Int(-25i64)), String::from("-25"));
         assert_eq!(
             display_as_json(&Edn::Double(3.14f64.into())),
             String::from("3.14")
@@ -277,7 +277,7 @@ mod test {
                         String::from("nil") => Edn::Vector(
                             Vector::new( vec![
                                 Edn::Rational("3/4".to_string()),
-                                Edn::Int(1isize)
+                                Edn::Int(1i64)
                             ]))
                 ]))
             ])),

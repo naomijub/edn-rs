@@ -47,12 +47,6 @@ impl Attribute for f32 {
     }
 }
 
-impl Attribute for isize {
-    fn process(&self) -> String {
-        format!("{self:?}")
-    }
-}
-
 impl Attribute for i32 {
     fn process(&self) -> String {
         format!("{self:?}")
@@ -60,12 +54,6 @@ impl Attribute for i32 {
 }
 
 impl Attribute for i64 {
-    fn process(&self) -> String {
-        format!("{self:?}")
-    }
-}
-
-impl Attribute for usize {
     fn process(&self) -> String {
         format!("{self:?}")
     }
