@@ -72,10 +72,10 @@ fn main() -> Result<(), EdnError> {
 
 #[test]
 fn test_maybe_some() {
-    let _ = maybe_is_some();
+    let _ = maybe_is_some().unwrap();
 }
 
 #[test]
 fn test_maybe_none() {
-    let _ = maybe_is_none();
+    let _ = maybe_is_none().unwrap();
 }

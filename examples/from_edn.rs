@@ -61,7 +61,7 @@ fn main() -> Result<(), EdnError> {
 
 #[test]
 fn test_person_ok() {
-    let _ = person_ok();
+    let _ = person_ok().unwrap();
 }
 
 #[test]

@@ -827,6 +827,9 @@ pub enum Error {
     ParseEdn(String),
     Deserialize(String),
     Iter(String),
+    TryFromInt(std::num::TryFromIntError),
+    #[doc(hidden)]
+    Infallable(), // Makes the compiler happy for converting u64 to u64 and i64 to i64
 }
 
 impl From<String> for Error {
@@ -853,15 +856,15 @@ impl From<std::str::ParseBoolError> for Error {
     }
 }
 
-impl std::error::Error for Error {
-    fn description(&self) -> &str {
-        match self {
-            Self::ParseEdn(s) | Self::Deserialize(s) | Self::Iter(s) => s,
-        }
+impl From<std::num::TryFromIntError> for Error {
+    fn from(e: std::num::TryFromIntError) -> Self {
+        Self::TryFromInt(e)
     }
+}
 
-    fn cause(&self) -> Option<&dyn std::error::Error> {
-        Some(self)
+impl From<std::convert::Infallible> for Error {
+    fn from(_: std::convert::Infallible) -> Self {
+        Self::Infallable()
     }
 }
 
@@ -869,6 +872,8 @@ impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::ParseEdn(s) | Self::Deserialize(s) | Self::Iter(s) => write!(f, "{}", &s),
+            Self::TryFromInt(e) => write!(f, "{e}"),
+            Self::Infallable() => panic!("Infallable conversion"),
         }
     }
 }
