@@ -19,11 +19,13 @@ pub mod utils;
 /// `EdnType` is an Enum with possible values for an EDN type
 /// Symbol and Char are not yet implemented
 /// String implementation of Edn can be obtained with `.to_string()`
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "sets", derive(Eq, PartialOrd, Ord))]
 #[non_exhaustive]
 pub enum Edn {
     Tagged(String, Box<Edn>),
     Vector(Vector),
+    #[cfg(feature = "sets")]
     Set(Set),
     Map(Map),
     List(List),
@@ -32,7 +34,7 @@ pub enum Edn {
     Str(String),
     Int(i64),
     UInt(u64),
-    Double(OrderedFloat<f64>),
+    Double(Double),
     Rational(String),
     Char(char),
     Bool(bool),
@@ -57,7 +59,50 @@ impl futures::future::Future for Edn {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
+#[derive(Clone, Ord, Debug, Eq, PartialEq, PartialOrd, Hash)]
+#[cfg(feature = "sets")]
+pub struct Double(pub(crate) OrderedFloat<f64>);
+
+#[derive(Clone, Debug, PartialEq)]
+#[cfg(not(feature = "sets"))]
+pub struct Double(f64);
+
+impl std::fmt::Display for Double {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+#[cfg(feature = "sets")]
+impl Double {
+    fn to_float(&self) -> f64 {
+        self.0.into_inner()
+    }
+}
+
+#[cfg(not(feature = "sets"))]
+impl Double {
+    fn to_float(&self) -> f64 {
+        self.0
+    }
+}
+
+#[cfg(feature = "sets")]
+impl From<f64> for Double {
+    fn from(f: f64) -> Self {
+        Self(OrderedFloat(f))
+    }
+}
+
+#[cfg(not(feature = "sets"))]
+impl From<f64> for Double {
+    fn from(f: f64) -> Self {
+        Self(f)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "sets", derive(Eq, PartialOrd, Ord))]
 pub struct Vector(Vec<Edn>);
 impl Vector {
     #[must_use]
@@ -91,7 +136,8 @@ impl futures::future::Future for Vector {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "sets", derive(Eq, PartialOrd, Ord))]
 pub struct List(Vec<Edn>);
 impl List {
     #[must_use]
@@ -125,8 +171,11 @@ impl futures::future::Future for List {
     }
 }
 
+#[cfg(feature = "sets")]
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub struct Set(BTreeSet<Edn>);
+
+#[cfg(feature = "sets")]
 impl Set {
     #[must_use]
     pub const fn new(v: BTreeSet<Edn>) -> Self {
@@ -159,7 +208,8 @@ impl futures::future::Future for Set {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "sets", derive(Eq, PartialOrd, Ord))]
 pub struct Map(BTreeMap<String, Edn>);
 impl Map {
     #[must_use]
@@ -227,6 +277,7 @@ impl core::fmt::Display for List {
     }
 }
 
+#[cfg(feature = "sets")]
 impl core::fmt::Display for Set {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(
@@ -264,6 +315,7 @@ impl core::fmt::Display for Edn {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let text = match self {
             Self::Vector(v) => format!("{v}"),
+            #[cfg(feature = "sets")]
             Self::Set(s) => format!("{s}"),
             Self::Map(m) => format!("{m}"),
             Self::List(l) => format!("{l}"),
@@ -308,7 +360,7 @@ impl Edn {
             Self::Str(s) => s.parse::<f64>().ok(),
             Self::Int(i) => to_double(i).ok(),
             Self::UInt(u) => to_double(u).ok(),
-            Self::Double(d) => Some(d.into_inner()),
+            Self::Double(d) => Some(d.to_float()),
             Self::Rational(r) => rational_to_double(r),
             _ => None,
         }
@@ -336,7 +388,7 @@ impl Edn {
             #[allow(clippy::cast_possible_wrap)]
             Self::UInt(u) if i64::try_from(*u).is_ok() => Some(*u as i64),
             #[allow(clippy::cast_possible_truncation)]
-            Self::Double(d) => Some((*d).into_inner().round() as i64),
+            Self::Double(d) => Some((*d).to_float().round() as i64),
             #[allow(clippy::cast_possible_truncation)]
             Self::Rational(r) => Some(rational_to_double(r).unwrap_or(0f64).round() as i64),
             _ => None,
@@ -351,11 +403,11 @@ impl Edn {
             #[allow(clippy::cast_sign_loss)]
             Self::Int(i) if i > &0 => Some(*i as u64),
             Self::UInt(i) => Some(*i),
-            Self::Double(d) if d.into_inner() > 0f64 =>
+            Self::Double(d) if d.to_float() > 0f64 =>
             {
                 #[allow(clippy::cast_sign_loss)]
                 #[allow(clippy::cast_possible_truncation)]
-                Some((*d).into_inner().round() as u64)
+                Some((*d).to_float().round() as u64)
             }
             Self::Rational(r) if !r.contains('-') =>
             {
@@ -427,6 +479,7 @@ impl Edn {
                     })
                     .collect::<Vec<String>>(),
             ),
+            #[cfg(feature = "sets")]
             Self::Set(_) => Some(
                 self.iter_some()?
                     .map(|e| match e {
@@ -454,6 +507,7 @@ impl Edn {
                     .map(Self::to_int)
                     .collect::<Option<Vec<i64>>>()?,
             ),
+            #[cfg(feature = "sets")]
             Self::Set(_) if !self.iter_some()?.any(|e| e.to_int().is_none()) => Some(
                 self.iter_some()?
                     .map(Self::to_int)
@@ -478,6 +532,7 @@ impl Edn {
                     .map(Self::to_uint)
                     .collect::<Option<Vec<u64>>>()?,
             ),
+            #[cfg(feature = "sets")]
             Self::Set(_) if !self.iter_some()?.any(|e| e.to_uint().is_none()) => Some(
                 self.iter_some()?
                     .map(Self::to_uint)
@@ -502,6 +557,7 @@ impl Edn {
                     .map(Self::to_float)
                     .collect::<Option<Vec<f64>>>()?,
             ),
+            #[cfg(feature = "sets")]
             Self::Set(_) if !self.iter_some()?.any(|e| e.to_float().is_none()) => Some(
                 self.iter_some()?
                     .map(Self::to_float)
@@ -526,6 +582,7 @@ impl Edn {
                     .map(Self::to_bool)
                     .collect::<Option<Vec<bool>>>()?,
             ),
+            #[cfg(feature = "sets")]
             Self::Set(_) if !self.iter_some()?.any(|e| e.to_bool().is_none()) => Some(
                 self.iter_some()?
                     .map(Self::to_bool)
@@ -642,6 +699,7 @@ impl Edn {
 
     /// `set_iter` returns am `Option<btree_set::Iter<Edn>>` with `Some` for type `Edn::Set`
     /// Other types return `None`
+    #[cfg(feature = "sets")]
     #[must_use]
     pub fn set_iter(&self) -> Option<std::collections::btree_set::Iter<'_, Self>> {
         match self {
@@ -831,7 +889,7 @@ mod test {
     #[test]
     fn iterator() {
         let v = Edn::Vector(Vector::new(vec![Edn::Int(5), Edn::Int(6), Edn::Int(7)]));
-        let sum = v
+        let sum: i64 = v
             .iter_some()
             .unwrap()
             .filter(|e| e.to_int().is_some())

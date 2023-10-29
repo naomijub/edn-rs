@@ -1,4 +1,6 @@
-use crate::edn::{Edn, Error, List, Map, Set, Vector};
+#[cfg(feature = "sets")]
+use crate::edn::Set;
+use crate::edn::{Edn, Error, List, Map, Vector};
 use std::collections::{BTreeMap, BTreeSet};
 
 const DELIMITERS: [char; 8] = [',', ']', '}', ')', ';', '(', '[', '{'];
@@ -414,6 +416,7 @@ fn read_list(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, E
     }
 }
 
+#[cfg(feature = "sets")]
 fn read_set(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
     let _discard_brackets = chars.next();
     let i = chars
@@ -437,6 +440,13 @@ fn read_set(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Er
             }
         }
     }
+}
+
+#[cfg(not(feature = "sets"))]
+fn read_set(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
+    Err(Error::ParseEdn(format!(
+        "Could not parse set due to feature not being enabled"
+    )))
 }
 
 fn read_namespaced_map(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
@@ -525,10 +535,10 @@ fn read_if_not_container_end(
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::edn::{Map, Set};
+    use crate::edn::Map;
+    #[cfg(feature = "sets")]
+    use crate::edn::Set;
     use crate::{map, set};
-
-    use ordered_float::OrderedFloat;
 
     #[test]
     fn parse_empty() {
@@ -642,6 +652,7 @@ mod test {
 
     #[test]
     fn parse_number() {
+        use crate::edn;
         let mut uint = "143".chars().enumerate();
         let mut int = "-435143".chars().enumerate();
         let mut f = "-43.5143".chars().enumerate();
@@ -651,7 +662,7 @@ mod test {
         assert_eq!(parse_edn(int.next(), &mut int).unwrap(), Edn::Int(-435143));
         assert_eq!(
             parse_edn(f.next(), &mut f).unwrap(),
-            Edn::Double(OrderedFloat(-43.5143))
+            Edn::Double(edn::Double::from(-43.5143))
         );
         assert_eq!(
             parse_edn(r.next(), &mut r).unwrap(),
@@ -659,7 +670,7 @@ mod test {
         );
         assert_eq!(
             parse_edn(big_f64.next(), &mut big_f64).unwrap(),
-            Edn::Double(OrderedFloat(1e21f64))
+            Edn::Double(edn::Double::from(1e21f64))
         );
     }
 
@@ -855,6 +866,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "sets")]
     fn parse_set() {
         let mut edn = "#{true \\c 3 }".chars().enumerate();
 
@@ -869,6 +881,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "sets")]
     fn parse_set_with_commas() {
         let mut edn = "#{true, \\c, 3,four, }".chars().enumerate();
 
@@ -884,6 +897,21 @@ mod test {
     }
 
     #[test]
+    #[cfg(not(feature = "sets"))]
+    fn parse_set_without_set_feature() {
+        let mut edn = "#{true, \\c, 3,four, }".chars().enumerate();
+        let res = parse(edn.next(), &mut edn);
+
+        assert_eq!(
+            res,
+            Err(Error::ParseEdn(
+                "Could not parse set due to feature not being enabled".to_string()
+            ))
+        )
+    }
+
+    #[test]
+    #[cfg(feature = "sets")]
     fn parse_comment_in_set() {
         let mut edn = "#{true ; bool true in a set\n \\c 3 }".chars().enumerate();
 
@@ -898,6 +926,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "sets")]
     fn parse_true_false_nil_with_comments_in_set() {
         let mut edn = "#{true;this is true\nfalse;this is false\nnil;this is nil\n}"
             .chars()
@@ -910,6 +939,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "sets")]
     fn parse_comment_in_set_end() {
         let mut edn = "#{true \\c 3; int 3 in a set\n}".chars().enumerate();
 
@@ -924,6 +954,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "sets")]
     fn parse_complex() {
         let mut edn = "[:b ( 5 \\c #{true \\c 3 } ) ]".chars().enumerate();
 
@@ -945,6 +976,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "sets")]
     fn parse_comment_complex() {
         let mut edn = "[:b ( 5 \\c #{true \\c; char c in a set\n3 } ) ]"
             .chars()
@@ -995,6 +1027,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "sets")]
     fn parse_edn_with_inst() {
         let mut edn =
             "#{ :a :b {:c :d :date  #inst \"2020-07-16T21:53:14.628-00:00\" ::c ::d} nil}"
@@ -1057,6 +1090,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "sets")]
     fn parse_discard_space_invalid() {
         let mut edn = "#_ ,, #{hello, this will be discarded} #_{so will this} #{this is invalid"
             .chars()
@@ -1358,6 +1392,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "sets")]
     fn parse_tagged_set() {
         let mut edn = "#domain/model #{1 2 3}".chars().enumerate();
         let res = parse(edn.next(), &mut edn).unwrap();

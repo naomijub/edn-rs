@@ -2,7 +2,9 @@
 mod tests {
     use std::collections::{BTreeMap, BTreeSet};
 
-    use edn_rs::{edn, map, set, Edn, List, Map, Set, Vector};
+    #[cfg(feature = "sets")]
+    use edn_rs::Set;
+    use edn_rs::{edn, map, set, Edn, List, Map, Vector};
 
     #[test]
     fn parse_primitive_types() {
@@ -25,6 +27,7 @@ mod tests {
     fn parse_empty_structures() {
         assert_eq!(edn!([]), Edn::Vector(Vector::new(Vec::new())));
         assert_eq!(edn!(()), Edn::List(List::new(Vec::new())));
+        #[cfg(feature = "sets")]
         assert_eq!(edn!(#{}), Edn::Set(Set::new(BTreeSet::new())));
         assert_eq!(edn!({}), Edn::Map(Map::new(BTreeMap::new())));
     }
@@ -60,6 +63,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "sets")]
     fn parse_simple_set() {
         let expected = Edn::Set(Set::new(set! {
             Edn::Int(1),
@@ -134,6 +138,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "sets")]
     fn parse_complex_set() {
         let expected = Edn::Set(Set::new(set! {
             Edn::Int(1),
