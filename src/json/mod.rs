@@ -11,7 +11,15 @@ pub fn display_as_json(edn: &Edn) -> String {
         Edn::Symbol(s) | Edn::Str(s) => format!("{s:?}"),
         Edn::Int(n) => format!("{n}"),
         Edn::UInt(n) => format!("{n}"),
-        Edn::Double(n) => format!("{n}"),
+        Edn::Double(n) => {
+            // Rust formats an f64 with a value of 2^5 as "32".
+            // We do this to ensure all precision is printed if available, but still adds a decimal point for json.
+            let mut s = format!("{n}");
+            if !s.contains('.') {
+                s.push_str(".0");
+            }
+            s
+        }
         Edn::Rational(r) => format!("{}", rational_to_double(r).unwrap()),
         Edn::Char(c) => format!("'{c}'"),
         Edn::Bool(b) => format!("{b}"),
@@ -124,6 +132,10 @@ mod test {
         assert_eq!(
             display_as_json(&Edn::Double(3.14f64.into())),
             String::from("3.14")
+        );
+        assert_eq!(
+            display_as_json(&Edn::Double(32f64.into())),
+            String::from("32.0")
         );
     }
 

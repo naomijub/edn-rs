@@ -10,6 +10,8 @@ use core::pin::Pin;
 use futures::task;
 #[cfg(feature = "async")]
 use futures::task::Poll;
+#[cfg(feature = "sets")]
+use ordered_float::OrderedFloat;
 
 #[doc(hidden)]
 pub mod utils;
@@ -17,7 +19,7 @@ pub mod utils;
 /// `EdnType` is an Enum with possible values for an EDN type
 /// Symbol and Char are not yet implemented
 /// String implementation of Edn can be obtained with `.to_string()`
-#[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
 #[non_exhaustive]
 pub enum Edn {
     Tagged(String, Box<Edn>),
@@ -30,7 +32,7 @@ pub enum Edn {
     Str(String),
     Int(i64),
     UInt(u64),
-    Double(Double),
+    Double(OrderedFloat<f64>),
     Rational(String),
     Char(char),
     Bool(bool),
@@ -55,7 +57,7 @@ impl futures::future::Future for Edn {
     }
 }
 
-#[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub struct Vector(Vec<Edn>);
 impl Vector {
     #[must_use]
@@ -89,7 +91,7 @@ impl futures::future::Future for Vector {
     }
 }
 
-#[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub struct List(Vec<Edn>);
 impl List {
     #[must_use]
@@ -123,7 +125,7 @@ impl futures::future::Future for List {
     }
 }
 
-#[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub struct Set(BTreeSet<Edn>);
 impl Set {
     #[must_use]
@@ -157,7 +159,7 @@ impl futures::future::Future for Set {
     }
 }
 
-#[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub struct Map(BTreeMap<String, Edn>);
 impl Map {
     #[must_use]
@@ -187,71 +189,6 @@ impl futures::future::Future for Map {
             Poll::Ready(pinned)
         } else {
             Poll::Pending
-        }
-    }
-}
-
-#[derive(Clone, Ord, Debug, Eq, PartialEq, PartialOrd, Hash)]
-pub struct Double(i64, u128);
-
-#[allow(clippy::fallible_impl_from)]
-impl From<f64> for Double {
-    fn from(f: f64) -> Self {
-        let f_as_str = format!("{f}");
-        let f_split = f_as_str.split('.').collect::<Vec<&str>>();
-        Self(
-            f_split[0].parse::<i64>().unwrap(),
-            f_split
-                .get(1)
-                .unwrap_or(&"0")
-                .chars()
-                .rev()
-                .collect::<String>()
-                .parse::<u128>()
-                .unwrap(),
-        )
-    }
-}
-
-#[cfg(feature = "async")]
-impl futures::future::Future for Double {
-    type Output = Self;
-
-    fn poll(self: Pin<&mut Self>, _cx: &mut task::Context) -> Poll<Self::Output> {
-        if self.to_string().is_empty() {
-            Poll::Pending
-        } else {
-            let pinned = self.to_owned();
-            Poll::Ready(pinned)
-        }
-    }
-}
-
-impl std::fmt::Display for Double {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let floating = self.1.to_string();
-        if floating.starts_with('0') {
-            write!(f, "{}.{}", self.0, floating)
-        } else {
-            write!(
-                f,
-                "{}.{}",
-                self.0,
-                floating.chars().rev().collect::<String>()
-            )
-        }
-    }
-}
-
-impl Double {
-    fn to_float(&self) -> f64 {
-        let floating = self.1.to_string();
-        if floating.starts_with('0') {
-            format!("{}.{}", self.0, floating).parse::<f64>().unwrap()
-        } else {
-            format!("{}.{}", self.0, floating.chars().rev().collect::<String>())
-                .parse::<f64>()
-                .unwrap()
         }
     }
 }
@@ -371,7 +308,7 @@ impl Edn {
             Self::Str(s) => s.parse::<f64>().ok(),
             Self::Int(i) => to_double(i).ok(),
             Self::UInt(u) => to_double(u).ok(),
-            Self::Double(d) => Some(d.to_float()),
+            Self::Double(d) => Some(d.into_inner()),
             Self::Rational(r) => rational_to_double(r),
             _ => None,
         }
@@ -399,7 +336,7 @@ impl Edn {
             #[allow(clippy::cast_possible_wrap)]
             Self::UInt(u) if i64::try_from(*u).is_ok() => Some(*u as i64),
             #[allow(clippy::cast_possible_truncation)]
-            Self::Double(d) => Some(d.clone().to_float().round() as i64),
+            Self::Double(d) => Some((*d).into_inner().round() as i64),
             #[allow(clippy::cast_possible_truncation)]
             Self::Rational(r) => Some(rational_to_double(r).unwrap_or(0f64).round() as i64),
             _ => None,
@@ -414,11 +351,11 @@ impl Edn {
             #[allow(clippy::cast_sign_loss)]
             Self::Int(i) if i > &0 => Some(*i as u64),
             Self::UInt(i) => Some(*i),
-            Self::Double(d) if d.to_float() > 0f64 =>
+            Self::Double(d) if d.into_inner() > 0f64 =>
             {
                 #[allow(clippy::cast_sign_loss)]
                 #[allow(clippy::cast_possible_truncation)]
-                Some(d.clone().to_float().round() as u64)
+                Some((*d).into_inner().round() as u64)
             }
             Self::Rational(r) if !r.contains('-') =>
             {
@@ -910,20 +847,6 @@ mod test {
         let v = vec![String::from("5"), String::from("6"), String::from("7")];
 
         assert_eq!(edn.to_vec().unwrap(), v);
-    }
-
-    #[test]
-    fn double_deals_with_decimal_zeros() {
-        let double = Double::from(-3.0000564f64);
-
-        assert_eq!(double.to_float(), -3.0000564f64);
-    }
-
-    #[test]
-    fn double_deals_without_decimal_zeros() {
-        let double = Double::from(45843.835832564f64);
-
-        assert_eq!(double.to_float(), 45843.835832564f64);
     }
 
     #[test]
