@@ -1,5 +1,6 @@
 use crate::edn::{Edn, Error};
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
+use std::convert::TryFrom;
 use std::str::FromStr;
 
 pub mod parse;
@@ -99,13 +100,12 @@ impl Deserialize for crate::Double {
 macro_rules! impl_deserialize_int {
     ( $( $name:ty ),+ ) => {
         $(
-            impl Deserialize for $name
-            {
+            impl Deserialize for $name {
                 fn deserialize(edn: &Edn) -> Result<Self, Error> {
-                    edn
+                    let int = edn
                         .to_int()
-                        .ok_or_else(|| build_deserialize_error(&edn, "int"))
-                        .map(|u| u as $name)
+                        .ok_or_else(|| build_deserialize_error(edn, "int"))?;
+                    Ok(Self::try_from(int)?)
                 }
             }
         )+
@@ -117,13 +117,12 @@ impl_deserialize_int!(i8, i16, i32, i64);
 macro_rules! impl_deserialize_uint {
     ( $( $name:ty ),+ ) => {
         $(
-            impl Deserialize for $name
-            {
+            impl Deserialize for $name {
                 fn deserialize(edn: &Edn) -> Result<Self, Error> {
-                    edn
+                    let uint = edn
                         .to_uint()
-                        .ok_or_else(|| build_deserialize_error(&edn, "uint"))
-                        .map(|u| u as $name)
+                        .ok_or_else(|| build_deserialize_error(edn, "uint"))?;
+                    Ok(Self::try_from(uint)?)
                 }
             }
         )+

@@ -88,7 +88,7 @@ fn main() -> Result<(), EdnError> {
 
 #[test]
 fn test_complex_ok() {
-    let _ = complex_ok();
+    let _ = complex_ok().unwrap();
 }
 
 #[test]
