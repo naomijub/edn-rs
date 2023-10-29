@@ -5,6 +5,8 @@ use std::str::FromStr;
 
 pub mod parse;
 
+use ordered_float::OrderedFloat;
+
 /// public trait to be used to `Deserialize` structs.
 ///
 /// # Errors
@@ -71,25 +73,15 @@ impl Deserialize for () {
     }
 }
 
-macro_rules! impl_deserialize_float {
-    ( $( $name:ty ),+ ) => {
-        $(
-            impl Deserialize for $name
-            {
-                fn deserialize(edn: &Edn) -> Result<Self, Error> {
-                    edn
-                        .to_float()
-                        .ok_or_else(|| build_deserialize_error(&edn, "float"))
-                        .map(|u| u as $name)
-                }
-            }
-        )+
-    };
+impl Deserialize for OrderedFloat<f64> {
+    fn deserialize(edn: &Edn) -> Result<Self, Error> {
+        edn.to_float()
+            .ok_or_else(|| build_deserialize_error(edn, "edn_rs::Double"))
+            .map(std::convert::Into::into)
+    }
 }
 
-impl_deserialize_float!(f32, f64);
-
-impl Deserialize for crate::Double {
+impl Deserialize for f64 {
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
         edn.to_float()
             .ok_or_else(|| build_deserialize_error(edn, "edn_rs::Double"))
@@ -747,17 +739,19 @@ mod test {
 
     #[test]
     fn deser_hashset() {
+        use ordered_float::OrderedFloat;
+
         let set = Edn::Set(Set::new(set! {
             Edn::Double(4.6.into()),
             Edn::Double(5.6.into()),
             Edn::Double(6.6.into())
         }));
         let expected = hset! {
-            crate::Double::from(4.6),
-            crate::Double::from(5.6),
-            crate::Double::from(6.6),
+            OrderedFloat(4.6f64),
+            OrderedFloat(5.6f64),
+            OrderedFloat(6.6f64),
         };
-        let deser_set: std::collections::HashSet<crate::Double> = from_edn(&set).unwrap();
+        let deser_set: std::collections::HashSet<OrderedFloat<f64>> = from_edn(&set).unwrap();
         assert_eq!(deser_set, expected);
     }
 

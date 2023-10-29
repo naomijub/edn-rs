@@ -524,8 +524,10 @@ fn read_if_not_container_end(
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::edn::{Double, Map, Set};
+    use crate::edn::{Map, Set};
     use crate::{map, set};
+
+    use ordered_float::OrderedFloat;
 
     #[test]
     fn parse_empty() {
@@ -643,15 +645,20 @@ mod test {
         let mut int = "-435143".chars().enumerate();
         let mut f = "-43.5143".chars().enumerate();
         let mut r = "43/5143".chars().enumerate();
+        let mut big_f64 = "999999999999999999999.0".chars().enumerate();
         assert_eq!(parse_edn(uint.next(), &mut uint).unwrap(), Edn::UInt(143));
         assert_eq!(parse_edn(int.next(), &mut int).unwrap(), Edn::Int(-435143));
         assert_eq!(
             parse_edn(f.next(), &mut f).unwrap(),
-            Edn::Double(Double::from(-43.5143))
+            Edn::Double(OrderedFloat(-43.5143))
         );
         assert_eq!(
             parse_edn(r.next(), &mut r).unwrap(),
             Edn::Rational("43/5143".to_string())
+        );
+        assert_eq!(
+            parse_edn(big_f64.next(), &mut big_f64).unwrap(),
+            Edn::Double(OrderedFloat(1e21f64))
         );
     }
 
