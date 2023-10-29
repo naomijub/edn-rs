@@ -1,7 +1,9 @@
 #[cfg(feature = "sets")]
 use crate::edn::Set;
 use crate::edn::{Edn, Error, List, Map, Vector};
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
+#[cfg(feature = "sets")]
+use std::collections::BTreeSet;
 
 const DELIMITERS: [char; 8] = [',', ']', '}', ')', ';', '(', '[', '{'];
 
@@ -443,10 +445,10 @@ fn read_set(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Er
 }
 
 #[cfg(not(feature = "sets"))]
-fn read_set(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
-    Err(Error::ParseEdn(format!(
-        "Could not parse set due to feature not being enabled"
-    )))
+fn read_set(_chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
+    Err(Error::ParseEdn(
+        "Could not parse set due to feature not being enabled".to_string(),
+    ))
 }
 
 fn read_namespaced_map(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {

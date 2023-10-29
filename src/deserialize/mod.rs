@@ -1,5 +1,7 @@
 use crate::edn::{Edn, Error};
-use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap};
+#[cfg(feature = "sets")]
+use std::collections::{BTreeSet, HashSet};
 use std::convert::TryFrom;
 use std::str::FromStr;
 

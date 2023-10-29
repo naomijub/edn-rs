@@ -1,6 +1,9 @@
 use crate::deserialize::parse::{self};
+#[cfg(feature = "sets")]
 use std::cmp::{Ord, PartialOrd};
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
+#[cfg(feature = "sets")]
+use std::collections::BTreeSet;
 use std::convert::TryFrom;
 use utils::index::Index;
 
@@ -82,7 +85,7 @@ impl Double {
 
 #[cfg(not(feature = "sets"))]
 impl Double {
-    fn to_float(&self) -> f64 {
+    const fn to_float(&self) -> f64 {
         self.0
     }
 }
