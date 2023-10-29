@@ -76,7 +76,9 @@ pub fn json_to_edn(json: String) -> String {
 
 pub use deserialize::{from_edn, from_str, Deserialize};
 pub use edn::Error as EdnError;
-pub use edn::{Edn, List, Map, Set, Vector};
+#[cfg(feature = "sets")]
+pub use edn::Set;
+pub use edn::{Edn, List, Map, Vector};
 pub use serialize::Serialize;
 
 /// Function for converting Rust types into EDN Strings.

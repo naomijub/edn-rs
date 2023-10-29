@@ -34,6 +34,8 @@ jobs:
         run: cargo test --example edn_to_json --features "json"
       - name: example_async
         run: cargo run --example async --features "async"
+      - name: example_no_sets
+        run: cargo run --example struct_from_str --no-default-features
 
   fmt:
       runs-on: ubuntu-latest

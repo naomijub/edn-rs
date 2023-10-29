@@ -1,10 +1,13 @@
 use crate::edn::{Edn, Error};
-use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap};
+#[cfg(feature = "sets")]
+use std::collections::{BTreeSet, HashSet};
 use std::convert::TryFrom;
 use std::str::FromStr;
 
 pub mod parse;
 
+#[cfg(feature = "sets")]
 use ordered_float::OrderedFloat;
 
 /// public trait to be used to `Deserialize` structs.
@@ -73,6 +76,7 @@ impl Deserialize for () {
     }
 }
 
+#[cfg(feature = "sets")]
 impl Deserialize for OrderedFloat<f64> {
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
         edn.to_float()
@@ -168,6 +172,7 @@ where
                 .ok_or_else(|| Error::Iter(format!("Could not create iter from {edn:?}")))?
                 .map(|e| Deserialize::deserialize(e))
                 .collect::<Result<Self, Error>>()?),
+            #[cfg(feature = "sets")]
             Edn::Set(_) => Ok(edn
                 .iter_some()
                 .ok_or_else(|| Error::Iter(format!("Could not create iter from {edn:?}")))?
@@ -267,6 +272,7 @@ where
     }
 }
 
+#[cfg(feature = "sets")]
 impl<T, H> Deserialize for HashSet<T, H>
 where
     T: std::cmp::Eq + std::hash::Hash + Deserialize,
@@ -291,6 +297,7 @@ where
     }
 }
 
+#[cfg(feature = "sets")]
 impl<T> Deserialize for BTreeSet<T>
 where
     T: std::cmp::Eq + std::hash::Hash + std::cmp::Ord + Deserialize,
@@ -440,7 +447,9 @@ pub fn from_edn<T: Deserialize>(edn: &Edn) -> Result<T, Error> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::edn::{List, Map, Set, Vector};
+    #[cfg(feature = "sets")]
+    use crate::edn::Set;
+    use crate::edn::{List, Map, Vector};
     use crate::{hmap, hset, map, set};
 
     #[test]
@@ -452,6 +461,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "sets")]
     fn deser_btreeset_with_error() {
         let edn = "#{\"a\", 5, \"b\"}";
         let err: Result<BTreeSet<u64>, Error> = from_str(edn);
@@ -498,6 +508,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "sets")]
     fn from_str_list_with_set() {
         let edn = "(1 -10 \"2\" 3.3 :b #{true \\c})";
 
@@ -528,6 +539,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "sets")]
     fn from_str_complex_map() {
         let edn = "{:a \"2\" :b [true false] :c #{:A {:a :b} nil}}";
 
@@ -633,6 +645,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "sets")]
     fn test_more_sym() {
         let edn: Edn = Edn::from_str("(a \\b \"c\" 5 #{hello world})").unwrap();
         let expected = Edn::List(List::new(vec![
@@ -722,6 +735,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "sets")]
     fn deser_btreeset() {
         let set = Edn::Set(Set::new(set! {
             Edn::UInt(4),
@@ -737,6 +751,7 @@ mod test {
         assert_eq!(deser_set, expected);
     }
 
+    #[cfg(feature = "sets")]
     #[test]
     fn deser_hashset() {
         use ordered_float::OrderedFloat;
