@@ -60,8 +60,7 @@ where
     }
 }
 
-#[allow(clippy::implicit_hasher)]
-impl<T> Serialize for std::collections::HashSet<T>
+impl<T, H: std::hash::BuildHasher> Serialize for std::collections::HashSet<T, H>
 where
     T: Serialize,
 {
@@ -114,8 +113,7 @@ where
     }
 }
 
-#[allow(clippy::implicit_hasher)]
-impl<T> Serialize for std::collections::HashMap<String, T>
+impl<T, H: std::hash::BuildHasher> Serialize for std::collections::HashMap<String, T, H>
 where
     T: Serialize,
 {
@@ -132,8 +130,7 @@ where
     }
 }
 
-#[allow(clippy::implicit_hasher)]
-impl<T> Serialize for std::collections::HashMap<&str, T>
+impl<T, H: ::std::hash::BuildHasher> Serialize for std::collections::HashMap<&str, T, H>
 where
     T: Serialize,
 {

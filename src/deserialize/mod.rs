@@ -187,10 +187,10 @@ where
     }
 }
 
-#[allow(clippy::implicit_hasher)]
-impl<T> Deserialize for HashMap<String, T>
+impl<T, H> Deserialize for HashMap<String, T, H>
 where
     T: Deserialize,
+    H: std::hash::BuildHasher + std::default::Default,
 {
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
         match edn {
@@ -276,10 +276,10 @@ where
     }
 }
 
-#[allow(clippy::implicit_hasher)]
-impl<T> Deserialize for HashSet<T>
+impl<T, H> Deserialize for HashSet<T, H>
 where
     T: std::cmp::Eq + std::hash::Hash + Deserialize,
+    H: std::hash::BuildHasher + std::default::Default,
 {
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
         match edn {

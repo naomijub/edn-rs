@@ -25,8 +25,7 @@ fn parse_internal(
         Some((_, '{')) => Some(read_map(chars)?),
         Some((_, ';')) => {
             // Consumes the content
-            #[allow(clippy::skip_while_next)]
-            chars.skip_while(|c| c.1 != '\n').next();
+            chars.find(|c| c.1 == '\n');
             read_if_not_container_end(chars)?
         }
         Some((_, s)) if s.is_whitespace() || s == ',' => read_if_not_container_end(chars)?,
