@@ -22,6 +22,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: test_lib_features
+        run: cargo test --all-features --no-fail-fast
+      - name: test_lib_no_default_features
+        run: cargo test --no-default-features --no-fail-fast
       - name: example_fast
         run: cargo test --examples --no-fail-fast
       - name: example_json_to_edn
@@ -50,3 +54,4 @@ jobs:
           with:
             components: clippy
         - run: cargo clippy --all-features -- -W clippy::all -W clippy::pedantic -W clippy::nursery --deny warnings
+        - run: cargo clippy --no-default-features -- -W clippy::all -W clippy::pedantic -W clippy::nursery --deny warnings
