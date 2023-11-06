@@ -3,7 +3,7 @@ use edn_rs::{Deserialize, Edn, EdnError};
 #[derive(Debug, PartialEq)]
 struct Another {
     name: String,
-    age: usize,
+    age: u64,
     cool: bool,
 }
 
@@ -19,7 +19,7 @@ impl Deserialize for Another {
 
 #[derive(Debug, PartialEq)]
 struct Complex {
-    id: usize,
+    id: u64,
     maybe: Option<Another>,
 }
 
@@ -72,10 +72,10 @@ fn main() -> Result<(), EdnError> {
 
 #[test]
 fn test_maybe_some() {
-    let _ = maybe_is_some();
+    let _ = maybe_is_some().unwrap();
 }
 
 #[test]
 fn test_maybe_none() {
-    let _ = maybe_is_none();
+    let _ = maybe_is_none().unwrap();
 }

@@ -3,7 +3,7 @@ use edn_rs::{map, Deserialize, Edn, EdnError, Map};
 #[derive(Debug, PartialEq)]
 struct Person {
     name: String,
-    age: usize,
+    age: u64,
 }
 
 impl Deserialize for Person {
@@ -61,7 +61,7 @@ fn main() -> Result<(), EdnError> {
 
 #[test]
 fn test_person_ok() {
-    let _ = person_ok();
+    let _ = person_ok().unwrap();
 }
 
 #[test]

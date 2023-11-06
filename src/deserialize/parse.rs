@@ -25,8 +25,7 @@ fn parse_internal(
         Some((_, '{')) => Some(read_map(chars)?),
         Some((_, ';')) => {
             // Consumes the content
-            #[allow(clippy::skip_while_next)]
-            chars.skip_while(|c| c.1 != '\n').next();
+            chars.find(|c| c.1 == '\n');
             read_if_not_container_end(chars)?
         }
         Some((_, s)) if s.is_whitespace() || s == ',' => read_if_not_container_end(chars)?,
@@ -269,11 +268,11 @@ fn read_number(n: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Re
         n if (n.contains('E') || n.contains('e')) && n.parse::<f64>().is_ok() => {
             Ok(Edn::Double(n.parse::<f64>()?.into()))
         }
-        n if usize::from_str_radix(&n, radix).is_ok() => {
-            Ok(Edn::UInt(usize::from_str_radix(&n, radix)?))
+        n if u64::from_str_radix(&n, radix).is_ok() => {
+            Ok(Edn::UInt(u64::from_str_radix(&n, radix)?))
         }
-        n if isize::from_str_radix(&n, radix).is_ok() => {
-            Ok(Edn::Int(isize::from_str_radix(&n, radix)?))
+        n if i64::from_str_radix(&n, radix).is_ok() => {
+            Ok(Edn::Int(i64::from_str_radix(&n, radix)?))
         }
         n if n.parse::<f64>().is_ok() => Ok(Edn::Double(n.parse::<f64>()?.into())),
         n if n.contains('/') && n.split('/').all(|d| d.parse::<f64>().is_ok()) => {

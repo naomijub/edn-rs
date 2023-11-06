@@ -18,6 +18,7 @@ pub mod utils;
 /// Symbol and Char are not yet implemented
 /// String implementation of Edn can be obtained with `.to_string()`
 #[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone)]
+#[non_exhaustive]
 pub enum Edn {
     Tagged(String, Box<Edn>),
     Vector(Vector),
@@ -27,8 +28,8 @@ pub enum Edn {
     Key(String),
     Symbol(String),
     Str(String),
-    Int(isize),
-    UInt(usize),
+    Int(i64),
+    UInt(u64),
     Double(Double),
     Rational(String),
     Char(char),
@@ -356,7 +357,7 @@ impl Edn {
     ///
     /// let key = Edn::Key(String::from(":1234"));
     /// let q = Edn::Rational(String::from("3/4"));
-    /// let i = Edn::Int(12isize);
+    /// let i = Edn::Int(12i64);
     ///
     /// assert_eq!(Edn::Vector(Vector::empty()).to_float(), None);
     /// assert_eq!(key.to_float().unwrap(),1234f64);
@@ -376,7 +377,7 @@ impl Edn {
         }
     }
 
-    /// `to_int` takes an `Edn` and returns an `Option<isize>` with its value. Most types return None
+    /// `to_int` takes an `Edn` and returns an `Option<i64>` with its value. Most types return None
     /// ```rust
     /// use edn_rs::edn::{Edn, Vector};
     ///
@@ -385,45 +386,45 @@ impl Edn {
     /// let f = Edn::Double(12.3f64.into());
     ///
     /// assert_eq!(Edn::Vector(Vector::empty()).to_float(), None);
-    /// assert_eq!(key.to_int().unwrap(),1234isize);
-    /// assert_eq!(q.to_int().unwrap(), 1isize);
-    /// assert_eq!(f.to_int().unwrap(), 12isize);
+    /// assert_eq!(key.to_int().unwrap(),1234i64);
+    /// assert_eq!(q.to_int().unwrap(), 1i64);
+    /// assert_eq!(f.to_int().unwrap(), 12i64);
     /// ```
     #[must_use]
-    pub fn to_int(&self) -> Option<isize> {
+    pub fn to_int(&self) -> Option<i64> {
         match self {
-            Self::Key(k) => k.replace(':', "").parse::<isize>().ok(),
-            Self::Str(s) => s.parse::<isize>().ok(),
+            Self::Key(k) => k.replace(':', "").parse::<i64>().ok(),
+            Self::Str(s) => s.parse::<i64>().ok(),
             Self::Int(i) => Some(*i),
             #[allow(clippy::cast_possible_wrap)]
-            Self::UInt(u) if isize::try_from(*u).is_ok() => Some(*u as isize),
+            Self::UInt(u) if i64::try_from(*u).is_ok() => Some(*u as i64),
             #[allow(clippy::cast_possible_truncation)]
-            Self::Double(d) => Some(d.clone().to_float().round() as isize),
+            Self::Double(d) => Some(d.clone().to_float().round() as i64),
             #[allow(clippy::cast_possible_truncation)]
-            Self::Rational(r) => Some(rational_to_double(r).unwrap_or(0f64).round() as isize),
+            Self::Rational(r) => Some(rational_to_double(r).unwrap_or(0f64).round() as i64),
             _ => None,
         }
     }
 
-    /// Similar to `to_int` but returns an `Option<usize>`
+    /// Similar to `to_int` but returns an `Option<u64>`
     #[must_use]
-    pub fn to_uint(&self) -> Option<usize> {
+    pub fn to_uint(&self) -> Option<u64> {
         match self {
-            Self::Str(s) => s.parse::<usize>().ok(),
+            Self::Str(s) => s.parse::<u64>().ok(),
             #[allow(clippy::cast_sign_loss)]
-            Self::Int(i) if i > &0 => Some(*i as usize),
+            Self::Int(i) if i > &0 => Some(*i as u64),
             Self::UInt(i) => Some(*i),
             Self::Double(d) if d.to_float() > 0f64 =>
             {
                 #[allow(clippy::cast_sign_loss)]
                 #[allow(clippy::cast_possible_truncation)]
-                Some(d.clone().to_float().round() as usize)
+                Some(d.clone().to_float().round() as u64)
             }
             Self::Rational(r) if !r.contains('-') =>
             {
                 #[allow(clippy::cast_sign_loss)]
                 #[allow(clippy::cast_possible_truncation)]
-                Some(rational_to_double(r)?.round() as usize)
+                Some(rational_to_double(r)?.round() as u64)
             }
             _ => None,
         }
@@ -501,49 +502,49 @@ impl Edn {
         }
     }
 
-    /// `to_int_vec` converts `Edn` types `Vector` `List` and `Set` into an `Option<Vec<isize>>`.
+    /// `to_int_vec` converts `Edn` types `Vector` `List` and `Set` into an `Option<Vec<i64>>`.
     /// All elements of this Edn structure should be of the same type
     #[must_use]
-    pub fn to_int_vec(&self) -> Option<Vec<isize>> {
+    pub fn to_int_vec(&self) -> Option<Vec<i64>> {
         match self {
             Self::Vector(_) if !self.iter_some()?.any(|e| e.to_int().is_none()) => Some(
                 self.iter_some()?
                     .map(Self::to_int)
-                    .collect::<Option<Vec<isize>>>()?,
+                    .collect::<Option<Vec<i64>>>()?,
             ),
             Self::List(_) if !self.iter_some()?.any(|e| e.to_int().is_none()) => Some(
                 self.iter_some()?
                     .map(Self::to_int)
-                    .collect::<Option<Vec<isize>>>()?,
+                    .collect::<Option<Vec<i64>>>()?,
             ),
             Self::Set(_) if !self.iter_some()?.any(|e| e.to_int().is_none()) => Some(
                 self.iter_some()?
                     .map(Self::to_int)
-                    .collect::<Option<Vec<isize>>>()?,
+                    .collect::<Option<Vec<i64>>>()?,
             ),
             _ => None,
         }
     }
 
-    /// `to_uint_vec` converts `Edn` types `Vector` `List` and `Set` into an `Option<Vec<usize>>`.
+    /// `to_uint_vec` converts `Edn` types `Vector` `List` and `Set` into an `Option<Vec<u64>>`.
     /// All elements of this Edn structure should be of the same type
     #[must_use]
-    pub fn to_uint_vec(&self) -> Option<Vec<usize>> {
+    pub fn to_uint_vec(&self) -> Option<Vec<u64>> {
         match self {
             Self::Vector(_) if !self.iter_some()?.any(|e| e.to_uint().is_none()) => Some(
                 self.iter_some()?
                     .map(Self::to_uint)
-                    .collect::<Option<Vec<usize>>>()?,
+                    .collect::<Option<Vec<u64>>>()?,
             ),
             Self::List(_) if !self.iter_some()?.any(|e| e.to_uint().is_none()) => Some(
                 self.iter_some()?
                     .map(Self::to_uint)
-                    .collect::<Option<Vec<usize>>>()?,
+                    .collect::<Option<Vec<u64>>>()?,
             ),
             Self::Set(_) if !self.iter_some()?.any(|e| e.to_uint().is_none()) => Some(
                 self.iter_some()?
                     .map(Self::to_uint)
-                    .collect::<Option<Vec<usize>>>()?,
+                    .collect::<Option<Vec<u64>>>()?,
             ),
             _ => None,
         }
@@ -625,7 +626,7 @@ impl Edn {
     }
 
     /// Index into a EDN vector, list, set or map. A string index can be used to access a
-    /// value in a map, and a usize index can be used to access an element of a
+    /// value in a map, and a u64 index can be used to access an element of a
     /// seqs.
     ///
     /// Returns `None` if the type of `self` does not match the type of the
@@ -653,7 +654,7 @@ impl Edn {
     }
 
     /// Mutably index into a EDN vector, set, list or map. A string index can be used to
-    /// access a value in a map, and a usize index can be used to access an
+    /// access a value in a map, and a u64 index can be used to access an
     /// element of a seq.
     ///
     /// Returns `None` if the type of `self` does not match the type of the
@@ -689,7 +690,7 @@ impl Edn {
     ///     let v = Edn::Vector(Vector::new(vec![Edn::Int(5), Edn::Int(6), Edn::Int(7)]));
     ///     let sum = v.iter_some().unwrap().filter(|e| e.to_int().is_some()).map(|e| e.to_int().unwrap()).sum();
     ///
-    ///     assert_eq!(18isize, sum);
+    ///     assert_eq!(18i64, sum);
     /// }
     /// ```
     #[allow(clippy::needless_doctest_main)]
@@ -821,10 +822,14 @@ pub(crate) fn rational_to_double(r: &str) -> Option<f64> {
 }
 
 #[derive(Debug, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum Error {
     ParseEdn(String),
     Deserialize(String),
     Iter(String),
+    TryFromInt(std::num::TryFromIntError),
+    #[doc(hidden)]
+    Infallable(), // Makes the compiler happy for converting u64 to u64 and i64 to i64
 }
 
 impl From<String> for Error {
@@ -851,15 +856,15 @@ impl From<std::str::ParseBoolError> for Error {
     }
 }
 
-impl std::error::Error for Error {
-    fn description(&self) -> &str {
-        match self {
-            Self::ParseEdn(s) | Self::Deserialize(s) | Self::Iter(s) => s,
-        }
+impl From<std::num::TryFromIntError> for Error {
+    fn from(e: std::num::TryFromIntError) -> Self {
+        Self::TryFromInt(e)
     }
+}
 
-    fn cause(&self) -> Option<&dyn std::error::Error> {
-        Some(self)
+impl From<std::convert::Infallible> for Error {
+    fn from(_: std::convert::Infallible) -> Self {
+        Self::Infallable()
     }
 }
 
@@ -867,6 +872,8 @@ impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::ParseEdn(s) | Self::Deserialize(s) | Self::Iter(s) => write!(f, "{}", &s),
+            Self::TryFromInt(e) => write!(f, "{e}"),
+            Self::Infallable() => panic!("Infallable conversion"),
         }
     }
 }
@@ -894,7 +901,7 @@ mod test {
             .map(|e| e.to_int().unwrap())
             .sum();
 
-        assert_eq!(18isize, sum);
+        assert_eq!(18i64, sum);
     }
 
     #[test]
@@ -931,7 +938,7 @@ mod test {
     #[test]
     fn to_int_vec() {
         let edn = Edn::Vector(Vector::new(vec![Edn::Int(5), Edn::Int(6), Edn::Int(7)]));
-        let v = vec![5isize, 6isize, 7isize];
+        let v = vec![5i64, 6i64, 7i64];
 
         assert_eq!(edn.to_int_vec().unwrap(), v);
     }
@@ -939,7 +946,7 @@ mod test {
     #[test]
     fn to_uint_vec() {
         let edn = Edn::Vector(Vector::new(vec![Edn::UInt(5), Edn::UInt(6), Edn::UInt(7)]));
-        let v = vec![5usize, 6usize, 7usize];
+        let v = vec![5u64, 6u64, 7u64];
 
         assert_eq!(edn.to_uint_vec().unwrap(), v);
     }
@@ -999,28 +1006,28 @@ mod test {
     }
 
     #[test]
-    fn negative_isize_to_usize() {
+    fn negative_i64_to_u64() {
         let neg_i = Edn::Int(-10);
 
         assert_eq!(neg_i.to_uint(), None);
     }
 
     #[test]
-    fn max_usize_to_uint() {
-        let max_u = Edn::UInt(usize::MAX);
+    fn max_u64_to_uint() {
+        let max_u = Edn::UInt(u64::MAX);
 
         assert_eq!(max_u.to_int(), None);
     }
 
     #[test]
-    fn positive_isize_to_usize() {
-        let max_i = Edn::Int(isize::MAX);
+    fn positive_i64_to_u64() {
+        let max_i = Edn::Int(i64::MAX);
 
-        assert_eq!(max_i.to_uint(), Some(isize::MAX as usize));
+        assert_eq!(max_i.to_uint(), Some(i64::MAX as u64));
     }
 
     #[test]
-    fn small_usize_to_isize() {
+    fn small_u64_to_i64() {
         let small_u = Edn::UInt(10);
 
         assert_eq!(small_u.to_int(), Some(10));

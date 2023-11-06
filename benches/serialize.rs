@@ -38,7 +38,7 @@ mod serde {
 
     #[derive(Debug, Clone, Serialize)]
     struct Foo {
-        value: usize,
+        value: u64,
     }
 }
 
@@ -72,6 +72,6 @@ mod edn {
 
     #[derive(Debug, Clone, Serialize)]
     struct Foo {
-        value: usize,
+        value: u64,
     }
 }

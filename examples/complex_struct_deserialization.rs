@@ -3,7 +3,7 @@ use edn_rs::{Deserialize, Edn, EdnError};
 #[derive(Debug, PartialEq)]
 struct Another {
     name: String,
-    age: usize,
+    age: u64,
     cool: bool,
 }
 
@@ -88,7 +88,7 @@ fn main() -> Result<(), EdnError> {
 
 #[test]
 fn test_complex_ok() {
-    let _ = complex_ok();
+    let _ = complex_ok().unwrap();
 }
 
 #[test]

@@ -3,7 +3,7 @@ use edn_rs::{Deserialize, Edn, EdnError};
 #[derive(Debug, PartialEq)]
 struct Person {
     name: String,
-    age: usize,
+    age: u8,
 }
 
 impl Deserialize for Person {
@@ -46,19 +46,37 @@ fn person_mistyped() -> Result<(), EdnError> {
     Ok(())
 }
 
+fn person_overflow() -> Result<(), EdnError> {
+    let overflow_edn_str = "  {:name \"rose\" :age 9002  }  ";
+    let person: Result<Person, EdnError> = edn_rs::from_str(overflow_edn_str);
+
+    assert_eq!(
+        format!("{person:?}"),
+        "Err(TryFromInt(TryFromIntError(())))"
+    );
+
+    Ok(())
+}
+
 fn main() -> Result<(), EdnError> {
     person_ok()?;
     person_mistyped()?;
+    person_overflow()?;
 
     Ok(())
 }
 
 #[test]
 fn test_person_ok() {
-    let _ = person_ok();
+    let _ = person_ok().unwrap();
 }
 
 #[test]
 fn test_person_mistyped() {
-    let _ = person_mistyped();
+    let _ = person_mistyped().unwrap();
+}
+
+#[test]
+fn test_person_overflow() {
+    let _ = person_overflow().unwrap();
 }

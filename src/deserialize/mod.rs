@@ -1,5 +1,6 @@
 use crate::edn::{Edn, Error};
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
+use std::convert::TryFrom;
 use std::str::FromStr;
 
 pub mod parse;
@@ -16,7 +17,7 @@ pub mod parse;
 /// #[derive(Debug, PartialEq)]
 /// struct Person {
 ///     name: String,
-///     age: usize,
+///     age: u64,
 /// }
 ///
 /// impl Deserialize for Person {
@@ -99,38 +100,36 @@ impl Deserialize for crate::Double {
 macro_rules! impl_deserialize_int {
     ( $( $name:ty ),+ ) => {
         $(
-            impl Deserialize for $name
-            {
+            impl Deserialize for $name {
                 fn deserialize(edn: &Edn) -> Result<Self, Error> {
-                    edn
+                    let int = edn
                         .to_int()
-                        .ok_or_else(|| build_deserialize_error(&edn, "int"))
-                        .map(|u| u as $name)
+                        .ok_or_else(|| build_deserialize_error(edn, "int"))?;
+                    Ok(Self::try_from(int)?)
                 }
             }
         )+
     };
 }
 
-impl_deserialize_int!(isize, i8, i16, i32, i64);
+impl_deserialize_int!(i8, i16, i32, i64);
 
 macro_rules! impl_deserialize_uint {
     ( $( $name:ty ),+ ) => {
         $(
-            impl Deserialize for $name
-            {
+            impl Deserialize for $name {
                 fn deserialize(edn: &Edn) -> Result<Self, Error> {
-                    edn
+                    let uint = edn
                         .to_uint()
-                        .ok_or_else(|| build_deserialize_error(&edn, "uint"))
-                        .map(|u| u as $name)
+                        .ok_or_else(|| build_deserialize_error(edn, "uint"))?;
+                    Ok(Self::try_from(uint)?)
                 }
             }
         )+
     };
 }
 
-impl_deserialize_uint!(usize, u8, u16, u32, u64);
+impl_deserialize_uint!(u8, u16, u32, u64);
 
 impl Deserialize for bool {
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
@@ -187,10 +186,10 @@ where
     }
 }
 
-#[allow(clippy::implicit_hasher)]
-impl<T> Deserialize for HashMap<String, T>
+impl<T, H> Deserialize for HashMap<String, T, H>
 where
     T: Deserialize,
+    H: std::hash::BuildHasher + std::default::Default,
 {
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
         match edn {
@@ -276,10 +275,10 @@ where
     }
 }
 
-#[allow(clippy::implicit_hasher)]
-impl<T> Deserialize for HashSet<T>
+impl<T, H> Deserialize for HashSet<T, H>
 where
     T: std::cmp::Eq + std::hash::Hash + Deserialize,
+    H: std::hash::BuildHasher + std::default::Default,
 {
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
         match edn {
@@ -347,7 +346,7 @@ where
 /// #[derive(Debug, PartialEq)]
 /// struct Person {
 ///     name: String,
-///     age: usize,
+///     age: u64,
 /// }
 ///
 /// impl Deserialize for Person {
@@ -400,7 +399,7 @@ pub fn from_str<T: Deserialize>(s: &str) -> Result<T, Error> {
 /// #[derive(Debug, PartialEq)]
 /// struct Person {
 ///     name: String,
-///     age: usize,
+///     age: u64,
 /// }
 ///
 /// impl Deserialize for Person {
@@ -463,7 +462,7 @@ mod test {
     #[test]
     fn deser_btreeset_with_error() {
         let edn = "#{\"a\", 5, \"b\"}";
-        let err: Result<BTreeSet<usize>, Error> = from_str(edn);
+        let err: Result<BTreeSet<u64>, Error> = from_str(edn);
         assert_eq!(
             err,
             Err(Error::Deserialize(
@@ -596,7 +595,7 @@ mod test {
     fn deserialize_struct_with_vec() {
         #[derive(PartialEq, Debug)]
         struct Foo {
-            bar: Vec<Option<usize>>,
+            bar: Vec<Option<u64>>,
         }
         impl Deserialize for Foo {
             fn deserialize(edn: &Edn) -> Result<Self, Error> {
@@ -648,7 +647,7 @@ mod test {
             Edn::Symbol("a".to_string()),
             Edn::Char('b'),
             Edn::Str("c".to_string()),
-            Edn::UInt(5usize),
+            Edn::UInt(5u64),
             Edn::Set(Set::new(
                 set! { Edn::Symbol("hello".to_string()), Edn::Symbol("world".to_string()) },
             )),
@@ -742,7 +741,7 @@ mod test {
             5,
             6,
         };
-        let deser_set: std::collections::BTreeSet<usize> = from_edn(&set).unwrap();
+        let deser_set: std::collections::BTreeSet<u64> = from_edn(&set).unwrap();
         assert_eq!(deser_set, expected);
     }
 

@@ -4,7 +4,7 @@ use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 
 #[derive(Debug, Clone, Serialize)]
 struct Foo {
-    value: usize,
+    value: u64,
 }
 
 #[derive(Debug, Clone, Serialize)]

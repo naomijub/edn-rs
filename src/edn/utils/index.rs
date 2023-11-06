@@ -1,6 +1,6 @@
 use crate::edn::{Edn, Map};
-use std::fmt;
-use std::ops;
+use std::convert::TryFrom;
+use std::{fmt, ops};
 
 /// This is a Copy of [`Serde_json::index`](https://docs.serde.rs/src/serde_json/value/index.rs.html)
 pub trait Index: private::Sealed {
@@ -14,28 +14,37 @@ pub trait Index: private::Sealed {
     fn index_or_insert<'v>(&self, v: &'v mut Edn) -> &'v mut Edn;
 }
 
-impl Index for usize {
+impl Index for u64 {
     fn index_into<'v>(&self, v: &'v Edn) -> Option<&'v Edn> {
-        match *v {
-            Edn::Vector(ref vec) => vec.0.get(*self),
-            Edn::List(ref vec) => vec.0.get(*self),
-            Edn::NamespacedMap(_, ref map) => map.0.get(&self.to_string()),
-            _ => None,
+        if let Ok(idx) = usize::try_from(*self) {
+            return match *v {
+                Edn::Vector(ref vec) => vec.0.get(idx),
+                Edn::List(ref vec) => vec.0.get(idx),
+                Edn::NamespacedMap(_, ref map) => map.0.get(&self.to_string()),
+                _ => None,
+            };
         }
+        None
     }
     fn index_into_mut<'v>(&self, v: &'v mut Edn) -> Option<&'v mut Edn> {
-        match *v {
-            Edn::Vector(ref mut vec) => vec.0.get_mut(*self),
-            Edn::List(ref mut vec) => vec.0.get_mut(*self),
-            Edn::NamespacedMap(_, ref mut map) => map.0.get_mut(&self.to_string()),
-            _ => None,
+        if let Ok(idx) = usize::try_from(*self) {
+            return match *v {
+                Edn::Vector(ref mut vec) => vec.0.get_mut(idx),
+                Edn::List(ref mut vec) => vec.0.get_mut(idx),
+                Edn::NamespacedMap(_, ref mut map) => map.0.get_mut(&self.to_string()),
+                _ => None,
+            };
         }
+        None
     }
     fn index_or_insert<'v>(&self, v: &'v mut Edn) -> &'v mut Edn {
         match *v {
             Edn::Vector(ref mut vec) => {
                 let len = vec.0.len();
-                vec.0.get_mut(*self).unwrap_or_else(|| {
+                let idx = usize::try_from(*self).unwrap_or_else(|e| {
+                    panic!("index {} cannot fit in usize with error {}", self, e);
+                });
+                vec.0.get_mut(idx).unwrap_or_else(|| {
                     panic!(
                         "cannot access index {} of EDN array of length {}",
                         self, len
@@ -125,7 +134,7 @@ mod private {
     use crate::Edn;
 
     pub trait Sealed {}
-    impl Sealed for usize {}
+    impl Sealed for u64 {}
     impl Sealed for str {}
     impl Sealed for String {}
     impl Sealed for Edn {}
