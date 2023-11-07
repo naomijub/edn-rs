@@ -1,4 +1,7 @@
 #[macro_export(local_inner_macros)]
+#[cfg_attr(
+    feature = "sets",
+    doc = r##"
 /// Macro to parse `EDN` into Rust Spec:
 ///  
 /// ```rust
@@ -107,6 +110,8 @@
 ///     assert_eq!(edn[3]["false"], Edn::Key(":f".to_string()));
 /// }
 /// ```
+"##
+)]
 ///
 /// Internal implementation is hidden, please look at source.
 macro_rules! edn {
