@@ -7,20 +7,20 @@ use std::collections::BTreeSet;
 
 const DELIMITERS: [char; 8] = [',', ']', '}', ')', ';', '(', '[', '{'];
 
-pub fn tokenize(edn: &str) -> std::iter::Enumerate<std::str::Chars> {
+pub fn tokenize(edn: &str) -> std::iter::Enumerate<std::str::Chars<'_>> {
     edn.chars().enumerate()
 }
 
 pub fn parse(
     c: Option<(usize, char)>,
-    chars: &mut std::iter::Enumerate<std::str::Chars>,
+    chars: &mut std::iter::Enumerate<std::str::Chars<'_>>,
 ) -> Result<Edn, Error> {
     (parse_internal(c, chars)?).map_or_else(|| Ok(Edn::Empty), Ok)
 }
 
 fn parse_internal(
     c: Option<(usize, char)>,
-    chars: &mut std::iter::Enumerate<std::str::Chars>,
+    chars: &mut std::iter::Enumerate<std::str::Chars<'_>>,
 ) -> Result<Option<Edn>, Error> {
     Ok(match c {
         Some((_, '[')) => Some(read_vec(chars)?),
@@ -41,7 +41,7 @@ fn parse_internal(
 #[allow(clippy::module_name_repetitions)]
 pub fn parse_edn(
     c: Option<(usize, char)>,
-    chars: &mut std::iter::Enumerate<std::str::Chars>,
+    chars: &mut std::iter::Enumerate<std::str::Chars<'_>>,
 ) -> Result<Edn, Error> {
     match c {
         Some((_, '\"')) => read_str(chars),
@@ -65,7 +65,7 @@ pub fn parse_edn(
 }
 
 fn tagged_or_set_or_discard(
-    chars: &mut std::iter::Enumerate<std::str::Chars>,
+    chars: &mut std::iter::Enumerate<std::str::Chars<'_>>,
 ) -> Result<Option<Edn>, Error> {
     match chars.clone().next() {
         Some((_, '{')) => read_set(chars).map(Some),
@@ -74,7 +74,7 @@ fn tagged_or_set_or_discard(
     }
 }
 
-fn read_key_or_nsmap(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
+fn read_key_or_nsmap(chars: &mut std::iter::Enumerate<std::str::Chars<'_>>) -> Result<Edn, Error> {
     let mut key_chars = chars.clone().take_while(|c| {
         !c.1.is_whitespace() && c.1 != ',' && c.1 != ')' && c.1 != ']' && c.1 != '}' && c.1 != ';'
     });
@@ -86,14 +86,14 @@ fn read_key_or_nsmap(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Resul
     })
 }
 
-fn read_key(chars: &mut std::iter::Enumerate<std::str::Chars>, c_len: usize) -> Edn {
+fn read_key(chars: &mut std::iter::Enumerate<std::str::Chars<'_>>, c_len: usize) -> Edn {
     let mut key = String::from(":");
     let key_chars = chars.take(c_len).map(|c| c.1).collect::<String>();
     key.push_str(&key_chars);
     Edn::Key(key)
 }
 
-fn read_str(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
+fn read_str(chars: &mut std::iter::Enumerate<std::str::Chars<'_>>) -> Result<Edn, Error> {
     let result = chars.try_fold(
         (false, String::new()),
         |(last_was_escape, mut s), (_, c)| {
@@ -134,7 +134,10 @@ fn read_str(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Er
     }
 }
 
-fn read_symbol(a: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
+fn read_symbol(
+    a: char,
+    chars: &mut std::iter::Enumerate<std::str::Chars<'_>>,
+) -> Result<Edn, Error> {
     let c_len = chars
         .clone()
         .enumerate()
@@ -158,7 +161,7 @@ fn read_symbol(a: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Re
     Ok(Edn::Symbol(symbol))
 }
 
-fn read_tagged(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
+fn read_tagged(chars: &mut std::iter::Enumerate<std::str::Chars<'_>>) -> Result<Edn, Error> {
     let tag = chars
         .take_while(|c| !c.1.is_whitespace() && c.1 != ',')
         .map(|c| c.1)
@@ -187,7 +190,9 @@ fn read_tagged(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn,
     Ok(Edn::Tagged(tag, Box::new(parse(chars.next(), chars)?)))
 }
 
-fn read_discard(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Option<Edn>, Error> {
+fn read_discard(
+    chars: &mut std::iter::Enumerate<std::str::Chars<'_>>,
+) -> Result<Option<Edn>, Error> {
     let _discard_underscore = chars.next();
     let i = chars
         .clone()
@@ -203,7 +208,10 @@ fn read_discard(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Opt
     }
 }
 
-fn read_number(n: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
+fn read_number(
+    n: char,
+    chars: &mut std::iter::Enumerate<std::str::Chars<'_>>,
+) -> Result<Edn, Error> {
     let i = chars
         .clone()
         .next()
@@ -292,7 +300,7 @@ fn read_number(n: char, chars: &mut std::iter::Enumerate<std::str::Chars>) -> Re
     }
 }
 
-fn read_char(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
+fn read_char(chars: &mut std::iter::Enumerate<std::str::Chars<'_>>) -> Result<Edn, Error> {
     let i = chars
         .clone()
         .next()
@@ -307,7 +315,7 @@ fn read_char(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, E
 
 fn read_bool_or_nil(
     c: char,
-    chars: &mut std::iter::Enumerate<std::str::Chars>,
+    chars: &mut std::iter::Enumerate<std::str::Chars<'_>>,
 ) -> Result<Edn, Error> {
     let i = chars
         .clone()
@@ -369,7 +377,7 @@ fn read_bool_or_nil(
     }
 }
 
-fn read_vec(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
+fn read_vec(chars: &mut std::iter::Enumerate<std::str::Chars<'_>>) -> Result<Edn, Error> {
     let i = chars
         .clone()
         .next()
@@ -393,7 +401,7 @@ fn read_vec(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Er
     }
 }
 
-fn read_list(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
+fn read_list(chars: &mut std::iter::Enumerate<std::str::Chars<'_>>) -> Result<Edn, Error> {
     let i = chars
         .clone()
         .next()
@@ -418,7 +426,7 @@ fn read_list(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, E
 }
 
 #[cfg(feature = "sets")]
-fn read_set(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
+fn read_set(chars: &mut std::iter::Enumerate<std::str::Chars<'_>>) -> Result<Edn, Error> {
     let _discard_brackets = chars.next();
     let i = chars
         .clone()
@@ -444,13 +452,15 @@ fn read_set(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Er
 }
 
 #[cfg(not(feature = "sets"))]
-fn read_set(_chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
+fn read_set(_chars: &mut std::iter::Enumerate<std::str::Chars<'_>>) -> Result<Edn, Error> {
     Err(Error::ParseEdn(
         "Could not parse set due to feature not being enabled".to_string(),
     ))
 }
 
-fn read_namespaced_map(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
+fn read_namespaced_map(
+    chars: &mut std::iter::Enumerate<std::str::Chars<'_>>,
+) -> Result<Edn, Error> {
     let i = chars
         .clone()
         .next()
@@ -489,7 +499,7 @@ fn read_namespaced_map(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Res
     }
 }
 
-fn read_map(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Error> {
+fn read_map(chars: &mut std::iter::Enumerate<std::str::Chars<'_>>) -> Result<Edn, Error> {
     let i = chars
         .clone()
         .next()
@@ -524,7 +534,7 @@ fn read_map(chars: &mut std::iter::Enumerate<std::str::Chars>) -> Result<Edn, Er
 }
 
 fn read_if_not_container_end(
-    chars: &mut std::iter::Enumerate<std::str::Chars>,
+    chars: &mut std::iter::Enumerate<std::str::Chars<'_>>,
 ) -> Result<Option<Edn>, Error> {
     Ok(match chars.clone().next() {
         Some(c) if c.1 == ']' || c.1 == ')' || c.1 == '}' => None,
@@ -572,7 +582,7 @@ mod test {
         assert_eq!(
             parse_edn(key.next(), &mut key).unwrap(),
             Edn::Key(":keyword".to_string())
-        )
+        );
     }
 
     #[test]
@@ -582,7 +592,7 @@ mod test {
         assert_eq!(
             parse_edn(string.next(), &mut string).unwrap(),
             Edn::Str("hello world, from      RUST".to_string())
-        )
+        );
     }
 
     #[test]
@@ -592,7 +602,7 @@ mod test {
         assert_eq!(
             parse(string.next(), &mut string).unwrap(),
             Edn::Str("hello world, from      RUST".to_string())
-        )
+        );
     }
 
     #[test]
@@ -602,7 +612,7 @@ mod test {
         assert_eq!(
             parse(string.next(), &mut string).unwrap(),
             Edn::Str("hello world, from      RUST".to_string())
-        )
+        );
     }
 
     #[test]
@@ -612,43 +622,43 @@ mod test {
         assert_eq!(
             parse_edn(string.next(), &mut string).unwrap(),
             Edn::Str(";;; hello world, from      RUST\n".to_string())
-        )
+        );
     }
 
     #[test]
     fn parse_str_with_escaped_characters() {
-        let mut string = r##""hello\n \r \t \"world\" with escaped \\ characters""##
+        let mut string = r#""hello\n \r \t \"world\" with escaped \\ characters""#
             .chars()
             .enumerate();
 
         assert_eq!(
             parse_edn(string.next(), &mut string).unwrap(),
             Edn::Str("hello\n \r \t \"world\" with escaped \\ characters".to_string())
-        )
+        );
     }
 
     #[test]
     fn parse_str_with_invalid_escape() {
-        let mut string = r##""hello\n \r \t \"world\" with escaped \\ \g characters""##
+        let mut string = r#""hello\n \r \t \"world\" with escaped \\ \g characters""#
             .chars()
             .enumerate();
 
         assert_eq!(
             parse_edn(string.next(), &mut string),
             Err(Error::ParseEdn("Invalid escape sequence \\g".to_string()))
-        )
+        );
     }
 
     #[test]
     fn parse_unterminated_string() {
-        let mut string = r##""hello\n \r \t \"world\" with escaped \\ characters"##
+        let mut string = r#""hello\n \r \t \"world\" with escaped \\ characters"#
             .chars()
             .enumerate();
 
         assert_eq!(
             parse_edn(string.next(), &mut string),
             Err(Error::ParseEdn("Unterminated string".to_string()))
-        )
+        );
     }
 
     #[test]
@@ -660,7 +670,7 @@ mod test {
         let mut r = "43/5143".chars().enumerate();
         let mut big_f64 = "999999999999999999999.0".chars().enumerate();
         assert_eq!(parse_edn(uint.next(), &mut uint).unwrap(), Edn::UInt(143));
-        assert_eq!(parse_edn(int.next(), &mut int).unwrap(), Edn::Int(-435143));
+        assert_eq!(parse_edn(int.next(), &mut int).unwrap(), Edn::Int(-435_143));
         assert_eq!(
             parse_edn(f.next(), &mut f).unwrap(),
             Edn::Double(edn::Double::from(-43.5143))
@@ -679,7 +689,7 @@ mod test {
     fn parse_char() {
         let mut c = "\\k".chars().enumerate();
 
-        assert_eq!(parse_edn(c.next(), &mut c).unwrap(), Edn::Char('k'))
+        assert_eq!(parse_edn(c.next(), &mut c).unwrap(), Edn::Char('k'));
     }
 
     #[test]
@@ -878,7 +888,7 @@ mod test {
                 Edn::Char('c'),
                 Edn::UInt(3)
             ]))
-        )
+        );
     }
 
     #[test]
@@ -894,7 +904,7 @@ mod test {
                 Edn::Char('c'),
                 Edn::UInt(3),
             ]))
-        )
+        );
     }
 
     #[test]
@@ -923,7 +933,7 @@ mod test {
                 Edn::Char('c'),
                 Edn::UInt(3)
             ]))
-        )
+        );
     }
 
     #[test]
@@ -936,7 +946,7 @@ mod test {
         assert_eq!(
             parse(edn.next(), &mut edn).unwrap(),
             Edn::Set(Set::new(set![Edn::Bool(true), Edn::Bool(false), Edn::Nil,]))
-        )
+        );
     }
 
     #[test]
@@ -951,7 +961,7 @@ mod test {
                 Edn::Char('c'),
                 Edn::UInt(3)
             ]))
-        )
+        );
     }
 
     #[test]
@@ -973,7 +983,7 @@ mod test {
                     ]))
                 ]))
             ]))
-        )
+        );
     }
 
     #[test]
@@ -997,7 +1007,7 @@ mod test {
                     ]))
                 ]))
             ]))
-        )
+        );
     }
 
     #[test]
@@ -1024,7 +1034,7 @@ mod test {
             Edn::Map(Map::new(map! {
                 ":date".to_string() => Edn::Inst("2020-07-16T21:53:14.628-00:00".to_string())
             }))
-        )
+        );
     }
 
     #[test]
@@ -1047,7 +1057,7 @@ mod test {
                 })),
                 Edn::Nil
             }))
-        )
+        );
     }
 
     #[test]
@@ -1058,7 +1068,7 @@ mod test {
         assert_eq!(
             res,
             Edn::Tagged(String::from("iasdf"), Box::new(Edn::UInt(234)))
-        )
+        );
     }
 
     #[test]
@@ -1066,7 +1076,7 @@ mod test {
         let mut edn = "#_iasdf 234".chars().enumerate();
         let res = parse(edn.next(), &mut edn).unwrap();
 
-        assert_eq!(res, Edn::UInt(234))
+        assert_eq!(res, Edn::UInt(234));
     }
 
     #[test]
@@ -1079,7 +1089,7 @@ mod test {
             Err(Error::ParseEdn(
                 "None could not be parsed at char count 3".to_string()
             ))
-        )
+        );
     }
 
     #[test]
@@ -1087,7 +1097,7 @@ mod test {
         let mut edn = "#_ ,, 234 567".chars().enumerate();
         let res = parse(edn.next(), &mut edn).unwrap();
 
-        assert_eq!(res, Edn::UInt(567))
+        assert_eq!(res, Edn::UInt(567));
     }
 
     #[test]
@@ -1103,7 +1113,7 @@ mod test {
             Err(Error::ParseEdn(
                 "None could not be parsed at char count 58".to_string()
             ))
-        )
+        );
     }
 
     #[test]
@@ -1111,7 +1121,7 @@ mod test {
         let mut edn = "#_ ,, foo".chars().enumerate();
         let res = parse(edn.next(), &mut edn).unwrap();
 
-        assert_eq!(res, Edn::Empty)
+        assert_eq!(res, Edn::Empty);
     }
 
     #[test]
@@ -1121,7 +1131,7 @@ mod test {
             .enumerate();
         let res = parse(edn.next(), &mut edn).unwrap();
 
-        assert_eq!(res, Edn::Empty)
+        assert_eq!(res, Edn::Empty);
     }
 
     #[test]
@@ -1136,7 +1146,7 @@ mod test {
             Edn::Map(Map::new(
                 map! {":a".to_string() => Edn::Symbol("map".to_string())}
             ))
-        )
+        );
     }
 
     #[test]
@@ -1149,7 +1159,7 @@ mod test {
             Err(Error::ParseEdn(
                 "Discard sequence must have a following element at char count 2".to_string()
             ))
-        )
+        );
     }
 
     #[test]
@@ -1173,7 +1183,7 @@ mod test {
             Err(Error::ParseEdn(
                 "Discard sequence must have a following element at char count 8".to_string()
             ))
-        )
+        );
     }
 
     #[test]
@@ -1315,7 +1325,7 @@ mod test {
                     Edn::UInt(3)
                 ])))
             )
-        )
+        );
     }
 
     #[test]
@@ -1335,7 +1345,7 @@ mod test {
                     Edn::UInt(3)
                 ])))
             )
-        )
+        );
     }
 
     #[test]
@@ -1357,7 +1367,7 @@ mod test {
                     Edn::UInt(3)
                 ])))
             )}))
-        )
+        );
     }
 
     #[test]
@@ -1375,7 +1385,7 @@ mod test {
                     Edn::UInt(3)
                 ])))
             )
-        )
+        );
     }
 
     #[test]
@@ -1389,7 +1399,7 @@ mod test {
                 String::from("domain/model"),
                 Box::new(Edn::Str(String::from("hello")))
             )
-        )
+        );
     }
 
     #[test]
@@ -1408,7 +1418,7 @@ mod test {
                     Edn::UInt(3)
                 ])))
             )
-        )
+        );
     }
 
     #[test]
@@ -1427,7 +1437,7 @@ mod test {
                     Edn::UInt(4)
                 })))
             )
-        )
+        );
     }
 
     #[test]
@@ -1435,7 +1445,7 @@ mod test {
         let mut edn = "#domain/model \n;; cool a tagged map!!!\n {1 \"hello\" 3 [[1 2] [2 3] [3,, 4]] #keyword, :4,,, {:cool-tagged #yay ;; what a tag inside a tagged map?!\n {:stuff \"hehe\"}}, 5 #wow {:a, :b}}".chars().enumerate();
         let res = parse(edn.next(), &mut edn).unwrap();
 
-        println!("{:#?}\n\n", res);
+        println!("{res:#?}\n\n");
 
         assert_eq!(
             res,
@@ -1519,7 +1529,7 @@ mod test {
                     )
                 },),),)
             )
-        )
+        );
     }
 
     #[test]
@@ -1527,7 +1537,7 @@ mod test {
         let mut edn = "5.01122771367421E15".chars().enumerate();
         assert_eq!(
             parse(edn.next(), &mut edn),
-            Ok(Edn::Double(5011227713674210f64.into()))
+            Ok(Edn::Double(5_011_227_713_674_210_f64.into()))
         );
     }
 
@@ -1545,7 +1555,7 @@ mod test {
         let mut edn = "5.01122771367421E+12".chars().enumerate();
         assert_eq!(
             parse(edn.next(), &mut edn),
-            Ok(Edn::Double(5011227713674.210f64.into()))
+            Ok(Edn::Double(5_011_227_713_674.21_f64.into()))
         );
     }
 
@@ -1554,7 +1564,7 @@ mod test {
         let mut edn = "0.00000000000501122771367421".chars().enumerate();
         assert_eq!(
             parse(edn.next(), &mut edn),
-            Ok(Edn::Double(5.01122771367421e-12.into()))
+            Ok(Edn::Double(5.011_227_713_674_21e-12.into()))
         );
     }
 
@@ -1563,7 +1573,10 @@ mod test {
         let mut edn = "5.01122771367421e-12".chars().enumerate();
         let res = parse(edn.next(), &mut edn);
 
-        assert_eq!(res, Ok(Edn::Double(0.00000000000501122771367421.into())));
+        assert_eq!(
+            res,
+            Ok(Edn::Double(0.000_000_000_005_011_227_713_674_21.into()))
+        );
         assert_eq!(res.unwrap().to_string(), "0.00000000000501122771367421");
     }
 
@@ -1585,13 +1598,13 @@ mod test {
         assert_eq!(parse(edn.next(), &mut edn), Ok(Edn::UInt(51)));
 
         let mut edn = "36rabcxyz".chars().enumerate();
-        assert_eq!(parse(edn.next(), &mut edn), Ok(Edn::UInt(623741435)));
+        assert_eq!(parse(edn.next(), &mut edn), Ok(Edn::UInt(623_741_435)));
 
         let mut edn = "-16r2a".chars().enumerate();
         assert_eq!(parse(edn.next(), &mut edn), Ok(Edn::Int(-42)));
 
         let mut edn = "-32rFOObar".chars().enumerate();
-        assert_eq!(parse(edn.next(), &mut edn), Ok(Edn::Int(-529280347)));
+        assert_eq!(parse(edn.next(), &mut edn), Ok(Edn::Int(-529_280_347)));
     }
 
     #[test]

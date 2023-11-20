@@ -143,7 +143,7 @@ mod private {
 struct Type<'a>(&'a Edn);
 
 impl<'a> fmt::Display for Type<'a> {
-    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self.0 {
             Edn::Empty => formatter.write_str("empty"),
             Edn::Nil => formatter.write_str("null"),

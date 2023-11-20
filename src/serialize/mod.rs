@@ -345,7 +345,7 @@ mod test {
         assert_eq!(v_f32.serialize(), "[3.0, 12.1, 24.2, 72.3]");
         assert_eq!(v_i64.serialize(), "[3, 12, 24, 72]");
         assert_eq!(v_u64.serialize(), "[3, 12, 24, 72]");
-        assert_eq!(v_bool.serialize(), "[true, false]")
+        assert_eq!(v_bool.serialize(), "[true, false]");
     }
 
     #[test]
@@ -385,42 +385,42 @@ mod test {
 
         assert!(
             set_i8.contains("#{")
-                && set_i8.contains(",")
-                && set_i8.contains("3")
-                && set_i8.contains("}")
+                && set_i8.contains(',')
+                && set_i8.contains('3')
+                && set_i8.contains('}')
         );
         assert!(
             set_u16.contains("#{")
-                && set_u16.contains(",")
-                && set_u16.contains("3")
-                && set_u16.contains("}")
+                && set_u16.contains(',')
+                && set_u16.contains('3')
+                && set_u16.contains('}')
         );
         assert!(
             set_i64.contains("#{")
-                && set_i64.contains(",")
-                && set_i64.contains("3")
-                && set_i64.contains("}")
+                && set_i64.contains(',')
+                && set_i64.contains('3')
+                && set_i64.contains('}')
         );
         assert!(
             set_bool.contains("#{")
-                && set_bool.contains(",")
+                && set_bool.contains(',')
                 && set_bool.contains("true")
                 && set_bool.contains("false")
-                && set_bool.contains("}")
+                && set_bool.contains('}')
         );
         assert!(
             set_str.contains("#{")
-                && set_str.contains(",")
+                && set_str.contains(',')
                 && set_str.contains("\"aba\"")
                 && set_str.contains("\"cate\"")
-                && set_str.contains("}")
+                && set_str.contains('}')
         );
         assert!(
             set_string.contains("#{")
-                && set_string.contains(",")
+                && set_string.contains(',')
                 && set_string.contains("\"aba\"")
                 && set_string.contains("\"cate\"")
-                && set_string.contains("}")
+                && set_string.contains('}')
         );
     }
 
@@ -452,42 +452,42 @@ mod test {
 
         assert!(
             set_i8.contains("#{")
-                && set_i8.contains(",")
-                && set_i8.contains("3")
-                && set_i8.contains("}")
+                && set_i8.contains(',')
+                && set_i8.contains('3')
+                && set_i8.contains('}')
         );
         assert!(
             set_u16.contains("#{")
-                && set_u16.contains(",")
-                && set_u16.contains("3")
-                && set_u16.contains("}")
+                && set_u16.contains(',')
+                && set_u16.contains('3')
+                && set_u16.contains('}')
         );
         assert!(
             set_i64.contains("#{")
-                && set_i64.contains(",")
-                && set_i64.contains("3")
-                && set_i64.contains("}")
+                && set_i64.contains(',')
+                && set_i64.contains('3')
+                && set_i64.contains('}')
         );
         assert!(
             set_bool.contains("#{")
-                && set_bool.contains(",")
+                && set_bool.contains(',')
                 && set_bool.contains("true")
                 && set_bool.contains("false")
-                && set_bool.contains("}")
+                && set_bool.contains('}')
         );
         assert!(
             set_str.contains("#{")
-                && set_str.contains(",")
+                && set_str.contains(',')
                 && set_str.contains("\"aba\"")
                 && set_str.contains("\"cate\"")
-                && set_str.contains("}")
+                && set_str.contains('}')
         );
         assert!(
             set_string.contains("#{")
-                && set_string.contains(",")
+                && set_string.contains(',')
                 && set_string.contains("\"aba\"")
                 && set_string.contains("\"cate\"")
-                && set_string.contains("}")
+                && set_string.contains('}')
         );
     }
 
@@ -540,20 +540,20 @@ mod test {
         assert!(
             m_i64.contains(":hello-world 5")
                 && m_i64.contains(":bye-bye 125")
-                && m_i64.contains("{")
-                && m_i64.contains("}")
+                && m_i64.contains('{')
+                && m_i64.contains('}')
         );
         assert!(
             m_bool.contains(":hello-world true")
                 && m_bool.contains(":bye-bye false")
-                && m_bool.contains("{")
-                && m_bool.contains("}")
+                && m_bool.contains('{')
+                && m_bool.contains('}')
         );
         assert!(
             m_str.contains(":hello-world \"this is str 1\"")
                 && m_str.contains(":bye-bye \"this is str 2\"")
-                && m_str.contains("{")
-                && m_str.contains("}")
+                && m_str.contains('{')
+                && m_str.contains('}')
         );
     }
 

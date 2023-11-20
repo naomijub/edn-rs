@@ -52,7 +52,7 @@ pub enum Edn {
 impl futures::future::Future for Edn {
     type Output = Self;
 
-    fn poll(self: Pin<&mut Self>, _cx: &mut task::Context) -> Poll<Self::Output> {
+    fn poll(self: Pin<&mut Self>, _cx: &mut task::Context<'_>) -> Poll<Self::Output> {
         if self.to_string().is_empty() {
             Poll::Pending
         } else {
@@ -129,7 +129,7 @@ impl futures::future::Future for Vector {
     type Output = Self;
 
     #[allow(unused_comparisons, clippy::absurd_extreme_comparisons)]
-    fn poll(self: Pin<&mut Self>, _cx: &mut task::Context) -> Poll<Self::Output> {
+    fn poll(self: Pin<&mut Self>, _cx: &mut task::Context<'_>) -> Poll<Self::Output> {
         if self.0.len() >= 0 {
             let pinned = self.to_owned();
             Poll::Ready(pinned)
@@ -164,7 +164,7 @@ impl futures::future::Future for List {
     type Output = Self;
 
     #[allow(unused_comparisons, clippy::absurd_extreme_comparisons)]
-    fn poll(self: Pin<&mut Self>, _cx: &mut task::Context) -> Poll<Self::Output> {
+    fn poll(self: Pin<&mut Self>, _cx: &mut task::Context<'_>) -> Poll<Self::Output> {
         if self.0.len() >= 0 {
             let pinned = self.to_owned();
             Poll::Ready(pinned)
@@ -201,7 +201,7 @@ impl futures::future::Future for Set {
     type Output = Self;
 
     #[allow(unused_comparisons, clippy::absurd_extreme_comparisons)]
-    fn poll(self: Pin<&mut Self>, _cx: &mut task::Context) -> Poll<Self::Output> {
+    fn poll(self: Pin<&mut Self>, _cx: &mut task::Context<'_>) -> Poll<Self::Output> {
         if self.0.len() >= 0 {
             let pinned = self.to_owned();
             Poll::Ready(pinned)
@@ -236,7 +236,7 @@ impl futures::future::Future for Map {
     type Output = Self;
 
     #[allow(unused_comparisons, clippy::absurd_extreme_comparisons)]
-    fn poll(self: Pin<&mut Self>, _cx: &mut task::Context) -> Poll<Self::Output> {
+    fn poll(self: Pin<&mut Self>, _cx: &mut task::Context<'_>) -> Poll<Self::Output> {
         if self.0.len() >= 0 {
             let pinned = self.to_owned();
             Poll::Ready(pinned)

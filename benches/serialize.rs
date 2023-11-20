@@ -15,7 +15,7 @@ mod serde {
 
     pub fn criterion_benchmark(c: &mut Criterion) {
         c.bench_function("serde", |b| {
-            b.iter(|| serde_json::to_string(&val()).unwrap())
+            b.iter(|| serde_json::to_string(&val()).unwrap());
         });
     }
 
