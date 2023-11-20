@@ -457,7 +457,7 @@ mod test {
         let nil = "nil";
         let unit: () = from_str(nil).unwrap();
 
-        assert_eq!(unit, ())
+        assert_eq!(unit, ());
     }
 
     #[test]
@@ -471,7 +471,7 @@ mod test {
                 "Cannot safely deserialize Set(Set({Str(\"a\"), Str(\"b\"), UInt(5)})) to BTreeSet"
                     .to_string()
             ))
-        )
+        );
     }
 
     #[test]
@@ -565,7 +565,7 @@ mod test {
             Edn::Vector(Vector::new(vec![Edn::Str(
                 "hello brave new world".to_string()
             )]))
-        )
+        );
     }
 
     #[test]
@@ -592,7 +592,7 @@ mod test {
         assert_eq!(
             edn,
             Edn::Uuid("af6d8699-f442-4dfd-8b26-37d80543186b".to_string())
-        )
+        );
     }
 
     #[test]
@@ -603,7 +603,7 @@ mod test {
         }
         impl Deserialize for Foo {
             fn deserialize(edn: &Edn) -> Result<Self, Error> {
-                Ok(Foo {
+                Ok(Self {
                     bar: from_edn(&edn[":bar"])?,
                 })
             }

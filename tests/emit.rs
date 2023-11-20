@@ -1,5 +1,3 @@
-extern crate edn_rs;
-
 #[cfg(feature = "json")]
 mod tests {
     use crate::edn_rs::json_to_edn;
