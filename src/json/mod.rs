@@ -122,7 +122,7 @@ mod test {
     #[test]
     fn nil_and_empty_edns() {
         assert_eq!(display_as_json(&Edn::Nil), String::from("null"));
-        assert_eq!(display_as_json(&Edn::Empty), String::from(""));
+        assert_eq!(display_as_json(&Edn::Empty), String::new());
     }
 
     #[test]
@@ -243,8 +243,8 @@ mod test {
             Edn::UInt(4),
         ]));
         let set = display_as_json(&edn);
-        assert!(set.contains("["));
-        assert!(set.contains("]"));
+        assert!(set.contains('['));
+        assert!(set.contains(']'));
         assert!(set.contains("-0.75"));
         assert!(set.contains("\"myBestie\""));
     }
@@ -260,7 +260,7 @@ mod test {
         assert_eq!(
             display_as_json(&map),
             "{\"1.2\": false, \"beloMonte\": 0.75, \"true\": \'d\'}"
-        )
+        );
     }
 
     #[test]
@@ -313,7 +313,7 @@ mod test {
         assert_eq!(
             display_as_json(&map),
             "{\"thisIsANamespace\": {\"1.2\": false, \"beloMonte\": 0.75, \"true\": \'d\'}}"
-        )
+        );
     }
 
     #[test]
