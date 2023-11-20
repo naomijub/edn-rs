@@ -21,7 +21,7 @@ pub fn replace_keywords(json: String) -> String {
 #[must_use]
 #[allow(clippy::needless_pass_by_value)]
 pub fn replace_char(json: String) -> String {
-    let c_re = Regex::new(r#"'.'"#).unwrap();
+    let c_re = Regex::new(r"'.'").unwrap();
 
     let edn = c_re.replace_all(&json[..], |caps: &Captures| {
         let mut rcap = caps[0].replace('\'', "");
