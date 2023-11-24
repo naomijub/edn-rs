@@ -42,13 +42,10 @@ impl Index for u64 {
             Edn::Vector(ref mut vec) => {
                 let len = vec.0.len();
                 let idx = usize::try_from(*self).unwrap_or_else(|e| {
-                    panic!("index {} cannot fit in usize with error {}", self, e);
+                    panic!("index {self} cannot fit in usize with error {e}");
                 });
                 vec.0.get_mut(idx).unwrap_or_else(|| {
-                    panic!(
-                        "cannot access index {} of EDN array of length {}",
-                        self, len
-                    )
+                    panic!("cannot access index {self} of EDN array of length {len}")
                 })
             }
             Edn::NamespacedMap(_, ref mut map) => map.0.entry(self.to_string()).or_insert(Edn::Nil),

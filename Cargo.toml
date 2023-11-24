@@ -8,7 +8,7 @@ documentation = "https://docs.rs/edn-rs/"
 repository = "https://github.com/naomijub/edn-rs"
 keywords = ["EDN"]
 license = "MIT"
-edition = "2018"
+edition = "2021"
 
 [lints.rust]
 rust_2018_idioms = "warn"
@@ -19,14 +19,12 @@ pedantic = "warn"
 nursery = "warn"
 
 [features]
-async = ["futures"]
 default = ["sets"]
 json = ["regex"]
 sets = ["ordered-float"]
 
 [dependencies]
 regex = { version = "1", optional = true }
-futures = { version = "0.3.5", optional = true }
 ordered-float = { version = "4.1", default-features = false, optional = true }
 
 [dev-dependencies]
@@ -55,7 +53,6 @@ harness = false
 
 [[example]]
 name = "async"
-required-features = ["async"]
 
 [[example]]
 name = "json_to_edn"

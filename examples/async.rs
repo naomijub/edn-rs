@@ -1,16 +1,19 @@
-use edn_rs::{edn, Edn, Vector};
-use futures::Future;
+use std::str::{self, FromStr};
 
-async fn foo() -> impl Future<Output = Edn> + Send {
-    edn!([1 1.5 "hello" :key])
-}
+use edn_rs::{edn, Edn, Vector};
+use tokio::fs::File;
+use tokio::io::AsyncReadExt;
 
 #[tokio::main]
-async fn main() {
-    let edn = foo().await.await;
+async fn main() -> std::io::Result<()> {
+    let mut file = File::open("examples/test_edn.txt").await?;
+    let mut contents = vec![];
+    file.read_to_end(&mut contents).await?;
 
-    assert_eq!("[1, 1.5, \"hello\", :key, ]", edn.to_string());
-    assert_eq!(edn, edn!([1 1.5 "hello" :key]));
+    let edn = Edn::from_str(str::from_utf8(&contents).unwrap());
+    println!("{edn:?}");
 
-    assert_eq!(edn[1].to_float(), Some(1.5f64));
+    let edn = edn!([1 1.5 "hello" :key]);
+    println!("{edn:?}");
+    Ok(())
 }

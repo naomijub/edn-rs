@@ -3,8 +3,8 @@
 
 Crate to parse and emit EDN 
 * **This lib does not make effort to conform the EDN received to EDN Spec.** The lib that generated this EDN should be responsible for this. For more information on Edn Spec please visit: https://github.com/edn-format/edn.
-* Minimal Rust Version is 1.46+.
-* Library is almost stable (1.0.0), just missing [issue-4](https://github.com/naomijub/edn-rs/issues/4) to reach feature stability and possible bugfix for [equality rules](https://github.com/naomijub/edn-rs/issues/95). **No breaking changes predicted**.
+* MSRV (minimal supported rust version) is stable minus 2 versions. Once stable (1.0.0), the plan is to indefinitely maintain the MSRV.
+* Library is almost stable (1.0.0), just missing [issue-4](https://github.com/naomijub/edn-rs/issues/4) to reach feature stability and possible bugfix for [equality rules](https://github.com/naomijub/edn-rs/issues/95). **No breaking changes with default features are predicted**.
 
 Our **MTTA** (Mean time to acknowledge) is around `one day`; 
 <!---->
@@ -354,39 +354,6 @@ fn complex_ok() -> Result<(), EdnError> {
 //    "{:list: [{:age 66, :cool true, :name \"rose\", }, {:age 33, :cool false, :name \"josh\", }, {:age 296, :cool true, :name \"eva\", }, ], }"
 
     Ok(())
-}
-```
-
-## Using `async/await` with Edn type
-
-Edn supports `futures` by using the feature `async`. To enable this feature add to your `Cargo.toml`  dependencies the following line `edn-rs = { version = 0.17.4", features = ["async"] }` and you can use futures as in the following example.
-
-```rust
-use edn_rs::{edn, Double, Edn, Vector};
-use futures::prelude::*;
-use futures::Future;
-use tokio::prelude::*;
-
-async fn foo() -> impl Future<Output = Edn> + Send {
-    edn!([1 1.5 "hello" :key])
-}
-
-#[tokio::main]
-async fn main() {
-    let edn = foo().await.await;
-
-    println!("{}", edn.to_string());
-    assert_eq!(edn, edn!([1 1.5 "hello" :key]));
-
-    assert_eq!(edn[1].to_float(), Some(1.5f64));
-}
-```
-
-The objective of `foo` is to show that `Edn` can be wrapped with a `Future`. If you want to return an `Edn` from an `async` function just use:
-
-```rust
-async fn foo() -> Edn {
-    edn!([1 1.5 "hello" :key])
 }
 ```
 
