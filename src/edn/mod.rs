@@ -7,12 +7,6 @@ use std::collections::BTreeSet;
 use std::convert::TryFrom;
 use utils::index::Index;
 
-#[cfg(feature = "async")]
-use core::pin::Pin;
-#[cfg(feature = "async")]
-use futures::task;
-#[cfg(feature = "async")]
-use futures::task::Poll;
 #[cfg(feature = "sets")]
 use ordered_float::OrderedFloat;
 
@@ -46,20 +40,6 @@ pub enum Edn {
     NamespacedMap(String, Map),
     Nil,
     Empty,
-}
-
-#[cfg(feature = "async")]
-impl futures::future::Future for Edn {
-    type Output = Self;
-
-    fn poll(self: Pin<&mut Self>, _cx: &mut task::Context<'_>) -> Poll<Self::Output> {
-        if self.to_string().is_empty() {
-            Poll::Pending
-        } else {
-            let pinned = self.to_owned();
-            Poll::Ready(pinned)
-        }
-    }
 }
 
 #[derive(Clone, Ord, Debug, Eq, PartialEq, PartialOrd, Hash)]
@@ -124,21 +104,6 @@ impl Vector {
     }
 }
 
-#[cfg(feature = "async")]
-impl futures::future::Future for Vector {
-    type Output = Self;
-
-    #[allow(unused_comparisons, clippy::absurd_extreme_comparisons)]
-    fn poll(self: Pin<&mut Self>, _cx: &mut task::Context<'_>) -> Poll<Self::Output> {
-        if self.0.len() >= 0 {
-            let pinned = self.to_owned();
-            Poll::Ready(pinned)
-        } else {
-            Poll::Pending
-        }
-    }
-}
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "sets", derive(Eq, PartialOrd, Ord))]
 pub struct List(Vec<Edn>);
@@ -156,21 +121,6 @@ impl List {
     #[must_use]
     pub fn to_vec(self) -> Vec<Edn> {
         self.0
-    }
-}
-
-#[cfg(feature = "async")]
-impl futures::future::Future for List {
-    type Output = Self;
-
-    #[allow(unused_comparisons, clippy::absurd_extreme_comparisons)]
-    fn poll(self: Pin<&mut Self>, _cx: &mut task::Context<'_>) -> Poll<Self::Output> {
-        if self.0.len() >= 0 {
-            let pinned = self.to_owned();
-            Poll::Ready(pinned)
-        } else {
-            Poll::Pending
-        }
     }
 }
 
@@ -196,21 +146,6 @@ impl Set {
     }
 }
 
-#[cfg(feature = "async")]
-impl futures::future::Future for Set {
-    type Output = Self;
-
-    #[allow(unused_comparisons, clippy::absurd_extreme_comparisons)]
-    fn poll(self: Pin<&mut Self>, _cx: &mut task::Context<'_>) -> Poll<Self::Output> {
-        if self.0.len() >= 0 {
-            let pinned = self.to_owned();
-            Poll::Ready(pinned)
-        } else {
-            Poll::Pending
-        }
-    }
-}
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "sets", derive(Eq, PartialOrd, Ord))]
 pub struct Map(BTreeMap<String, Edn>);
@@ -228,21 +163,6 @@ impl Map {
     #[must_use]
     pub fn to_map(self) -> BTreeMap<String, Edn> {
         self.0
-    }
-}
-
-#[cfg(feature = "async")]
-impl futures::future::Future for Map {
-    type Output = Self;
-
-    #[allow(unused_comparisons, clippy::absurd_extreme_comparisons)]
-    fn poll(self: Pin<&mut Self>, _cx: &mut task::Context<'_>) -> Poll<Self::Output> {
-        if self.0.len() >= 0 {
-            let pinned = self.to_owned();
-            Poll::Ready(pinned)
-        } else {
-            Poll::Pending
-        }
     }
 }
 

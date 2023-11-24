@@ -40,8 +40,8 @@ jobs:
           name: Run example tests with json feature
           command: cargo test --example json_to_edn --features "json"
       - run:
-          name: Run example tests with async feature
-          command: cargo run --example async --features "async"
+          name: Run example tests with async
+          command: cargo run --example async
 
   lint:
     docker:
