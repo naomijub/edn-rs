@@ -1,8 +1,9 @@
+#[cfg(feature = "sets")]
 #[cfg(test)]
 mod test {
     use std::str::FromStr;
 
-    use edn::{Error, List, Vector};
+    use edn::{List, Vector};
     use edn_rs::{edn, map, set, Edn, Map, Set};
 
     #[test]
@@ -111,12 +112,15 @@ mod test {
     #[test]
     fn parse_discard_space_invalid() {
         assert_eq!(
-            Edn::from_str(
-                "#_ ,, #{hello, this will be discarded} #_{so will this} #{this is invalid"
+            format!(
+                "{}",
+                Edn::from_str(
+                    "#_ ,, #{hello, this will be discarded} #_{so will this} #{this is invalid"
+                )
+                .err()
+                .unwrap(),
             ),
-            Err(Error::ParseEdn(
-                "None could not be parsed at char count 58".to_string()
-            ))
+            "None could not be parsed at char count 58"
         );
     }
 

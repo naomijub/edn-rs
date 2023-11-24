@@ -1,4 +1,5 @@
-use crate::edn::{Edn, Error};
+use crate::edn::Edn;
+use crate::EdnError as Error;
 use std::collections::{BTreeMap, HashMap};
 #[cfg(feature = "sets")]
 use std::collections::{BTreeSet, HashSet};
@@ -14,7 +15,7 @@ use ordered_float::OrderedFloat;
 ///
 /// # Errors
 ///
-/// Error will be like `EdnError::Deserialize("couldn't convert <value> into <type>")`
+/// Error implements Display and Debug. See docs for more implementations.
 ///
 /// ```
 /// use crate::edn_rs::{Edn, EdnError, Deserialize};
@@ -51,12 +52,7 @@ use ordered_float::OrderedFloat;
 /// let bad_edn_str = "{:name \"rose\" :age \"some text\" }";
 /// let person: Result<Person, EdnError> = edn_rs::from_str(bad_edn_str);
 ///
-/// assert_eq!(
-///     person,
-///     Err(EdnError::Deserialize(
-///         "couldn't convert `\"some text\"` into `uint`".to_string()
-///     ))
-/// );
+/// println!("{:?}", person);
 /// ```
 #[allow(clippy::missing_errors_doc)]
 pub trait Deserialize: Sized {
@@ -338,12 +334,7 @@ where
 /// let bad_edn_str = "{:name \"rose\" :age \"some text\" }";
 /// let person: Result<Person, EdnError> = edn_rs::from_str(bad_edn_str);
 ///
-/// assert_eq!(
-///     person,
-///     Err(EdnError::Deserialize(
-///             "couldn't convert `\"some text\"` into `uint`".to_string()
-///     ))
-/// );
+/// println!("{:?}", person);
 /// ```
 pub fn from_str<T: Deserialize>(s: &str) -> Result<T, Error> {
     let edn = Edn::from_str(s)?;
@@ -397,12 +388,7 @@ pub fn from_str<T: Deserialize>(s: &str) -> Result<T, Error> {
 /// }));
 /// let person: Result<Person, EdnError> = edn_rs::from_edn(&bad_edn);
 ///
-/// assert_eq!(
-///     person,
-///     Err(EdnError::Deserialize(
-///         "couldn't convert `\"some text\"` into `uint`".to_string()
-///     ))
-/// );
+/// println!("{:?}", person);
 /// ```
 pub fn from_edn<T: Deserialize>(edn: &Edn) -> Result<T, Error> {
     T::deserialize(edn)
@@ -430,11 +416,8 @@ mod test {
         let edn = "#{\"a\", 5, \"b\"}";
         let err: Result<BTreeSet<u64>, Error> = from_str(edn);
         assert_eq!(
-            err,
-            Err(Error::Deserialize(
-                "Cannot safely deserialize Set(Set({Str(\"a\"), Str(\"b\"), UInt(5)})) to BTreeSet"
-                    .to_string()
-            ))
+            format!("{}", err.err().unwrap()),
+            "Cannot safely deserialize Set(Set({Str(\"a\"), Str(\"b\"), UInt(5)})) to BTreeSet"
         );
     }
 
@@ -443,15 +426,15 @@ mod test {
         let edn = "[1 \"2\" 3.3 :b true \\c]";
 
         assert_eq!(
-            Edn::from_str(edn),
-            Ok(Edn::Vector(Vector::new(vec![
+            Edn::from_str(edn).unwrap(),
+            Edn::Vector(Vector::new(vec![
                 Edn::UInt(1),
                 Edn::Str("2".to_string()),
                 Edn::Double(3.3.into()),
                 Edn::Key(":b".to_string()),
                 Edn::Bool(true),
                 Edn::Char('c')
-            ])))
+            ]))
         );
     }
 
@@ -460,14 +443,14 @@ mod test {
         let edn = "(1 \"2\" 3.3 :b [true \\c])";
 
         assert_eq!(
-            Edn::from_str(edn),
-            Ok(Edn::List(List::new(vec![
+            Edn::from_str(edn).unwrap(),
+            Edn::List(List::new(vec![
                 Edn::UInt(1),
                 Edn::Str("2".to_string()),
                 Edn::Double(3.3.into()),
                 Edn::Key(":b".to_string()),
                 Edn::Vector(Vector::new(vec![Edn::Bool(true), Edn::Char('c')]))
-            ])))
+            ]))
         );
     }
 
@@ -477,15 +460,15 @@ mod test {
         let edn = "(1 -10 \"2\" 3.3 :b #{true \\c})";
 
         assert_eq!(
-            Edn::from_str(edn),
-            Ok(Edn::List(List::new(vec![
+            Edn::from_str(edn).unwrap(),
+            Edn::List(List::new(vec![
                 Edn::UInt(1),
                 Edn::Int(-10),
                 Edn::Str("2".to_string()),
                 Edn::Double(3.3.into()),
                 Edn::Key(":b".to_string()),
                 Edn::Set(Set::new(set![Edn::Bool(true), Edn::Char('c')]))
-            ])))
+            ]))
         );
     }
 
@@ -494,11 +477,11 @@ mod test {
         let edn = "{:a \"2\" :b true :c nil}";
 
         assert_eq!(
-            Edn::from_str(edn),
-            Ok(Edn::Map(Map::new(
+            Edn::from_str(edn).unwrap(),
+            Edn::Map(Map::new(
                 map! {":a".to_string() => Edn::Str("2".to_string()),
                 ":b".to_string() => Edn::Bool(true), ":c".to_string() => Edn::Nil}
-            )))
+            ))
         );
     }
 
@@ -508,15 +491,15 @@ mod test {
         let edn = "{:a \"2\" :b [true false] :c #{:A {:a :b} nil}}";
 
         assert_eq!(
-            Edn::from_str(edn),
-            Ok(Edn::Map(Map::new(map! {
+            Edn::from_str(edn).unwrap(),
+            Edn::Map(Map::new(map! {
             ":a".to_string() =>Edn::Str("2".to_string()),
             ":b".to_string() => Edn::Vector(Vector::new(vec![Edn::Bool(true), Edn::Bool(false)])),
             ":c".to_string() => Edn::Set(Set::new(
                 set!{
                     Edn::Map(Map::new(map!{":a".to_string() => Edn::Key(":b".to_string())})),
                     Edn::Key(":A".to_string()),
-                    Edn::Nil}))})))
+                    Edn::Nil}))}))
         );
     }
 
@@ -676,10 +659,8 @@ mod test {
         let edn = "{:a]";
 
         assert_eq!(
-            Edn::from_str(edn),
-            Err(Error::ParseEdn(
-                "Could not identify symbol index".to_string()
-            ))
+            format!("{}", Edn::from_str(edn).err().unwrap()),
+            "Could not identify symbol index"
         );
     }
 

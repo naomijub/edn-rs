@@ -1,3 +1,4 @@
+#[cfg(feature = "sets")]
 #[cfg(test)]
 mod tests {
     use std::collections::{BTreeMap, BTreeSet};

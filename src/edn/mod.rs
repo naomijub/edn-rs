@@ -10,6 +10,7 @@ use utils::index::Index;
 #[cfg(feature = "sets")]
 use ordered_float::OrderedFloat;
 
+pub mod error;
 #[doc(hidden)]
 pub mod utils;
 
@@ -705,7 +706,7 @@ impl Edn {
 }
 
 impl std::str::FromStr for Edn {
-    type Err = Error;
+    type Err = error::Error;
 
     /// Parses a `&str` that contains an Edn into `Result<Edn, EdnError>`
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -731,63 +732,6 @@ pub(crate) fn rational_to_double(r: &str) -> Option<f64> {
         return Some(vals[0] / vals[1]);
     }
     None
-}
-
-#[derive(Debug, PartialEq, Eq)]
-#[non_exhaustive]
-pub enum Error {
-    ParseEdn(String),
-    Deserialize(String),
-    Iter(String),
-    TryFromInt(std::num::TryFromIntError),
-    #[doc(hidden)]
-    Infallable(), // Makes the compiler happy for converting u64 to u64 and i64 to i64
-}
-
-impl From<String> for Error {
-    fn from(s: String) -> Self {
-        Self::ParseEdn(s)
-    }
-}
-
-impl From<std::num::ParseIntError> for Error {
-    fn from(s: std::num::ParseIntError) -> Self {
-        Self::ParseEdn(s.to_string())
-    }
-}
-
-impl From<std::num::ParseFloatError> for Error {
-    fn from(s: std::num::ParseFloatError) -> Self {
-        Self::ParseEdn(s.to_string())
-    }
-}
-
-impl From<std::str::ParseBoolError> for Error {
-    fn from(s: std::str::ParseBoolError) -> Self {
-        Self::ParseEdn(s.to_string())
-    }
-}
-
-impl From<std::num::TryFromIntError> for Error {
-    fn from(e: std::num::TryFromIntError) -> Self {
-        Self::TryFromInt(e)
-    }
-}
-
-impl From<std::convert::Infallible> for Error {
-    fn from(_: std::convert::Infallible) -> Self {
-        Self::Infallable()
-    }
-}
-
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::ParseEdn(s) | Self::Deserialize(s) | Self::Iter(s) => write!(f, "{}", &s),
-            Self::TryFromInt(e) => write!(f, "{e}"),
-            Self::Infallable() => panic!("Infallable conversion"),
-        }
-    }
 }
 
 #[cfg(test)]

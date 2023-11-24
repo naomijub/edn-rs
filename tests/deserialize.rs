@@ -2,7 +2,6 @@
 mod test {
     use std::str::FromStr;
 
-    use edn::Error;
     use edn_rs::{edn, map, Edn, List, Map, Vector};
 
     #[test]
@@ -23,10 +22,8 @@ mod test {
     // Special case of running into a set without the feature enabled
     fn parse_set_without_set_feature() {
         assert_eq!(
-            Edn::from_str("#{true, \\c, 3,four, }"),
-            Err(Error::ParseEdn(
-                "Could not parse set due to feature not being enabled".to_string()
-            ))
+            format!("{}", Edn::from_str("#{true, \\c, 3,four, }").err().unwrap()),
+            "Could not parse set due to feature not being enabled"
         )
     }
 
@@ -86,16 +83,26 @@ mod test {
     #[test]
     fn parse_str_with_invalid_escape() {
         assert_eq!(
-            Edn::from_str(r#""hello\n \r \t \"world\" with escaped \\ \g characters""#),
-            Err(Error::ParseEdn("Invalid escape sequence \\g".to_string()))
+            format!(
+                "{}",
+                Edn::from_str(r#""hello\n \r \t \"world\" with escaped \\ \g characters""#)
+                    .err()
+                    .unwrap()
+            ),
+            "Invalid escape sequence \\g"
         );
     }
 
     #[test]
     fn parse_unterminated_string() {
         assert_eq!(
-            Edn::from_str(r#""hello\n \r \t \"world\" with escaped \\ characters"#),
-            Err(Error::ParseEdn("Unterminated string".to_string()))
+            format!(
+                "{}",
+                Edn::from_str(r#""hello\n \r \t \"world\" with escaped \\ characters"#)
+                    .err()
+                    .unwrap()
+            ),
+            "Unterminated string"
         );
     }
 
@@ -314,10 +321,8 @@ mod test {
     #[test]
     fn parse_discard_invalid() {
         assert_eq!(
-            Edn::from_str("#_{ 234"),
-            Err(Error::ParseEdn(
-                "None could not be parsed at char count 3".to_string()
-            ))
+            format!("{}", Edn::from_str("#_{ 234").err().unwrap()),
+            "None could not be parsed at char count 3"
         );
     }
 
@@ -352,10 +357,8 @@ mod test {
     #[test]
     fn parse_discard_no_follow_element() {
         assert_eq!(
-            Edn::from_str("#_ ,, "),
-            Err(Error::ParseEdn(
-                "Discard sequence must have a following element at char count 2".to_string()
-            ))
+            format!("{}", Edn::from_str("#_ ,, ").err().unwrap()),
+            "Discard sequence must have a following element at char count 2"
         );
     }
 
@@ -370,10 +373,8 @@ mod test {
     #[test]
     fn parse_discard_end_of_seq_no_follow() {
         assert_eq!(
-            Edn::from_str("[:foo #_ ]"),
-            Err(Error::ParseEdn(
-                "Discard sequence must have a following element at char count 8".to_string()
-            ))
+            format!("{}", Edn::from_str("[:foo #_ ]").err().unwrap()),
+            "Discard sequence must have a following element at char count 8"
         );
     }
 
@@ -714,30 +715,23 @@ mod test {
     #[test]
     fn parse_invalid_ints() {
         assert_eq!(
-            Edn::from_str("42invalid123"),
-            Err(Error::ParseEdn(
-                "42invalid123 could not be parsed at char count 1 with radix 10".to_string()
-            ))
+            format!("{}", Edn::from_str("42invalid123").err().unwrap()),
+            "42invalid123 could not be parsed at char count 1 with radix 10"
         );
 
         assert_eq!(
-            Edn::from_str("0xxyz123"),
-            Err(Error::ParseEdn(
-                "xyz123 could not be parsed at char count 1 with radix 16".to_string()
-            ))
+            format!("{}", Edn::from_str("0xxyz123").err().unwrap()),
+            "xyz123 could not be parsed at char count 1 with radix 16"
         );
 
         assert_eq!(
-            Edn::from_str("42rabcxzy"),
-            Err(Error::ParseEdn("Radix of 42 is out of bounds".to_string()))
+            format!("{}", Edn::from_str("42rabcxzy").err().unwrap()),
+            "Radix of 42 is out of bounds"
         );
 
         assert_eq!(
-            Edn::from_str("42crazyrabcxzy"),
-            Err(Error::ParseEdn(
-                "invalid digit found in string while trying to parse radix from 42crazyrabcxzy"
-                    .to_string()
-            ))
+            format!("{}", Edn::from_str("42crazyrabcxzy").err().unwrap()),
+            "invalid digit found in string while trying to parse radix from 42crazyrabcxzy"
         );
     }
 
