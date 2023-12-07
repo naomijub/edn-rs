@@ -11,6 +11,14 @@ mod tests {
     }
 
     #[test]
+    fn emits_helloworld_from_str_edn() {
+        let json = "{\"hello\": \"world\"}";
+        let edn = "{:hello \"world\"}";
+
+        assert_eq!(edn, json_to_edn(json));
+    }
+
+    #[test]
     fn replaces_whitespace_in_keys_by_dash() {
         let json = String::from("{\"hello world\": \"julia\"}");
         let edn = String::from("{:hello-world \"julia\"}");
