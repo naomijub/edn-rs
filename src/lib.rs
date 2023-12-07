@@ -2,9 +2,6 @@
 #[macro_use]
 mod macros;
 
-#[cfg(feature = "preserve_order")]
-extern crate regex;
-
 /// Edn type implementation
 pub mod edn;
 
@@ -40,6 +37,9 @@ pub mod serialize;
 #[cfg(feature = "json")]
 pub(crate) mod json;
 
+#[cfg(feature = "json")]
+use std::borrow::Cow;
+
 mod deserialize;
 /// `json_to_edn` receives a json string and parses its common key-values to a regular EDN format. It requires feature `json`
 /// tested examples are:
@@ -66,12 +66,27 @@ mod deserialize;
 /// }
 /// ```
 #[cfg(feature = "json")]
-#[must_use]
-pub fn json_to_edn(json: String) -> String {
-    use edn::utils::{replace_char, replace_keywords};
-    let edn_aux = replace_keywords(json);
-    let edn = replace_char(edn_aux);
-    edn.replace("null", "nil")
+#[allow(clippy::missing_panics_doc)] // Our regex's don't rely on user-input
+pub fn json_to_edn<'a>(json: impl AsRef<str>) -> Cow<'a, str> {
+    use regex::{Captures, Regex};
+
+    // Convert string keys to EDN keywords
+    let re = Regex::new(r#""\w*(\s\w*)*":"#).unwrap();
+    let json = re.replace_all(json.as_ref(), |caps: &Captures<'_>| {
+        let mut rcap = caps[0].replace(['\"', ':'], "").replace(['_', ' '], "-");
+        rcap.insert(0, ':');
+        rcap.to_string()
+    });
+
+    // Convert chars
+    let c_re = Regex::new(r"'.'").unwrap();
+    let json = c_re.replace_all(&json[..], |caps: &Captures<'_>| {
+        let mut rcap = caps[0].replace('\'', "");
+        rcap.insert(0, '\\');
+        rcap.to_string()
+    });
+
+    json.replace("null", "nil").into()
 }
 
 pub use deserialize::{from_edn, from_str, Deserialize};
