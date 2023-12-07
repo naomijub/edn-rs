@@ -25,7 +25,6 @@ pub fn display_as_json(edn: &Edn) -> String {
         Edn::Bool(b) => format!("{b}"),
         Edn::Inst(inst) => format!("{inst:?}"),
         Edn::Uuid(uuid) => format!("{uuid:?}"),
-        Edn::NamespacedMap(ns, map) => nsmap_to_json(ns, &map.clone().to_map()),
         Edn::Nil => String::from("null"),
         Edn::Empty => String::new(),
         Edn::Tagged(tag, content) => format!("{{ \"{}\": {}}}", tag, display_as_json(content)),
@@ -99,15 +98,6 @@ fn map_to_json(map: &std::collections::BTreeMap<String, Edn>) -> String {
         .collect::<Vec<String>>()
         .join(", ");
     let mut s = String::from("{");
-    s.push_str(&map_str);
-    s.push('}');
-    s
-}
-
-fn nsmap_to_json(ns: &str, map: &std::collections::BTreeMap<String, Edn>) -> String {
-    let mut s = String::from("{");
-    let map_str = map_to_json(map);
-    s.push_str(&format!("{:?}: ", kebab_to_camel(ns)));
     s.push_str(&map_str);
     s.push('}');
     s
@@ -297,23 +287,6 @@ mod test {
 
         assert_eq!(display_as_json(&edn),
             "[1, 1.2, 3, [false, \"f\", null, 0.75, [0.75]], {\"myCrazyMap\": {\"false\": {\"f\": \"b\"}, \"nil\": [0.75, 1]}, \"false\": \"f\", \"nil\": 0.75}]");
-    }
-
-    #[test]
-    fn simple_namespaced_map() {
-        let map = Edn::NamespacedMap(
-            String::from("this-is-a-namespace"),
-            Map::new(map! {
-                String::from("1.2") => Edn::Bool(false),
-                String::from(":belo-monte") => Edn::Rational(String::from("3/4")),
-                String::from("true") => Edn::Char('d')
-            }),
-        );
-
-        assert_eq!(
-            display_as_json(&map),
-            "{\"thisIsANamespace\": {\"1.2\": false, \"beloMonte\": 0.75, \"true\": \'d\'}}"
-        );
     }
 
     #[test]
