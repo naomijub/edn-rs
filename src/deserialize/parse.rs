@@ -45,7 +45,7 @@ pub fn parse_edn(
 ) -> Result<Edn, Error> {
     match c {
         Some((_, '\"')) => read_str(chars),
-        Some((_, ':')) => read_key_or_nsmap(chars),
+        Some((_, ':')) => Ok(read_key(chars)),
         Some((_, n)) if n.is_numeric() => Ok(read_number(n, chars)?),
         Some((_, n))
             if (n == '-' || n == '+')
@@ -74,19 +74,12 @@ fn tagged_or_set_or_discard(
     }
 }
 
-fn read_key_or_nsmap(chars: &mut std::iter::Enumerate<std::str::Chars<'_>>) -> Result<Edn, Error> {
-    let mut key_chars = chars.clone().take_while(|c| {
-        !c.1.is_whitespace() && c.1 != ',' && c.1 != ')' && c.1 != ']' && c.1 != '}' && c.1 != ';'
-    });
+fn read_key(chars: &mut std::iter::Enumerate<std::str::Chars<'_>>) -> Edn {
+    let key_chars = chars
+        .clone()
+        .take_while(|c| !c.1.is_whitespace() && !DELIMITERS.contains(&c.1));
     let c_len = key_chars.clone().count();
 
-    Ok(match key_chars.find(|c| c.1 == '{') {
-        Some(_) => read_namespaced_map(chars)?,
-        None => read_key(chars, c_len),
-    })
-}
-
-fn read_key(chars: &mut std::iter::Enumerate<std::str::Chars<'_>>, c_len: usize) -> Edn {
     let mut key = String::from(":");
     let key_chars = chars.take(c_len).map(|c| c.1).collect::<String>();
     key.push_str(&key_chars);
@@ -456,47 +449,6 @@ fn read_set(_chars: &mut std::iter::Enumerate<std::str::Chars<'_>>) -> Result<Ed
     Err(Error::ParseEdn(
         "Could not parse set due to feature not being enabled".to_string(),
     ))
-}
-
-fn read_namespaced_map(
-    chars: &mut std::iter::Enumerate<std::str::Chars<'_>>,
-) -> Result<Edn, Error> {
-    let i = chars
-        .clone()
-        .next()
-        .ok_or_else(|| Error::ParseEdn("Could not identify symbol index".to_string()))?
-        .0;
-    let mut res: BTreeMap<String, Edn> = BTreeMap::new();
-    let mut key: Option<Edn> = None;
-    let mut val: Option<Edn> = None;
-    let namespace = chars
-        .take_while(|c| c.1 != '{')
-        .map(|c| c.1)
-        .collect::<String>();
-
-    loop {
-        match chars.next() {
-            Some((_, '}')) => return Ok(Edn::NamespacedMap(namespace, Map::new(res))),
-            Some(c) => {
-                if key.is_some() {
-                    val = Some(parse(Some(c), chars)?);
-                } else {
-                    key = parse_internal(Some(c), chars)?;
-                }
-            }
-            err => {
-                return Err(Error::ParseEdn(format!(
-                    "{err:?} could not be parsed at char count {i}"
-                )))
-            }
-        }
-
-        if key.is_some() && val.is_some() {
-            res.insert(key.unwrap().to_string(), val.unwrap());
-            key = None;
-            val = None;
-        }
-    }
 }
 
 fn read_map(chars: &mut std::iter::Enumerate<std::str::Chars<'_>>) -> Result<Edn, Error> {

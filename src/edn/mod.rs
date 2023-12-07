@@ -37,7 +37,6 @@ pub enum Edn {
     Bool(bool),
     Inst(String),
     Uuid(String),
-    NamespacedMap(String, Map),
     Nil,
     Empty,
 }
@@ -253,7 +252,6 @@ impl core::fmt::Display for Edn {
             Self::Char(c) => format!("{c}"),
             Self::Inst(t) => format!("#inst \"{t}\""),
             Self::Uuid(t) => format!("#uuid \"{t}\""),
-            Self::NamespacedMap(s, m) => format!(":{s}{m}"),
             Self::Nil => String::from("nil"),
             Self::Empty => String::new(),
             Self::Tagged(tag, edn) => format!("#{tag} {edn}"),
@@ -636,7 +634,7 @@ impl Edn {
     #[must_use]
     pub fn map_iter(&self) -> Option<std::collections::btree_map::Iter<'_, String, Self>> {
         match self {
-            Self::Map(m) | Self::NamespacedMap(_, m) => Some(m.0.iter()),
+            Self::Map(m) => Some(m.0.iter()),
             _ => None,
         }
     }
@@ -679,7 +677,6 @@ impl Edn {
     /// `Edn::Bool(b)` => boolean options, `true` and `false`
     /// `Edn::Inst(inst)` => a `DateTime` string like `\"2020-10-21T00:00:00.000-00:00\"`
     /// `Edn::Uuid(uuid)` => a UUID string like `\"7a6b6722-0221-4280-865e-ad41060d53b2\"`
-    /// `Edn::NamespacedMap(ns, map)` => a namespaced map like `{\"nameSpace\": {\"key1\": value1, ..., \"keyN\": valueN}}`
     /// `Edn::Nil` => `null`
     /// `Edn::Empty` => empty value, ` `
     /// ```
@@ -951,21 +948,6 @@ mod test {
     }
 
     #[test]
-    fn namespaced_map_to_string() {
-        assert_eq!(
-            ":abc{0 :val, 1 :value, }",
-            Edn::NamespacedMap(
-                "abc".to_string(),
-                Map::new(map! {
-                    "0".to_string() => Edn::Key(":val".to_string()),
-                    "1".to_string() => Edn::Key(":value".to_string())
-                })
-            )
-            .to_string()
-        );
-    }
-
-    #[test]
     fn inst_to_string() {
         let inst = Edn::Inst("2020-09-18T01:16:25.909-00:00".to_string());
 
@@ -1033,21 +1015,6 @@ mod test {
         let val = &edn[Edn::Int(2)];
 
         assert_eq!(val, expected);
-    }
-
-    #[test]
-    fn get_namespaced_map() {
-        let expected = &Edn::Key(":val".to_string());
-        let ns_map = Edn::NamespacedMap(
-            "abc".to_string(),
-            Map::new(map! {
-                "0".to_string() => Edn::Key(":val".to_string()),
-                "1".to_string() => Edn::Key(":value".to_string())
-            }),
-        );
-
-        let val = &ns_map[Edn::UInt(0)];
-        assert_eq!(expected, val);
     }
 
     #[test]

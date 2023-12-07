@@ -17,7 +17,6 @@ impl Index for u64 {
             return match *v {
                 Edn::Vector(ref vec) => vec.0.get(idx),
                 Edn::List(ref vec) => vec.0.get(idx),
-                Edn::NamespacedMap(_, ref map) => map.0.get(&self.to_string()),
                 _ => None,
             };
         }
@@ -28,7 +27,6 @@ impl Index for u64 {
             return match *v {
                 Edn::Vector(ref mut vec) => vec.0.get_mut(idx),
                 Edn::List(ref mut vec) => vec.0.get_mut(idx),
-                Edn::NamespacedMap(_, ref mut map) => map.0.get_mut(&self.to_string()),
                 _ => None,
             };
         }
@@ -45,7 +43,6 @@ impl Index for u64 {
                     panic!("cannot access index {self} of EDN array of length {len}")
                 })
             }
-            Edn::NamespacedMap(_, ref mut map) => map.0.entry(self.to_string()).or_insert(Edn::Nil),
             _ => panic!("cannot access index {} of EDN {}", self, Type(v)),
         }
     }
@@ -54,13 +51,13 @@ impl Index for u64 {
 impl Index for str {
     fn index_into<'v>(&self, v: &'v Edn) -> Option<&'v Edn> {
         match *v {
-            Edn::Map(ref map) | Edn::NamespacedMap(_, ref map) => map.0.get(self),
+            Edn::Map(ref map) => map.0.get(self),
             _ => None,
         }
     }
     fn index_into_mut<'v>(&self, v: &'v mut Edn) -> Option<&'v mut Edn> {
         match *v {
-            Edn::Map(ref mut map) | Edn::NamespacedMap(_, ref mut map) => map.0.get_mut(self),
+            Edn::Map(ref mut map) => map.0.get_mut(self),
             _ => None,
         }
     }
@@ -69,9 +66,7 @@ impl Index for str {
             *v = Edn::Map(Map::new(std::collections::BTreeMap::new()));
         }
         match *v {
-            Edn::Map(ref mut map) | Edn::NamespacedMap(_, ref mut map) => {
-                map.0.entry(self.to_owned()).or_insert(Edn::Nil)
-            }
+            Edn::Map(ref mut map) => map.0.entry(self.to_owned()).or_insert(Edn::Nil),
             _ => panic!("cannot access key {:?} in EDN {}", self, Type(v)),
         }
     }
@@ -95,7 +90,7 @@ impl Index for Edn {
         let index = self.to_uint();
 
         match (v, index) {
-            (Self::Map(ref map) | Self::NamespacedMap(_, ref map), _) => map.0.get(&key),
+            (Self::Map(ref map), _) => map.0.get(&key),
             (Self::List(_) | Self::Vector(_), Some(idx)) => idx.index_into(v),
             _ => None,
         }
@@ -149,7 +144,6 @@ impl<'a> fmt::Display for Type<'a> {
             Edn::Set(_) => formatter.write_str("set"),
             Edn::List(_) => formatter.write_str("list"),
             Edn::Map(_) => formatter.write_str("map"),
-            Edn::NamespacedMap(_, _) => formatter.write_str("namespaced-map"),
             Edn::Key(_) => formatter.write_str("key"),
             Edn::Char(_) => formatter.write_str("char"),
             Edn::Symbol(_) => formatter.write_str("symbol"),
