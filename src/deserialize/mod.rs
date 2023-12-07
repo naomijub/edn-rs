@@ -205,24 +205,6 @@ where
                     ))
                 })
                 .collect::<Result<Self, Error>>(),
-            Edn::NamespacedMap(ns, _) => edn
-                .map_iter()
-                .ok_or_else(|| Error::Iter(format!("Could not create iter from {edn:?}")))?
-                .map(|(key, e)| {
-                    let deser_element = Deserialize::deserialize(e).map_err(|_| {
-                        Error::Deserialize(format!(
-                            "Cannot safely deserialize {:?} to {}",
-                            edn, "HashMap"
-                        ))
-                    });
-
-                    if ns.starts_with(':') {
-                        Ok((ns.to_string() + "/" + key, deser_element?))
-                    } else {
-                        Ok((String::from(':') + ns + "/" + key, deser_element?))
-                    }
-                })
-                .collect::<Result<Self, Error>>(),
             _ => Err(build_deserialize_error(edn, std::any::type_name::<Self>())),
         }
     }
@@ -247,24 +229,6 @@ where
                             ))
                         })?,
                     ))
-                })
-                .collect::<Result<Self, Error>>(),
-            Edn::NamespacedMap(ns, _) => edn
-                .map_iter()
-                .ok_or_else(|| Error::Iter(format!("Could not create iter from {edn:?}")))?
-                .map(|(key, e)| {
-                    let deser_element = Deserialize::deserialize(e).map_err(|_| {
-                        Error::Deserialize(format!(
-                            "Cannot safely deserialize {:?} to {}",
-                            edn, "BTreeMap"
-                        ))
-                    });
-
-                    if ns.starts_with(':') {
-                        Ok((ns.to_string() + "/" + key, deser_element?))
-                    } else {
-                        Ok((String::from(':') + ns + "/" + key, deser_element?))
-                    }
                 })
                 .collect::<Result<Self, Error>>(),
             _ => Err(build_deserialize_error(edn, std::any::type_name::<Self>())),
@@ -567,23 +531,6 @@ mod test {
             )]))
         );
     }
-
-    #[test]
-    fn namespaced_maps() {
-        let edn = ":abc{ 0 :val 1 :value}";
-
-        assert_eq!(
-            Edn::from_str(edn).unwrap(),
-            Edn::NamespacedMap(
-                "abc".to_string(),
-                Map::new(map! {
-                    "0".to_string() => Edn::Key(":val".to_string()),
-                    "1".to_string() => Edn::Key(":value".to_string())
-                })
-            )
-        );
-    }
-
     #[test]
     fn uuid() {
         let uuid = "#uuid \"af6d8699-f442-4dfd-8b26-37d80543186b\"";
@@ -658,52 +605,6 @@ mod test {
             )),
         ]));
         assert_eq!(edn, expected);
-    }
-
-    #[test]
-    fn namespaced_maps_navigation() {
-        let edn_str = ":abc{ 0 :val 1 :value}";
-
-        let edn = Edn::from_str(edn_str).unwrap();
-
-        assert_eq!(edn[0], Edn::Key(":val".to_string()));
-        assert_eq!(edn["0"], Edn::Key(":val".to_string()));
-        assert_eq!(edn[1], Edn::Key(":value".to_string()));
-        assert_eq!(edn["1"], Edn::Key(":value".to_string()));
-    }
-
-    #[test]
-    fn deser_namespaced_btreemap() {
-        let ns_map = Edn::NamespacedMap(
-            "abc".to_string(),
-            Map::new(map! {
-                "0".to_string() => Edn::Key(":val".to_string()),
-                "1".to_string() => Edn::Key(":value".to_string())
-            }),
-        );
-        let expected = map! {
-            ":abc/0".to_string() => ":val".to_string(),
-            ":abc/1".to_string() => ":value".to_string()
-        };
-        let map: std::collections::BTreeMap<String, String> = from_edn(&ns_map).unwrap();
-        assert_eq!(map, expected);
-    }
-
-    #[test]
-    fn deser_namespaced_hashmap() {
-        let ns_map = Edn::NamespacedMap(
-            "abc".to_string(),
-            Map::new(map! {
-                "0".to_string() => Edn::Key(":val".to_string()),
-                "1".to_string() => Edn::Key(":value".to_string())
-            }),
-        );
-        let expected = hmap! {
-            ":abc/0".to_string() => ":val".to_string(),
-            ":abc/1".to_string() => ":value".to_string()
-        };
-        let map: std::collections::HashMap<String, String> = from_edn(&ns_map).unwrap();
-        assert_eq!(map, expected);
     }
 
     #[test]
