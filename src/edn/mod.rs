@@ -709,10 +709,7 @@ impl std::str::FromStr for Edn {
 
     /// Parses a `&str` that contains an Edn into `Result<Edn, EdnError>`
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let clean = String::from(s.trim_start());
-        let mut tokens = parse::tokenize(&clean);
-        let edn = parse::parse(tokens.next(), &mut tokens)?;
-        Ok(edn)
+        parse::parse(s)
     }
 }
 
