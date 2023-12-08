@@ -1,10 +1,8 @@
 #[cfg(test)]
 mod tests {
-    use std::collections::{BTreeMap, BTreeSet};
+    use std::collections::BTreeMap;
 
-    #[cfg(feature = "sets")]
-    use edn_rs::Set;
-    use edn_rs::{edn, map, set, Edn, List, Map, Vector};
+    use edn_rs::{edn, map, Edn, List, Map, Vector};
 
     #[test]
     fn parse_primitive_types() {
@@ -27,8 +25,6 @@ mod tests {
     fn parse_empty_structures() {
         assert_eq!(edn!([]), Edn::Vector(Vector::new(Vec::new())));
         assert_eq!(edn!(()), Edn::List(List::new(Vec::new())));
-        #[cfg(feature = "sets")]
-        assert_eq!(edn!(#{}), Edn::Set(Set::new(BTreeSet::new())));
         assert_eq!(edn!({}), Edn::Map(Map::new(BTreeMap::new())));
     }
 
@@ -60,22 +56,6 @@ mod tests {
         ]));
 
         assert_eq!(edn!((1 1.2 3 false :f nil 3/4)), expected);
-    }
-
-    #[test]
-    #[cfg(feature = "sets")]
-    fn parse_simple_set() {
-        let expected = Edn::Set(Set::new(set! {
-            Edn::Int(1),
-            Edn::Double(1.2.into()),
-            Edn::Int(3),
-            Edn::Bool(false),
-            Edn::Key(":f".to_string()),
-            Edn::Nil,
-            Edn::Rational("3/4".to_string())
-        }));
-
-        assert_eq!(edn!(#{1 1.2 3 false :f nil 3/4}), expected);
     }
 
     #[test]
@@ -135,34 +115,6 @@ mod tests {
         ]));
 
         assert_eq!(edn!([ 1 1.2 3 {false :f nil 3/4}]), expected);
-    }
-
-    #[test]
-    #[cfg(feature = "sets")]
-    fn parse_complex_set() {
-        let expected = Edn::Set(Set::new(set! {
-            Edn::Int(1),
-            Edn::Double(1.2.into()),
-            Edn::Int(3),
-            Edn::List(
-                List::new( vec![
-                    Edn::Bool(false),
-                    Edn::Key(":f".to_string()),
-                    Edn::Nil,
-                    Edn::Rational("3/4".to_string())
-            ])),
-            Edn::Vector(
-                Vector::new( vec![
-                    Edn::Bool(true),
-                    Edn::Key(":b".to_string()),
-                    Edn::Rational("12/5".to_string())
-            ]))
-        }));
-
-        assert_eq!(
-            edn!(#{ 1 1.2 3 (false :f nil 3/4) [true :b 12/5]}),
-            expected
-        );
     }
 
     #[test]
