@@ -1,11 +1,9 @@
 #[macro_export(local_inner_macros)]
-#[cfg_attr(
-    feature = "sets",
-    doc = r##"
-/// Macro to parse `EDN` into Rust Spec:
-///  
+///
+/// Macro to parse `EDN` into Rust Spec
+#[cfg_attr(not(feature = "sets"), doc = "```ignore")]
 /// ```rust
-/// #![recursion_limit="512"] //recommended recursion size
+/// #![recursion_limit="512"] // recommended recursion size
 ///
 /// #[macro_use]
 /// extern crate edn_rs;
@@ -62,6 +60,7 @@
 /// ```
 ///
 /// A more complete example:
+#[cfg_attr(not(feature = "sets"), doc = "```ignore")]
 /// ```rust
 /// #[macro_use]
 /// extern crate edn_rs;
@@ -110,8 +109,6 @@
 ///     assert_eq!(edn[3]["false"], Edn::Key(":f".to_string()));
 /// }
 /// ```
-"##
-)]
 ///
 /// Internal implementation is hidden, please look at source.
 macro_rules! edn {
