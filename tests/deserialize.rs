@@ -3,7 +3,15 @@ mod test {
     use std::str::FromStr;
 
     use edn::Error;
-    use edn_rs::{edn, map, Edn, List, Map, Vector};
+    use edn_rs::{edn, from_edn, from_str, hmap, map, Edn, List, Map, Vector};
+
+    #[test]
+    fn unit() {
+        let nil = "nil";
+        let unit: () = from_str(nil).unwrap();
+
+        assert_eq!(unit, ());
+    }
 
     #[test]
     fn parse_empty() {
@@ -48,6 +56,18 @@ mod test {
         assert_eq!(
             Edn::from_str("\"hello world, from      RUST\"").unwrap(),
             Edn::Str("hello world, from      RUST".to_string())
+        );
+    }
+
+    #[test]
+    fn from_str_wordy_str() {
+        let edn = "[\"hello brave new world\"]";
+
+        assert_eq!(
+            Edn::from_str(edn).unwrap(),
+            Edn::Vector(Vector::new(vec![Edn::Str(
+                "hello brave new world".to_string()
+            )]))
         );
     }
 
@@ -130,6 +150,23 @@ mod test {
         assert_eq!(
             Edn::from_str("\"true\"").unwrap(),
             Edn::Str("true".to_string())
+        );
+    }
+
+    #[test]
+    fn from_str_simple_vec() {
+        let edn = "[1 \"2\" 3.3 :b true \\c]";
+
+        assert_eq!(
+            Edn::from_str(edn),
+            Ok(Edn::Vector(Vector::new(vec![
+                Edn::UInt(1),
+                Edn::Str("2".to_string()),
+                Edn::Double(3.3.into()),
+                Edn::Key(":b".to_string()),
+                Edn::Bool(true),
+                Edn::Char('c')
+            ])))
         );
     }
 
@@ -252,6 +289,22 @@ mod test {
     }
 
     #[test]
+    fn from_str_list_with_vec() {
+        let edn = "(1 \"2\" 3.3 :b [true \\c])";
+
+        assert_eq!(
+            Edn::from_str(edn),
+            Ok(Edn::List(List::new(vec![
+                Edn::UInt(1),
+                Edn::Str("2".to_string()),
+                Edn::Double(3.3.into()),
+                Edn::Key(":b".to_string()),
+                Edn::Vector(Vector::new(vec![Edn::Bool(true), Edn::Char('c')]))
+            ])))
+        );
+    }
+
+    #[test]
     fn parse_comment_in_list() {
         assert_eq!(
             Edn::from_str("(1 \"2\"; string in list\n3.3 :b )").unwrap(),
@@ -289,12 +342,64 @@ mod test {
     }
 
     #[test]
+    fn from_str_simple_map() {
+        let edn = "{:a \"2\" :b true :c nil}";
+
+        assert_eq!(
+            Edn::from_str(edn),
+            Ok(Edn::Map(Map::new(
+                map! {":a".to_string() => Edn::Str("2".to_string()),
+                ":b".to_string() => Edn::Bool(true), ":c".to_string() => Edn::Nil}
+            )))
+        );
+    }
+
+    #[test]
+    fn deser_btreemap() {
+        let ns_map = Edn::Map(Map::new(map! {
+            ":a".to_string() => Edn::Vector(Vector::new(vec![Edn::Key(":val".to_string())])),
+            ":b".to_string() => Edn::Vector(Vector::new(vec![Edn::Key(":value".to_string())]))
+        }));
+        let expected = map! {
+            ":a".to_string() => vec![":val".to_string()],
+            ":b".to_string() => vec![":value".to_string()]
+        };
+        let map: std::collections::BTreeMap<String, Vec<String>> = from_edn(&ns_map).unwrap();
+        assert_eq!(map, expected);
+    }
+
+    #[test]
+    fn deser_hashmap() {
+        let ns_map = Edn::Map(Map::new(map! {
+            ":a".to_string() => Edn::Bool(true),
+            ":b".to_string() => Edn::Bool(false)
+        }));
+        let expected = hmap! {
+            ":a".to_string() => true,
+            ":b".to_string() => false
+        };
+        let map: std::collections::HashMap<String, bool> = from_edn(&ns_map).unwrap();
+        assert_eq!(map, expected);
+    }
+
+    #[test]
     fn parse_inst() {
         assert_eq!(
             Edn::from_str("{:date  #inst \"2020-07-16T21:53:14.628-00:00\"}").unwrap(),
             Edn::Map(Map::new(map! {
                 ":date".to_string() => Edn::Inst("2020-07-16T21:53:14.628-00:00".to_string())
             }))
+        );
+    }
+
+    #[test]
+    fn uuid() {
+        let uuid = "#uuid \"af6d8699-f442-4dfd-8b26-37d80543186b\"";
+        let edn: Edn = Edn::from_str(uuid).unwrap();
+
+        assert_eq!(
+            edn,
+            Edn::Uuid("af6d8699-f442-4dfd-8b26-37d80543186b".to_string())
         );
     }
 
@@ -563,6 +668,31 @@ mod test {
     }
 
     #[test]
+    fn test_sym() {
+        let edn: Edn = Edn::from_str("(a b c your-hair!-is+_parsed?)").unwrap();
+        let expected = Edn::List(List::new(vec![
+            Edn::Symbol("a".to_string()),
+            Edn::Symbol("b".to_string()),
+            Edn::Symbol("c".to_string()),
+            Edn::Symbol("your-hair!-is+_parsed?".to_string()),
+        ]));
+        assert_eq!(edn, expected);
+    }
+
+    #[test]
+    fn test_nft() {
+        let t: Edn = Edn::from_str("tTEST").unwrap();
+        let f: Edn = Edn::from_str("fTEST").unwrap();
+        let n: Edn = Edn::from_str("nTEST").unwrap();
+        let err: Edn = Edn::from_str("fTE").unwrap();
+
+        assert_eq!(n, Edn::Symbol("nTEST".to_string()));
+        assert_eq!(f, Edn::Symbol("fTEST".to_string()));
+        assert_eq!(t, Edn::Symbol("tTEST".to_string()));
+        assert_eq!(err, Edn::Symbol("fTE".to_string()));
+    }
+
+    #[test]
     fn parse_tagged_map_anything() {
         let edn = "#domain/model \n;; cool a tagged map!!!\n {1 \"hello\" 3 [[1 2] [2 3] [3,, 4]] #keyword, :4,,, {:cool-tagged #yay ;; what a tag inside a tagged map?!\n {:stuff \"hehe\"}}, 5 #wow {:a, :b}}";
         let res = Edn::from_str(edn).unwrap();
@@ -796,5 +926,17 @@ mod test {
         );
 
         assert!(Edn::from_str("(-foo( ba").is_err());
+    }
+
+    #[test]
+    fn weird_input() {
+        let edn = "{:a]";
+
+        assert_eq!(
+            Edn::from_str(edn),
+            Err(Error::ParseEdn(
+                "Could not identify symbol index".to_string()
+            ))
+        );
     }
 }
