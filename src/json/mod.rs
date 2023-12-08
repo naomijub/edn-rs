@@ -23,8 +23,6 @@ pub fn display_as_json(edn: &Edn) -> String {
         Edn::Rational(r) => format!("{}", rational_to_double(r).unwrap()),
         Edn::Char(c) => format!("'{c}'"),
         Edn::Bool(b) => format!("{b}"),
-        Edn::Inst(inst) => format!("{inst:?}"),
-        Edn::Uuid(uuid) => format!("{uuid:?}"),
         Edn::Nil => String::from("null"),
         Edn::Empty => String::new(),
         Edn::Tagged(tag, content) => format!("{{ \"{}\": {}}}", tag, display_as_json(content)),
@@ -151,21 +149,6 @@ mod test {
     fn chars() {
         assert_eq!(display_as_json(&Edn::Char('e')), String::from("'e'"));
         assert_eq!(display_as_json(&Edn::Char('5')), String::from("'5'"));
-    }
-
-    #[test]
-    fn inst_and_uuid() {
-        let inst = Edn::Inst("2020-09-18T01:16:25.909-00:00".to_string());
-        let uuid = Edn::Uuid("af6d8699-f442-4dfd-8b26-37d80543186b".to_string());
-
-        assert_eq!(
-            display_as_json(&inst),
-            "\"2020-09-18T01:16:25.909-00:00\"".to_string()
-        );
-        assert_eq!(
-            display_as_json(&uuid),
-            "\"af6d8699-f442-4dfd-8b26-37d80543186b\"".to_string()
-        );
     }
 
     #[test]

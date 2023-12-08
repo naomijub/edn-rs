@@ -387,7 +387,9 @@ mod test {
         assert_eq!(
             Edn::from_str("{:date  #inst \"2020-07-16T21:53:14.628-00:00\"}").unwrap(),
             Edn::Map(Map::new(map! {
-                ":date".to_string() => Edn::Inst("2020-07-16T21:53:14.628-00:00".to_string())
+                ":date".to_string() =>
+                    Edn::Tagged("inst".to_string(),
+                                Box::new(Edn::Str("2020-07-16T21:53:14.628-00:00".to_string())))
             }))
         );
     }
@@ -395,11 +397,14 @@ mod test {
     #[test]
     fn uuid() {
         let uuid = "#uuid \"af6d8699-f442-4dfd-8b26-37d80543186b\"";
-        let edn: Edn = Edn::from_str(uuid).unwrap();
+        let edn = Edn::from_str(uuid).unwrap();
 
         assert_eq!(
             edn,
-            Edn::Uuid("af6d8699-f442-4dfd-8b26-37d80543186b".to_string())
+            Edn::Tagged(
+                "uuid".to_string(),
+                Box::new(Edn::Str("af6d8699-f442-4dfd-8b26-37d80543186b".to_string()))
+            )
         );
     }
 

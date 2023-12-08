@@ -374,8 +374,7 @@ fn complex_ok() -> Result<(), EdnError> {
     - [x] List `"(1 :2 \"d\")"`
     - [x] Set `"#{1 2 3}"`
     - [x] Map `"{:a 1 :b 2 }"`
-    - [x] Inst `#inst \"yyyy-mm-ddTHH:MM:ss\"`
-    - [x] UUID `#uuid \"<some-uuid>\"`
+    - [x] Tag `#inst \"yyyy-mm-ddTHH:MM:ss\"`, `#uuid \"<some-uuid>\"` as string data (no custom reader support)
     - [x] Nested structures `"{:a \"2\" :b [true false] :c #{:A {:a :b} nil}}"`
 - [ ] Simple data structures in one another [`edn!`](https://docs.rs/edn-rs/0.17.4/edn_rs/macro.edn.html):
     - [x] Vec in Vec `"[1 2 [:3 \"4\"]]"`
