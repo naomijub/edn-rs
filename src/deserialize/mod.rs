@@ -407,6 +407,3 @@ pub fn from_str<T: Deserialize>(s: &str) -> Result<T, Error> {
 pub fn from_edn<T: Deserialize>(edn: &Edn) -> Result<T, Error> {
     T::deserialize(edn)
 }
-
-#[cfg(test)]
-mod test {}
