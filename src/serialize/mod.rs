@@ -18,18 +18,6 @@ pub trait Serialize {
     fn serialize(self) -> String;
 }
 
-#[doc(hidden)]
-#[must_use]
-pub fn field_names(id: Vec<String>) -> std::collections::HashMap<String, String> {
-    let mut hashmap = std::collections::HashMap::new();
-    for i in id {
-        let mut value = i.replace("___", "/").replace("__", ".").replace('_', "-");
-        value.insert(0, ':');
-        hashmap.insert(i.to_string(), value);
-    }
-    hashmap
-}
-
 macro_rules! ser_primitives {
     ( $( $name:ty ),+ ) => {
         $(

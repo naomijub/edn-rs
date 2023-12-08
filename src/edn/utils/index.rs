@@ -4,13 +4,10 @@ use std::{fmt, ops};
 
 /// This is a Copy of [`Serde_json::index`](https://docs.serde.rs/src/serde_json/value/index.rs.html)
 pub trait Index: private::Sealed {
-    #[doc(hidden)]
     fn index_into<'v>(&self, v: &'v Edn) -> Option<&'v Edn>;
 
-    #[doc(hidden)]
     fn index_into_mut<'v>(&self, v: &'v mut Edn) -> Option<&'v mut Edn>;
 
-    #[doc(hidden)]
     fn index_or_insert<'v>(&self, v: &'v mut Edn) -> &'v mut Edn;
 }
 
