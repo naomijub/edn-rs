@@ -13,6 +13,7 @@ edition = "2021"
 [lints.rust]
 rust_2018_idioms = "warn"
 future-incompatible = "warn"
+unsafe_code = "deny"
 
 [lints.clippy]
 pedantic = "warn"
