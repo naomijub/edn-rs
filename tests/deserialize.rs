@@ -124,6 +124,7 @@ mod test {
 
     #[test]
     fn parse_number() {
+        assert_eq!(Edn::from_str("7").unwrap(), Edn::UInt(7));
         assert_eq!(Edn::from_str("143").unwrap(), Edn::UInt(143));
         assert_eq!(Edn::from_str("-435143").unwrap(), Edn::Int(-435_143));
         assert_eq!(
@@ -855,14 +856,14 @@ mod test {
         assert_eq!(
             Edn::from_str("42invalid123"),
             Err(Error::ParseEdn(
-                "42invalid123 could not be parsed at char count 1 with radix 10".to_string()
+                "42invalid123 could not be parsed with radix 10".to_string()
             ))
         );
 
         assert_eq!(
             Edn::from_str("0xxyz123"),
             Err(Error::ParseEdn(
-                "xyz123 could not be parsed at char count 1 with radix 16".to_string()
+                "xyz123 could not be parsed with radix 16".to_string()
             ))
         );
 
