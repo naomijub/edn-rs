@@ -171,69 +171,62 @@ impl Map {
 
 impl core::fmt::Display for Vector {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(
-            f,
-            "[{}]",
-            self.0
-                .iter()
-                .map(ToString::to_string)
-                .fold(String::new(), |mut acc, i| {
-                    acc.push_str(&i);
-                    acc.push_str(", ");
-                    acc
-                })
-        )
+        write!(f, "[")?;
+        let mut it = self.0.iter().peekable();
+        while let Some(i) = it.next() {
+            if it.peek().is_some() {
+                write!(f, "{i} ")?;
+            } else {
+                write!(f, "{i}")?;
+            }
+        }
+        write!(f, "]")
     }
 }
 
 impl core::fmt::Display for List {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(
-            f,
-            "({})",
-            self.0
-                .iter()
-                .map(ToString::to_string)
-                .fold(String::new(), |mut acc, i| {
-                    acc.push_str(&i);
-                    acc.push_str(", ");
-                    acc
-                })
-        )
+        write!(f, "(")?;
+        let mut it = self.0.iter().peekable();
+        while let Some(i) = it.next() {
+            if it.peek().is_some() {
+                write!(f, "{i} ")?;
+            } else {
+                write!(f, "{i}")?;
+            }
+        }
+        write!(f, ")")
     }
 }
 
 #[cfg(feature = "sets")]
 impl core::fmt::Display for Set {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(
-            f,
-            "#{{{}}}",
-            self.0
-                .iter()
-                .map(ToString::to_string)
-                .fold(String::new(), |mut acc, i| {
-                    acc.push_str(&i);
-                    acc.push_str(", ");
-                    acc
-                })
-        )
+        write!(f, "#{{")?;
+        let mut it = self.0.iter().peekable();
+        while let Some(i) = it.next() {
+            if it.peek().is_some() {
+                write!(f, "{i} ")?;
+            } else {
+                write!(f, "{i}")?;
+            }
+        }
+        write!(f, "}}")
     }
 }
 
 impl core::fmt::Display for Map {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(
-            f,
-            "{{{}}}",
-            self.0
-                .iter()
-                .map(|(k, v)| format!("{k} {v}, "))
-                .fold(String::new(), |mut acc, i| {
-                    acc.push_str(&i);
-                    acc
-                })
-        )
+        write!(f, "{{")?;
+        let mut it = self.0.iter().peekable();
+        while let Some(kv) = it.next() {
+            if it.peek().is_some() {
+                write!(f, "{} {}, ", kv.0, kv.1)?;
+            } else {
+                write!(f, "{} {}", kv.0, kv.1)?;
+            }
+        }
+        write!(f, "}}")
     }
 }
 
@@ -253,7 +246,7 @@ impl core::fmt::Display for Edn {
             Self::Double(d) => format!("{d}"),
             Self::Rational(r) => r.to_string(),
             Self::Bool(b) => format!("{b}"),
-            Self::Char(c) => format!("{c}"),
+            Self::Char(c) => format!("\\{c}"),
             Self::Nil => String::from("nil"),
             Self::Empty => String::new(),
             Self::Tagged(tag, edn) => format!("#{tag} {edn}"),
@@ -536,7 +529,7 @@ impl Edn {
     /// use edn_rs::edn::{Edn, Vector};
     ///
     /// let edn = Edn::Vector(Vector::new(vec![Edn::Int(5), Edn::Int(6), Edn::Int(7)]));
-    /// let expected = "[5, 6, 7, ]";
+    /// let expected = "[5 6 7]";
     ///
     /// assert_eq!(edn.to_string(), expected);
     /// ```
@@ -877,7 +870,7 @@ mod test {
             map! {":a".to_string() => Edn::Key(":something".to_string()),
             ":b".to_string() => Edn::Bool(false), ":c".to_string() => Edn::Nil},
         ));
-        assert_eq!(edn.to_string(), "{:a :something, :b false, :c nil, }");
+        assert_eq!(edn.to_string(), "{:a :something, :b false, :c nil}");
     }
 
     #[test]
