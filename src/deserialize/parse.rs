@@ -205,11 +205,6 @@ fn num_den_from_slice(slice: impl AsRef<str>) -> Option<(i64, u64)> {
 }
 
 fn read_number(n: char, chars: &mut iter::Enumerate<core::str::Chars<'_>>) -> Result<Edn, Error> {
-    let i = chars
-        .clone()
-        .next()
-        .ok_or_else(|| Error::ParseEdn("Could not identify symbol index".to_string()))?
-        .0;
     let c_len = chars
         .clone()
         .take_while(|(_, c)| !c.is_whitespace() && !DELIMITERS.contains(c))
@@ -286,7 +281,7 @@ fn read_number(n: char, chars: &mut iter::Enumerate<core::str::Chars<'_>>) -> Re
             read_symbol(n.next().unwrap_or(' '), &mut n.enumerate())
         }
         _ => Err(Error::ParseEdn(format!(
-            "{number} could not be parsed at char count {i} with radix {radix}"
+            "{number} could not be parsed with radix {radix}"
         ))),
     }
 }
