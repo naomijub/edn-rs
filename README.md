@@ -384,6 +384,7 @@ fn complex_ok() -> Result<(), EdnError> {
     - [x] nil `""`
     - [x] String `"\"string\""`
     - [x] Numbers `"324352"`, `"3442.234"`, `"3/4"`
+    - [x] Arbitrary Numbers `"4650481213195981094N"`, `"-6.731982E-96M"`. These are stored as strings and not checked for correctness
     - [x] Keywords `:a`
     - [x] Symbol `sym-bol-s` with a maximum of 200 chars
     - [x] Vector `"[1 :2 \"d\"]"`

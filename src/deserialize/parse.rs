@@ -270,6 +270,8 @@ fn read_number(n: char, chars: &mut iter::Enumerate<core::str::Chars<'_>>) -> Re
             let mut n = n.chars();
             read_symbol(n.next().unwrap_or(' '), &mut n.enumerate())
         }
+        n if n.to_uppercase().ends_with('N') => Ok(Edn::ArbitraryInt(n)),
+        n if n.to_uppercase().ends_with('M') => Ok(Edn::ArbitraryFloat(n)),
         _ => Err(Error::ParseEdn(format!(
             "{number} could not be parsed at char count {i} with radix {radix}"
         ))),

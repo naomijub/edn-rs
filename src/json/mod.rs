@@ -19,6 +19,8 @@ pub fn display_as_json(edn: &Edn) -> String {
         Edn::Symbol(s) | Edn::Str(s) => format!("{s:?}"),
         Edn::Int(n) => format!("{n}"),
         Edn::UInt(n) => format!("{n}"),
+        Edn::ArbitraryInt(i) => format!("{i:?}"),
+        Edn::ArbitraryFloat(f) => format!("{f:?}"),
         Edn::Double(n) => {
             // Rust formats an f64 with a value of 2^5 as "32".
             // We do this to ensure all precision is printed if available, but still adds a decimal point for json.

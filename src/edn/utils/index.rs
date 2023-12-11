@@ -143,6 +143,8 @@ impl<'a> fmt::Display for Type<'a> {
             Edn::Nil => formatter.write_str("null"),
             Edn::Bool(_) => formatter.write_str("boolean"),
             Edn::Int(_) | Edn::UInt(_) => formatter.write_str("integer"),
+            Edn::ArbitraryInt(_) => formatter.write_str("arbitraryint"),
+            Edn::ArbitraryFloat(_) => formatter.write_str("arbitraryfloat"),
             Edn::Str(_) => formatter.write_str("string"),
             Edn::Vector(_) => formatter.write_str("vector"),
             #[cfg(feature = "sets")]
