@@ -161,26 +161,6 @@ fn read_tagged(chars: &mut std::iter::Enumerate<std::str::Chars<'_>>) -> Result<
         .map(|c| c.1)
         .collect::<String>();
 
-    if tag.starts_with("inst") {
-        return Ok(Edn::Inst(
-            chars
-                .skip_while(|c| c.1 == '\"' || c.1.is_whitespace())
-                .take_while(|c| c.1 != '\"')
-                .map(|c| c.1)
-                .collect::<String>(),
-        ));
-    }
-
-    if tag.starts_with("uuid") {
-        return Ok(Edn::Uuid(
-            chars
-                .skip_while(|c| c.1 == '\"' || c.1.is_whitespace())
-                .take_while(|c| c.1 != '\"')
-                .map(|c| c.1)
-                .collect::<String>(),
-        ));
-    }
-
     Ok(Edn::Tagged(
         tag,
         Box::new(parse_consuming(chars.next(), chars)?),

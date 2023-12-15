@@ -136,7 +136,7 @@ mod test {
                 Edn::Key(":b".to_string()),
                 Edn::Map(Map::new(map! {
                     ":c".to_string() => Edn::Key(":d".to_string()),
-                    ":date".to_string() => Edn::Inst("2020-07-16T21:53:14.628-00:00".to_string()),
+                    ":date".to_string() => Edn::Tagged("inst".to_string(), Box::new(Edn::Str("2020-07-16T21:53:14.628-00:00".to_string()))),
                     "::c".to_string() => Edn::Key("::d".to_string())
                 })),
                 Edn::Nil
