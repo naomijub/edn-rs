@@ -139,7 +139,7 @@ fn read_symbol(a: char, chars: &mut iter::Enumerate<core::str::Chars<'_>>) -> Re
     let c_len = chars
         .clone()
         .enumerate()
-        .take_while(|&(i, c)| i <= 200 && !c.1.is_whitespace() && !DELIMITERS.contains(&c.1))
+        .take_while(|&(_, c)| !c.1.is_whitespace() && !DELIMITERS.contains(&c.1))
         .count();
     let i = chars
         .clone()
@@ -275,7 +275,7 @@ fn read_char(chars: &mut iter::Enumerate<core::str::Chars<'_>>) -> Result<Edn, E
     let element = chars
         .clone()
         .enumerate()
-        .take_while(|&(i, c)| i <= 200 && !c.1.is_whitespace())
+        .take_while(|&(_, c)| !c.1.is_whitespace())
         .map(|(_, c)| c.1)
         .collect::<String>();
 
