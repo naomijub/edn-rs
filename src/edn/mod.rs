@@ -230,6 +230,16 @@ impl core::fmt::Display for Map {
     }
 }
 
+fn char_to_edn(c: char) -> String {
+    match c {
+        '\n' => "\\newline".to_string(),
+        '\r' => "\\return".to_string(),
+        ' ' => "\\space".to_string(),
+        '\t' => "\\tab".to_string(),
+        _ => format!("\\{c}"),
+    }
+}
+
 impl core::fmt::Display for Edn {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let text = match self {
@@ -246,7 +256,7 @@ impl core::fmt::Display for Edn {
             Self::Double(d) => format!("{d}"),
             Self::Rational((n, d)) => format!("{n}/{d}"),
             Self::Bool(b) => format!("{b}"),
-            Self::Char(c) => format!("\\{c}"),
+            Self::Char(c) => char_to_edn(*c),
             Self::Nil => String::from("nil"),
             Self::Empty => String::new(),
             Self::Tagged(tag, edn) => format!("#{tag} {edn}"),
