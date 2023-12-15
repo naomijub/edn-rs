@@ -292,16 +292,43 @@ fn read_number(n: char, chars: &mut iter::Enumerate<core::str::Chars<'_>>) -> Re
 }
 
 fn read_char(chars: &mut iter::Enumerate<core::str::Chars<'_>>) -> Result<Edn, Error> {
-    let i = chars
+    let element = chars
         .clone()
-        .next()
-        .ok_or_else(|| Error::ParseEdn("Could not identify symbol index".to_string()))?
-        .0;
-    let c = chars.next();
-    c.ok_or(format!("{c:?} could not be parsed at char count {i}"))
-        .map(|c| c.1)
-        .map(Edn::Char)
-        .map_err(Error::ParseEdn)
+        .enumerate()
+        .take_while(|&(i, c)| i <= 200 && !c.1.is_whitespace())
+        .map(|(_, c)| c.1)
+        .collect::<String>();
+
+    let mut consume_chars = |n| {
+        // We need to map/collect to consume out of the Enumerate
+        let _ = chars.take(n).map(|c| c.1).collect::<String>();
+    };
+
+    match element {
+        _ if element.starts_with("newline") => {
+            consume_chars(7);
+            Ok(Edn::Char('\n'))
+        }
+        _ if element.starts_with("return") => {
+            consume_chars(6);
+            Ok(Edn::Char('\r'))
+        }
+        _ if element.starts_with("tab") => {
+            consume_chars(3);
+            Ok(Edn::Char('\t'))
+        }
+        _ if element.starts_with("space") => {
+            consume_chars(5);
+            Ok(Edn::Char(' '))
+        }
+        c if !c.is_empty() => {
+            consume_chars(1);
+            Ok(Edn::Char(c.chars().next().unwrap()))
+        }
+        _ => Err(Error::ParseEdn(format!(
+            "{element:?} could not be parsed as a symbol"
+        ))),
+    }
 }
 
 fn read_bool_or_nil(
