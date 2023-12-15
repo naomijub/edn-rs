@@ -18,6 +18,8 @@
   cargo-fmt                    {:doc  "Checks cargo fmt"
                                 :task (shell "cargo fmt --check")}
   cargo-clippy                 {:doc  "Runs cargo clippy"
-                                :task (shell "cargo test")}
+                                :task (do
+                                        (shell "cargo clippy --all-features -- -W future-incompatible -W rust_2018_idioms -W clippy::all -W clippy::pedantic -W clippy::nursery --deny warnings")
+                                        (shell "cargo clippy --no-default-features -- -W future-incompatible -W rust_2018_idioms -W clippy::all -W clippy::pedantic -W clippy::nursery --deny warnings"))}
   test                         {:doc     "Runs all tests and checks"
                                 :depends [cargo-test cargo-fmt cargo-clippy]}}}
