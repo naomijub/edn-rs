@@ -385,7 +385,7 @@ fn complex_ok() -> Result<(), EdnError> {
     - [x] String `"\"string\""`
     - [x] Numbers `"324352"`, `"3442.234"`, `"3/4"`
     - [x] Keywords `:a`
-    - [x] Symbol `sym-bol-s` with a maximum of 200 chars
+    - [x] Symbol `sym-bol-s`
     - [x] Vector `"[1 :2 \"d\"]"`
     - [x] List `"(1 :2 \"d\")"`
     - [x] Set `"#{1 2 3}"`
