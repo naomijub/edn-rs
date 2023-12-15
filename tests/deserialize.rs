@@ -948,4 +948,46 @@ mod test {
             ))
         );
     }
+
+    #[test]
+    fn special_chars() {
+        let edn = "[\\space \\@ \\` \\tab \\return \\newline \\# \\% \\' \\g \\( \\* \\j \\+ \\, \\l \\- \\. \\/ \\0 \\2 \\r \\: \\; \\< \\\\ \\] \\} \\~ \\? \\_]";
+
+        assert_eq!(
+            Edn::from_str(edn).unwrap(),
+            Edn::Vector(Vector::new(vec![
+                Edn::Char(' '),
+                Edn::Char('@'),
+                Edn::Char('`'),
+                Edn::Char('\t'),
+                Edn::Char('\r'),
+                Edn::Char('\n'),
+                Edn::Char('#'),
+                Edn::Char('%'),
+                Edn::Char('\''),
+                Edn::Char('g'),
+                Edn::Char('('),
+                Edn::Char('*'),
+                Edn::Char('j'),
+                Edn::Char('+'),
+                Edn::Char(','),
+                Edn::Char('l'),
+                Edn::Char('-'),
+                Edn::Char('.'),
+                Edn::Char('/'),
+                Edn::Char('0'),
+                Edn::Char('2'),
+                Edn::Char('r'),
+                Edn::Char(':'),
+                Edn::Char(';'),
+                Edn::Char('<'),
+                Edn::Char('\\'),
+                Edn::Char(']'),
+                Edn::Char('}'),
+                Edn::Char('~'),
+                Edn::Char('?'),
+                Edn::Char('_'),
+            ]))
+        );
+    }
 }
