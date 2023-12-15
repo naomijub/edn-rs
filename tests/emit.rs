@@ -25,5 +25,8 @@ mod tests {
     fn char_formatting() {
         let edn = edn_to_string_unwrap("(\\b \\g \\m)");
         assert_eq!(edn, "(\\b \\g \\m)");
+
+        assert_eq!(edn_to_string_unwrap("[\\space \\@ \\` \\tab \\return \\newline \\# \\% \\' \\g \\( \\* \\j \\+ \\, \\l \\- \\. \\/ \\0 \\2 \\r \\: \\; \\< \\\\ \\] \\} \\~ \\? \\_]"),
+        "[\\space \\@ \\` \\tab \\return \\newline \\# \\% \\' \\g \\( \\* \\j \\+ \\, \\l \\- \\. \\/ \\0 \\2 \\r \\: \\; \\< \\\\ \\] \\} \\~ \\? \\_]")
     }
 }
