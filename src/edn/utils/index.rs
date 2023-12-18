@@ -20,6 +20,7 @@ impl Index for u64 {
             return match *v {
                 Edn::Vector(ref vec) => vec.0.get(idx),
                 Edn::List(ref vec) => vec.0.get(idx),
+                Edn::Map(ref map) => map.0.get(&self.to_string()),
                 _ => None,
             };
         }
@@ -30,6 +31,7 @@ impl Index for u64 {
             return match *v {
                 Edn::Vector(ref mut vec) => vec.0.get_mut(idx),
                 Edn::List(ref mut vec) => vec.0.get_mut(idx),
+                Edn::Map(ref mut map) => map.0.get_mut(&self.to_string()),
                 _ => None,
             };
         }
