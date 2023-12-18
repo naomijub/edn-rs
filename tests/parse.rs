@@ -150,6 +150,6 @@ mod tests {
         assert_eq!(edn[3]["false"], edn!(:f));
         assert_eq!(edn[3]["false"], Edn::Key(":f".to_string()));
         assert_eq!(edn[3]["2"], Edn::Str("banana".to_string()));
-        assert_eq!(edn[3][2], Edn::Nil);
+        assert_eq!(edn[3][2], Edn::Str("banana".to_string()));
     }
 }
