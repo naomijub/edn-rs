@@ -23,7 +23,7 @@ fn edn_str() -> String {
                 :role :adm
             }
             {
-                :name :otavio
+                :name :eva
                 :role :contributor
             }
             {

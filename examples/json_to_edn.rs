@@ -14,7 +14,7 @@ fn complex_json() {
             "people": 
             [
                 {
-                    "name": "otavio",
+                    "name": "eva",
                     "age": 22
                 },
                 {
@@ -27,7 +27,7 @@ fn complex_json() {
             "brain": null
         }"#,
     );
-    let edn = "{ :people  [ { :name \"otavio\", :age 22 }, { :name \"Julia\", :age 32.0 } ], :country-or-origin \"Brazil\", :queerentener true, :brain nil }";
+    let edn = "{ :people  [ { :name \"eva\", :age 22 }, { :name \"Julia\", :age 32.0 } ], :country-or-origin \"Brazil\", :queerentener true, :brain nil }";
 
     assert_eq!(
         edn,
