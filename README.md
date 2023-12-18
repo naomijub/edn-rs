@@ -271,7 +271,7 @@ fn main() {
             "people": 
             [
                 {
-                    "name": "otavio",
+                    "name": "eva",
                     "age": 22
                 },
                 {
@@ -285,7 +285,7 @@ fn main() {
         }"#);
 
     println!("{:?}", json_to_edn(complex_json.clone()).replace("  ", "").replace("\n", " "));
-    // "{ :people  [ { :name \"otavio\", :age 22 }, { :name \"Julia\", :age 32.0 } ], :country-or-origin \"Brazil\", :queerentener true, :brain nil }"
+    // "{ :people  [ { :name \"eva\", :age 22 }, { :name \"Julia\", :age 32.0 } ], :country-or-origin \"Brazil\", :queerentener true, :brain nil }"
 }
  ```
 
@@ -297,7 +297,7 @@ use std::str::FromStr;
 fn complex_json() {
     let edn = "{ 
         :people-list [ 
-            { :first-name \"otavio\", :age 22 }, 
+            { :first-name \"eva\", :age 22 }, 
             { :first-name \"Julia\", :age 32.0 } 
         ], 
         :country-or-origin \"Brazil\", 
@@ -309,7 +309,7 @@ fn complex_json() {
         "{\"brain\": null, 
           \"countryOrOrigin\": \"Brazil\", 
           \"peopleList\": [
-              {\"age\": 22, \"firstName\": \"otavio\"}, 
+              {\"age\": 22, \"firstName\": \"eva\"}, 
               {\"age\": 32.0, \"firstName\": \"Julia\"}
             ], 
           \"queerentener\": true}",
