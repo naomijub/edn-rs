@@ -184,7 +184,7 @@ where
 }
 
 // Primitive Types
-ser_primitives![i8, i16, i32, i64, u8, u16, u32, u64, f32, f64, bool];
+ser_primitives![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool];
 
 impl Serialize for () {
     fn serialize(self) -> String {
@@ -311,11 +311,13 @@ mod test {
         assert_eq!(8i32.serialize(), String::from("8"));
         assert_eq!(8i64.serialize(), String::from("8"));
         assert_eq!(8i64.serialize(), String::from("8"));
+        assert_eq!(8isize.serialize(), String::from("8"));
         assert_eq!(128u8.serialize(), String::from("128"));
         assert_eq!(128u16.serialize(), String::from("128"));
         assert_eq!(128u32.serialize(), String::from("128"));
         assert_eq!(128u64.serialize(), String::from("128"));
         assert_eq!(128u64.serialize(), String::from("128"));
+        assert_eq!(128usize.serialize(), String::from("128"));
         assert_eq!(true.serialize(), String::from("true"));
     }
 
