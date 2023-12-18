@@ -117,7 +117,7 @@ macro_rules! impl_deserialize_int {
     };
 }
 
-impl_deserialize_int!(i8, i16, i32, i64);
+impl_deserialize_int!(i8, i16, i32, i64, isize);
 
 macro_rules! impl_deserialize_uint {
     ( $( $name:ty ),+ ) => {
@@ -134,7 +134,7 @@ macro_rules! impl_deserialize_uint {
     };
 }
 
-impl_deserialize_uint!(u8, u16, u32, u64);
+impl_deserialize_uint!(u8, u16, u32, u64, usize);
 
 impl Deserialize for bool {
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
