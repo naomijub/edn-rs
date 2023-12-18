@@ -1,10 +1,10 @@
 # edn-rs
-[![Build Status](https://travis-ci.org/naomijub/edn-rs.svg?branch=master)](https://travis-ci.org/naomijub/edn-rs) [![codecov](https://codecov.io/gh/naomijub/edn-rs/branch/master/graph/badge.svg?token=4VMVTZTN8A)](https://codecov.io/gh/naomijub/edn-rs)
+[![Build Status](https://travis-ci.org/edn-rs/edn-rs.svg?branch=master)](https://travis-ci.org/edn-rs/edn-rs) [![codecov](https://codecov.io/gh/edn-rs/edn-rs/branch/master/graph/badge.svg?token=4VMVTZTN8A)](https://codecov.io/gh/edn-rs/edn-rs)
 
 Crate to parse and emit EDN 
 * **This lib does not make effort to conform the EDN received to EDN Spec.** The lib that generated this EDN should be responsible for this. For more information on Edn Spec please visit: https://github.com/edn-format/edn.
 * MSRV (minimal supported rust version) is stable minus 2 versions. Once stable (1.0.0), the plan is to indefinitely maintain the MSRV.
-* Library is almost stable (1.0.0), just missing [issue-4](https://github.com/naomijub/edn-rs/issues/4) to reach feature stability and possible bugfix for [equality rules](https://github.com/naomijub/edn-rs/issues/95). **No breaking changes with default features are predicted**.
+* Library is almost stable (1.0.0), just missing [issue-4](https://github.com/edn-rs/edn-rs/issues/4) to reach feature stability and possible bugfix for [equality rules](https://github.com/edn-rs/edn-rs/issues/95). **No breaking changes with default features are predicted**.
 
 Our **MTTA** (Mean time to acknowledge) is around `one day`; 
 <!---->
@@ -393,7 +393,7 @@ fn complex_ok() -> Result<(), EdnError> {
 - [x] trait Serialize struct to EDN
 
 ## `edn-derive`
-`edn-derive` is a proc-macro crate to (De)serialize Edn values, currently it is **beta** and it can be found at [`crates.io`](https://crates.io/crates/edn-derive) or at [`github`](https://github.com/otaviopace/edn-derive).
+`edn-derive` is a proc-macro crate to (De)serialize Edn values, currently it is **beta** and it can be found at [`crates.io`](https://crates.io/crates/edn-derive) or at [`github`](https://github.com/edn-rs/edn-derive).
 
 ### Usage
 Just add to your `Cargo.toml` the following:
