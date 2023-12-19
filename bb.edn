@@ -24,4 +24,4 @@
   clippy                       {:doc     "Runs cargo clippy"
                                 :depends [cargo-clippy-all-features cargo-clippy-no-sets-std cargo-clippy-no-std]}
   test                         {:doc     "Runs all tests and checks"
-                                :depends [cargo-test cargo-fmt cargo-clippy]}}}
+                                :depends [cargo-test cargo-fmt clippy]}}}
