@@ -2,7 +2,6 @@
  {clean                        {:doc      "Removes target folder"
                                 :requires ([babashka.fs :as fs])
                                 :task     (fs/delete-tree "target")}
-
   test_lib_features            (shell "cargo test --all-features --no-fail-fast")
   test_lib_no_default_features (shell "cargo test --no-default-features --no-fail-fast")
   example_fast                 (shell "cargo test --examples --no-fail-fast")
@@ -10,16 +9,19 @@
   example_edn_to_json          (shell "cargo test --example edn_to_json --features \"json\"")
   example_async                (shell "cargo run --example async")
   example_no_sets              (shell "cargo run --example struct_from_str --no-default-features")
-
   cargo-test                   {:doc     "Runs all cargo tests"
                                 :depends [test_lib_features test_lib_no_default_features example_fast
                                           example_json_to_edn example_edn_to_json example_edn_to_json
                                           example_async example_no_sets]}
   cargo-fmt                    {:doc  "Checks cargo fmt"
                                 :task (shell "cargo fmt --check")}
-  cargo-clippy                 {:doc  "Runs cargo clippy"
-                                :task (do
-                                        (shell "cargo clippy --all-features -- -W future-incompatible -W rust_2018_idioms -W clippy::all -W clippy::pedantic -W clippy::nursery --deny warnings")
-                                        (shell "cargo clippy --no-default-features -- -W future-incompatible -W rust_2018_idioms -W clippy::all -W clippy::pedantic -W clippy::nursery --deny warnings"))}
+  cargo-clippy-all-features    {:doc  "Cargo clippy with all features"
+                                :task (shell "cargo clippy --all-features -- -W future-incompatible -W rust_2018_idioms -W clippy::all -W clippy::pedantic -W clippy::nursery --deny warnings")}
+  cargo-clippy-no-sets-json    {:doc  "Cargo clippy with json feature but no default features"
+                                :task (shell "cargo clippy --features json --no-default-features -- -W future-incompatible -W rust_2018_idioms -W clippy::all -W clippy::pedantic -W clippy::nursery --deny warnings")}
+  cargo-clippy-no-defaults     {:doc  "Cargo clippy with no default features"
+                                :task (shell "cargo clippy --features json --no-default-features -- -W future-incompatible -W rust_2018_idioms -W clippy::all -W clippy::pedantic -W clippy::nursery --deny warnings")}
+  clippy                       {:doc     "Runs all variations of cargo clippy"
+                                :depends [cargo-clippy-all-features cargo-clippy-no-sets-json cargo-clippy-no-defaults]}
   test                         {:doc     "Runs all tests and checks"
-                                :depends [cargo-test cargo-fmt cargo-clippy]}}}
+                                :depends [cargo-test cargo-fmt clippy]}}}
