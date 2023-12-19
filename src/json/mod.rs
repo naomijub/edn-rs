@@ -4,6 +4,7 @@ use crate::edn::{rational_to_double, Edn};
 pub fn display_as_json(edn: &Edn) -> String {
     match edn {
         Edn::Vector(v) => vec_to_json(&v.clone().to_vec()),
+        #[cfg(feature = "sets")]
         Edn::Set(s) => set_to_json_vec(&s.clone().to_set()),
         Edn::Map(map) => map_to_json(&map.clone().to_map()),
         Edn::List(l) => vec_to_json(&l.clone().to_vec()),
@@ -68,6 +69,7 @@ fn vec_to_json(vec: &[Edn]) -> String {
     s
 }
 
+#[cfg(feature = "sets")]
 fn set_to_json_vec(set: &std::collections::BTreeSet<Edn>) -> String {
     let set_str = set
         .iter()
