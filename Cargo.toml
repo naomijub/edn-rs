@@ -1,12 +1,13 @@
+workspace = { members = ["no_std_rp2040"] }
 [package]
 name = "edn-rs"
 version = "0.17.4"
-authors = ["Julia Naomi <jnboeira@outlook.com>",  "Eva Pace <eba.pachi@gmail.com>"]
+authors = ["Julia Naomi <jnboeira@outlook.com>",  "Eva Pace <eba.pachi@gmail.com>", "Kevin Nakamura <grinkers@grinkers.net>"]
 description = "Crate to parse and emit EDN"
 readme = "README.md"
 documentation = "https://docs.rs/edn-rs/"
 repository = "https://github.com/edn-rs/edn-rs"
-keywords = ["EDN"]
+keywords = ["EDN", "no_std"]
 license = "MIT"
 edition = "2021"
 
@@ -20,9 +21,10 @@ pedantic = "warn"
 nursery = "warn"
 
 [features]
-default = ["sets"]
+default = ["sets", "std"]
 json = ["regex"]
 sets = ["ordered-float"]
+std = []
 
 [dependencies]
 regex = { version = "1", optional = true }

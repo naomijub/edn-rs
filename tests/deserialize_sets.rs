@@ -1,8 +1,10 @@
 #[cfg(feature = "sets")]
 #[cfg(test)]
 mod test {
-    use std::collections::BTreeSet;
-    use std::str::FromStr;
+    extern crate alloc;
+
+    use alloc::collections::BTreeSet;
+    use core::str::FromStr;
 
     use edn::{Error, List, Vector};
     use edn_rs::{edn, from_edn, from_str, hset, map, set, Edn, Map, Set};
@@ -216,6 +218,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "std")]
     fn deser_hashset() {
         use ordered_float::OrderedFloat;
 

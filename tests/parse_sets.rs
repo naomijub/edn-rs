@@ -1,7 +1,9 @@
 #[cfg(feature = "sets")]
 #[cfg(test)]
 mod tests {
-    use std::collections::{BTreeMap, BTreeSet};
+    extern crate alloc;
+
+    use alloc::collections::{BTreeMap, BTreeSet};
 
     use edn_rs::{edn, set, Edn, List, Map, Set, Vector};
 

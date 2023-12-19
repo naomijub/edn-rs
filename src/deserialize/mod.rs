@@ -1,9 +1,18 @@
-use crate::edn::{Edn, Error};
-use std::collections::{BTreeMap, HashMap};
+use alloc::collections::BTreeMap;
 #[cfg(feature = "sets")]
-use std::collections::{BTreeSet, HashSet};
-use std::convert::TryFrom;
-use std::str::FromStr;
+use alloc::collections::BTreeSet;
+use alloc::format;
+use alloc::string::{String, ToString};
+use alloc::vec::Vec;
+use core::any;
+use core::convert::{Into, TryFrom};
+use core::str::FromStr;
+#[cfg(feature = "std")]
+use std::collections::HashMap;
+#[cfg(all(feature = "sets", feature = "std"))]
+use std::collections::HashSet;
+
+use crate::edn::{Edn, Error};
 
 pub mod parse;
 
@@ -81,7 +90,7 @@ impl Deserialize for OrderedFloat<f64> {
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
         edn.to_float()
             .ok_or_else(|| build_deserialize_error(edn, "edn_rs::Double"))
-            .map(std::convert::Into::into)
+            .map(Into::into)
     }
 }
 
@@ -89,7 +98,7 @@ impl Deserialize for f64 {
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
         edn.to_float()
             .ok_or_else(|| build_deserialize_error(edn, "edn_rs::Double"))
-            .map(std::convert::Into::into)
+            .map(Into::into)
     }
 }
 
@@ -178,11 +187,12 @@ where
                 .ok_or_else(|| Error::Iter(format!("Could not create iter from {edn:?}")))?
                 .map(|e| Deserialize::deserialize(e))
                 .collect::<Result<Self, Error>>()?),
-            _ => Err(build_deserialize_error(edn, std::any::type_name::<Self>())),
+            _ => Err(build_deserialize_error(edn, any::type_name::<Self>())),
         }
     }
 }
 
+#[cfg(feature = "std")]
 impl<T, H> Deserialize for HashMap<String, T, H>
 where
     T: Deserialize,
@@ -205,7 +215,7 @@ where
                     ))
                 })
                 .collect::<Result<Self, Error>>(),
-            _ => Err(build_deserialize_error(edn, std::any::type_name::<Self>())),
+            _ => Err(build_deserialize_error(edn, any::type_name::<Self>())),
         }
     }
 }
@@ -231,7 +241,7 @@ where
                     ))
                 })
                 .collect::<Result<Self, Error>>(),
-            _ => Err(build_deserialize_error(edn, std::any::type_name::<Self>())),
+            _ => Err(build_deserialize_error(edn, any::type_name::<Self>())),
         }
     }
 }
@@ -256,7 +266,7 @@ where
                     })
                 })
                 .collect::<Result<Self, Error>>(),
-            _ => Err(build_deserialize_error(edn, std::any::type_name::<Self>())),
+            _ => Err(build_deserialize_error(edn, any::type_name::<Self>())),
         }
     }
 }
@@ -280,7 +290,7 @@ where
                     })
                 })
                 .collect::<Result<Self, Error>>(),
-            _ => Err(build_deserialize_error(edn, std::any::type_name::<Self>())),
+            _ => Err(build_deserialize_error(edn, any::type_name::<Self>())),
         }
     }
 }

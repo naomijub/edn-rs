@@ -1,3 +1,8 @@
+use alloc::collections::{BTreeMap, BTreeSet, LinkedList};
+use alloc::format;
+use alloc::string::{String, ToString};
+use alloc::vec::Vec;
+
 /// Trait that allows you to implement Serialization for each type of your choice.
 /// Example:
 /// ```rust
@@ -48,6 +53,7 @@ where
     }
 }
 
+#[cfg(feature = "std")]
 impl<T, H: std::hash::BuildHasher> Serialize for std::collections::HashSet<T, H>
 where
     T: Serialize,
@@ -66,7 +72,7 @@ where
     }
 }
 
-impl<T> Serialize for std::collections::BTreeSet<T>
+impl<T> Serialize for BTreeSet<T>
 where
     T: Serialize,
 {
@@ -84,7 +90,7 @@ where
     }
 }
 
-impl<T> Serialize for std::collections::LinkedList<T>
+impl<T> Serialize for LinkedList<T>
 where
     T: Serialize,
 {
@@ -101,6 +107,7 @@ where
     }
 }
 
+#[cfg(feature = "std")]
 impl<T, H: std::hash::BuildHasher> Serialize for std::collections::HashMap<String, T, H>
 where
     T: Serialize,
@@ -118,6 +125,7 @@ where
     }
 }
 
+#[cfg(feature = "std")]
 impl<T, H: ::std::hash::BuildHasher> Serialize for std::collections::HashMap<&str, T, H>
 where
     T: Serialize,
@@ -135,7 +143,7 @@ where
     }
 }
 
-impl<T> Serialize for std::collections::BTreeMap<String, T>
+impl<T> Serialize for BTreeMap<String, T>
 where
     T: Serialize,
 {
@@ -152,7 +160,7 @@ where
     }
 }
 
-impl<T> Serialize for std::collections::BTreeMap<&str, T>
+impl<T> Serialize for BTreeMap<&str, T>
 where
     T: Serialize,
 {
@@ -283,6 +291,9 @@ impl<A: Serialize, B: Serialize, C: Serialize, D: Serialize, E: Serialize, F: Se
 
 #[cfg(test)]
 mod test {
+    use alloc::collections::BTreeSet;
+    use alloc::vec;
+
     use super::*;
 
     #[test]
@@ -347,74 +358,7 @@ mod test {
 
     #[test]
     fn hashsets() {
-        use std::collections::HashSet;
-
-        let set_i8 = (vec![3i8, 12i8, 24i8, 72i8]
-            .into_iter()
-            .collect::<HashSet<i8>>())
-        .serialize();
-        let set_u16 = (vec![3u16, 12u16, 24u16, 72u16]
-            .into_iter()
-            .collect::<HashSet<u16>>())
-        .serialize();
-        let set_i64 = (vec![3i64, 12i64, 24i64, 72i64]
-            .into_iter()
-            .collect::<HashSet<i64>>())
-        .serialize();
-        let set_bool = (vec![true, false].into_iter().collect::<HashSet<bool>>()).serialize();
-        let set_str = (vec!["aba", "cate", "azul"]
-            .into_iter()
-            .collect::<HashSet<&str>>())
-        .serialize();
-        let set_string = (vec!["aba".to_string(), "cate".to_string(), "azul".to_string()]
-            .into_iter()
-            .collect::<HashSet<String>>())
-        .serialize();
-
-        assert!(
-            set_i8.contains("#{")
-                && set_i8.contains(',')
-                && set_i8.contains('3')
-                && set_i8.contains('}')
-        );
-        assert!(
-            set_u16.contains("#{")
-                && set_u16.contains(',')
-                && set_u16.contains('3')
-                && set_u16.contains('}')
-        );
-        assert!(
-            set_i64.contains("#{")
-                && set_i64.contains(',')
-                && set_i64.contains('3')
-                && set_i64.contains('}')
-        );
-        assert!(
-            set_bool.contains("#{")
-                && set_bool.contains(',')
-                && set_bool.contains("true")
-                && set_bool.contains("false")
-                && set_bool.contains('}')
-        );
-        assert!(
-            set_str.contains("#{")
-                && set_str.contains(',')
-                && set_str.contains("\"aba\"")
-                && set_str.contains("\"cate\"")
-                && set_str.contains('}')
-        );
-        assert!(
-            set_string.contains("#{")
-                && set_string.contains(',')
-                && set_string.contains("\"aba\"")
-                && set_string.contains("\"cate\"")
-                && set_string.contains('}')
-        );
-    }
-
-    #[test]
-    fn btreesets() {
-        use std::collections::BTreeSet;
+        use alloc::collections::BTreeSet;
 
         let set_i8 = (vec![3i8, 12i8, 24i8, 72i8]
             .into_iter()
@@ -480,8 +424,73 @@ mod test {
     }
 
     #[test]
+    fn btreesets() {
+        let set_i8 = (vec![3i8, 12i8, 24i8, 72i8]
+            .into_iter()
+            .collect::<BTreeSet<i8>>())
+        .serialize();
+        let set_u16 = (vec![3u16, 12u16, 24u16, 72u16]
+            .into_iter()
+            .collect::<BTreeSet<u16>>())
+        .serialize();
+        let set_i64 = (vec![3i64, 12i64, 24i64, 72i64]
+            .into_iter()
+            .collect::<BTreeSet<i64>>())
+        .serialize();
+        let set_bool = (vec![true, false].into_iter().collect::<BTreeSet<bool>>()).serialize();
+        let set_str = (vec!["aba", "cate", "azul"]
+            .into_iter()
+            .collect::<BTreeSet<&str>>())
+        .serialize();
+        let set_string = (vec!["aba".to_string(), "cate".to_string(), "azul".to_string()]
+            .into_iter()
+            .collect::<BTreeSet<String>>())
+        .serialize();
+
+        assert!(
+            set_i8.contains("#{")
+                && set_i8.contains(',')
+                && set_i8.contains('3')
+                && set_i8.contains('}')
+        );
+        assert!(
+            set_u16.contains("#{")
+                && set_u16.contains(',')
+                && set_u16.contains('3')
+                && set_u16.contains('}')
+        );
+        assert!(
+            set_i64.contains("#{")
+                && set_i64.contains(',')
+                && set_i64.contains('3')
+                && set_i64.contains('}')
+        );
+        assert!(
+            set_bool.contains("#{")
+                && set_bool.contains(',')
+                && set_bool.contains("true")
+                && set_bool.contains("false")
+                && set_bool.contains('}')
+        );
+        assert!(
+            set_str.contains("#{")
+                && set_str.contains(',')
+                && set_str.contains("\"aba\"")
+                && set_str.contains("\"cate\"")
+                && set_str.contains('}')
+        );
+        assert!(
+            set_string.contains("#{")
+                && set_string.contains(',')
+                && set_string.contains("\"aba\"")
+                && set_string.contains("\"cate\"")
+                && set_string.contains('}')
+        );
+    }
+
+    #[test]
     fn lists() {
-        use std::collections::LinkedList;
+        use alloc::collections::LinkedList;
 
         let list_i8 = (vec![3i8, 12i8, 24i8, 72i8]
             .into_iter()

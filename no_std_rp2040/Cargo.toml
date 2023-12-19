@@ -1,0 +1,18 @@
+[package]
+name = "no_std_rp2040"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+edn-rs = { path = "..", default-features = false }
+embedded-alloc = "0.5.1"
+
+[lib]
+name = "rustlib"
+crate-type = ["staticlib"]
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"

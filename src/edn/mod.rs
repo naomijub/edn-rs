@@ -1,10 +1,16 @@
+use alloc::boxed::Box;
+use alloc::collections::BTreeMap;
+#[cfg(feature = "sets")]
+use alloc::collections::BTreeSet;
+use alloc::string::{String, ToString};
+use alloc::vec::Vec;
+use alloc::{fmt, format};
+#[cfg(feature = "sets")]
+use core::cmp::{Ord, PartialOrd};
+use core::convert::{Infallible, TryFrom};
+use core::num;
+
 use crate::deserialize::parse::{self};
-#[cfg(feature = "sets")]
-use std::cmp::{Ord, PartialOrd};
-use std::collections::BTreeMap;
-#[cfg(feature = "sets")]
-use std::collections::BTreeSet;
-use std::convert::TryFrom;
 use utils::index::Index;
 
 #[cfg(feature = "sets")]
@@ -47,8 +53,8 @@ pub struct Double(pub(crate) OrderedFloat<f64>);
 #[cfg(not(feature = "sets"))]
 pub struct Double(f64);
 
-impl std::fmt::Display for Double {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for Double {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0)
     }
 }
@@ -305,8 +311,10 @@ impl Edn {
             #[allow(clippy::cast_possible_wrap)]
             Self::UInt(u) if i64::try_from(*u).is_ok() => Some(*u as i64),
             #[allow(clippy::cast_possible_truncation)]
+            #[cfg(feature = "std")]
             Self::Double(d) => Some((*d).to_float().round() as i64),
             #[allow(clippy::cast_possible_truncation)]
+            #[cfg(feature = "std")]
             Self::Rational(r) => Some(rational_to_double(r).unwrap_or(0f64).round() as i64),
             _ => None,
         }
@@ -320,12 +328,14 @@ impl Edn {
             #[allow(clippy::cast_sign_loss)]
             Self::Int(i) if i > &0 => Some(*i as u64),
             Self::UInt(i) => Some(*i),
+            #[cfg(feature = "std")]
             Self::Double(d) if d.to_float() > 0f64 =>
             {
                 #[allow(clippy::cast_sign_loss)]
                 #[allow(clippy::cast_possible_truncation)]
                 Some((*d).to_float().round() as u64)
             }
+            #[cfg(feature = "std")]
             Self::Rational(r) if !r.contains('-') =>
             {
                 #[allow(clippy::cast_sign_loss)]
@@ -606,7 +616,7 @@ impl Edn {
     /// ```
     #[allow(clippy::needless_doctest_main)]
     #[must_use]
-    pub fn iter_some(&self) -> Option<std::slice::Iter<'_, Self>> {
+    pub fn iter_some(&self) -> Option<core::slice::Iter<'_, Self>> {
         match self {
             Self::Vector(v) => Some(v.0.iter()),
             Self::List(l) => Some(l.0.iter()),
@@ -628,7 +638,7 @@ impl Edn {
     /// `map_iter` returns am `Option<btree_map::Iter<String, Edn>>` with `Some` for type `Edn::Map`
     /// Other types return `None`
     #[must_use]
-    pub fn map_iter(&self) -> Option<std::collections::btree_map::Iter<'_, String, Self>> {
+    pub fn map_iter(&self) -> Option<alloc::collections::btree_map::Iter<'_, String, Self>> {
         match self {
             Self::Map(m) => Some(m.0.iter()),
             _ => None,
@@ -678,7 +688,7 @@ impl Edn {
     }
 }
 
-impl std::str::FromStr for Edn {
+impl core::str::FromStr for Edn {
     type Err = Error;
 
     /// Parses a `&str` that contains an Edn into `Result<Edn, EdnError>`
@@ -687,9 +697,9 @@ impl std::str::FromStr for Edn {
     }
 }
 
-fn to_double<T>(i: T) -> Result<f64, std::num::ParseFloatError>
+fn to_double<T>(i: T) -> Result<f64, num::ParseFloatError>
 where
-    T: std::fmt::Debug,
+    T: fmt::Debug,
 {
     format!("{i:?}").parse::<f64>()
 }
@@ -713,7 +723,7 @@ pub enum Error {
     ParseEdn(String),
     Deserialize(String),
     Iter(String),
-    TryFromInt(std::num::TryFromIntError),
+    TryFromInt(num::TryFromIntError),
     #[doc(hidden)]
     Infallable(), // Makes the compiler happy for converting u64 to u64 and i64 to i64
 }
@@ -724,38 +734,38 @@ impl From<String> for Error {
     }
 }
 
-impl From<std::num::ParseIntError> for Error {
-    fn from(s: std::num::ParseIntError) -> Self {
+impl From<num::ParseIntError> for Error {
+    fn from(s: num::ParseIntError) -> Self {
         Self::ParseEdn(s.to_string())
     }
 }
 
-impl From<std::num::ParseFloatError> for Error {
-    fn from(s: std::num::ParseFloatError) -> Self {
+impl From<num::ParseFloatError> for Error {
+    fn from(s: num::ParseFloatError) -> Self {
         Self::ParseEdn(s.to_string())
     }
 }
 
-impl From<std::str::ParseBoolError> for Error {
-    fn from(s: std::str::ParseBoolError) -> Self {
+impl From<core::str::ParseBoolError> for Error {
+    fn from(s: core::str::ParseBoolError) -> Self {
         Self::ParseEdn(s.to_string())
     }
 }
 
-impl From<std::num::TryFromIntError> for Error {
-    fn from(e: std::num::TryFromIntError) -> Self {
+impl From<num::TryFromIntError> for Error {
+    fn from(e: num::TryFromIntError) -> Self {
         Self::TryFromInt(e)
     }
 }
 
-impl From<std::convert::Infallible> for Error {
-    fn from(_: std::convert::Infallible) -> Self {
+impl From<Infallible> for Error {
+    fn from(_: Infallible) -> Self {
         Self::Infallable()
     }
 }
 
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::ParseEdn(s) | Self::Deserialize(s) | Self::Iter(s) => write!(f, "{}", &s),
             Self::TryFromInt(e) => write!(f, "{e}"),
@@ -766,6 +776,9 @@ impl std::fmt::Display for Error {
 
 #[cfg(test)]
 mod test {
+    use alloc::borrow::ToOwned;
+    use alloc::vec;
+
     use super::*;
     #[test]
     fn parses_rationals() {

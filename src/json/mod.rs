@@ -1,9 +1,17 @@
+use alloc::collections::BTreeMap;
+#[cfg(feature = "sets")]
+use alloc::collections::BTreeSet;
+use alloc::format;
+use alloc::string::{String, ToString};
+use alloc::vec::Vec;
+
 use crate::edn::{rational_to_double, Edn};
 
 #[allow(clippy::module_name_repetitions)]
 pub fn display_as_json(edn: &Edn) -> String {
     match edn {
         Edn::Vector(v) => vec_to_json(&v.clone().to_vec()),
+        #[cfg(feature = "sets")]
         Edn::Set(s) => set_to_json_vec(&s.clone().to_set()),
         Edn::Map(map) => map_to_json(&map.clone().to_map()),
         Edn::List(l) => vec_to_json(&l.clone().to_vec()),
@@ -68,7 +76,8 @@ fn vec_to_json(vec: &[Edn]) -> String {
     s
 }
 
-fn set_to_json_vec(set: &std::collections::BTreeSet<Edn>) -> String {
+#[cfg(feature = "sets")]
+fn set_to_json_vec(set: &BTreeSet<Edn>) -> String {
     let set_str = set
         .iter()
         .map(display_as_json)
@@ -80,7 +89,7 @@ fn set_to_json_vec(set: &std::collections::BTreeSet<Edn>) -> String {
     s
 }
 
-fn map_to_json(map: &std::collections::BTreeMap<String, Edn>) -> String {
+fn map_to_json(map: &BTreeMap<String, Edn>) -> String {
     let map_str = map
         .iter()
         .map(|(k, e)| {
@@ -103,6 +112,9 @@ fn map_to_json(map: &std::collections::BTreeMap<String, Edn>) -> String {
 
 #[cfg(test)]
 mod test {
+    use alloc::boxed::Box;
+    use alloc::vec;
+
     use super::*;
     use crate::edn::{Edn, List, Map, Set, Vector};
     use crate::{map, set};
