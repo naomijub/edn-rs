@@ -25,7 +25,7 @@ jobs:
       - name: test_lib_features
         run: cargo test --all-features --no-fail-fast
       - name: test_lib_no_default_features
-        run: cargo test --no-default-features --no-fail-fast
+        run: cargo test --features std --no-default-features --no-fail-fast
       - name: example_fast
         run: cargo test --examples --no-fail-fast
       - name: example_json_to_edn
@@ -35,7 +35,7 @@ jobs:
       - name: example_async
         run: cargo run --example async
       - name: example_no_sets
-        run: cargo run --example struct_from_str --no-default-features
+        run: cargo run --example struct_from_str --features std --no-default-features
 
   fmt:
       runs-on: ubuntu-latest

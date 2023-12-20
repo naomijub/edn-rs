@@ -1,6 +1,14 @@
+#![no_std]
 #![recursion_limit = "512"]
+
 #[macro_use]
 mod macros;
+
+extern crate alloc;
+#[cfg(feature = "std")]
+extern crate std;
+
+use alloc::string::String;
 
 /// Edn type implementation
 pub mod edn;
@@ -38,7 +46,9 @@ pub mod serialize;
 pub(crate) mod json;
 
 #[cfg(feature = "json")]
-use std::borrow::Cow;
+use alloc::borrow::Cow;
+#[cfg(feature = "json")]
+use alloc::string::ToString;
 
 mod deserialize;
 /// `json_to_edn` receives a json string and parses its common key-values to a regular EDN format. It requires feature `json`

@@ -1,9 +1,16 @@
+use alloc::boxed::Box;
+use alloc::collections::BTreeMap;
+#[cfg(feature = "sets")]
+use alloc::collections::BTreeSet;
+use alloc::string::{String, ToString};
+use alloc::vec::Vec;
+use alloc::{format, vec};
+use core::iter;
+use core::primitive::str;
+
 #[cfg(feature = "sets")]
 use crate::edn::Set;
 use crate::edn::{Edn, Error, List, Map, Vector};
-use std::collections::BTreeMap;
-#[cfg(feature = "sets")]
-use std::collections::BTreeSet;
 
 const DELIMITERS: [char; 8] = [',', ']', '}', ')', ';', '(', '[', '{'];
 
@@ -15,14 +22,14 @@ pub fn parse(edn: &str) -> Result<Edn, Error> {
 
 fn parse_consuming(
     c: Option<(usize, char)>,
-    chars: &mut std::iter::Enumerate<std::str::Chars<'_>>,
+    chars: &mut iter::Enumerate<core::str::Chars<'_>>,
 ) -> Result<Edn, Error> {
     (parse_internal(c, chars)?).map_or_else(|| Ok(Edn::Empty), Ok)
 }
 
 fn parse_internal(
     c: Option<(usize, char)>,
-    chars: &mut std::iter::Enumerate<std::str::Chars<'_>>,
+    chars: &mut iter::Enumerate<core::str::Chars<'_>>,
 ) -> Result<Option<Edn>, Error> {
     Ok(match c {
         Some((_, '[')) => Some(read_vec(chars)?),
@@ -42,7 +49,7 @@ fn parse_internal(
 
 fn edn_element(
     c: Option<(usize, char)>,
-    chars: &mut std::iter::Enumerate<std::str::Chars<'_>>,
+    chars: &mut iter::Enumerate<core::str::Chars<'_>>,
 ) -> Result<Edn, Error> {
     match c {
         Some((_, '\"')) => read_str(chars),
@@ -66,7 +73,7 @@ fn edn_element(
 }
 
 fn tagged_or_set_or_discard(
-    chars: &mut std::iter::Enumerate<std::str::Chars<'_>>,
+    chars: &mut iter::Enumerate<core::str::Chars<'_>>,
 ) -> Result<Option<Edn>, Error> {
     match chars.clone().next() {
         Some((_, '{')) => read_set(chars).map(Some),
@@ -75,7 +82,7 @@ fn tagged_or_set_or_discard(
     }
 }
 
-fn read_key(chars: &mut std::iter::Enumerate<std::str::Chars<'_>>) -> Edn {
+fn read_key(chars: &mut iter::Enumerate<core::str::Chars<'_>>) -> Edn {
     let key_chars = chars
         .clone()
         .take_while(|c| !c.1.is_whitespace() && !DELIMITERS.contains(&c.1));
@@ -87,7 +94,7 @@ fn read_key(chars: &mut std::iter::Enumerate<std::str::Chars<'_>>) -> Edn {
     Edn::Key(key)
 }
 
-fn read_str(chars: &mut std::iter::Enumerate<std::str::Chars<'_>>) -> Result<Edn, Error> {
+fn read_str(chars: &mut iter::Enumerate<core::str::Chars<'_>>) -> Result<Edn, Error> {
     let result = chars.try_fold(
         (false, String::new()),
         |(last_was_escape, mut s), (_, c)| {
@@ -128,10 +135,7 @@ fn read_str(chars: &mut std::iter::Enumerate<std::str::Chars<'_>>) -> Result<Edn
     }
 }
 
-fn read_symbol(
-    a: char,
-    chars: &mut std::iter::Enumerate<std::str::Chars<'_>>,
-) -> Result<Edn, Error> {
+fn read_symbol(a: char, chars: &mut iter::Enumerate<core::str::Chars<'_>>) -> Result<Edn, Error> {
     let c_len = chars
         .clone()
         .enumerate()
@@ -155,7 +159,7 @@ fn read_symbol(
     Ok(Edn::Symbol(symbol))
 }
 
-fn read_tagged(chars: &mut std::iter::Enumerate<std::str::Chars<'_>>) -> Result<Edn, Error> {
+fn read_tagged(chars: &mut iter::Enumerate<core::str::Chars<'_>>) -> Result<Edn, Error> {
     let tag = chars
         .take_while(|c| !c.1.is_whitespace() && c.1 != ',')
         .map(|c| c.1)
@@ -167,9 +171,7 @@ fn read_tagged(chars: &mut std::iter::Enumerate<std::str::Chars<'_>>) -> Result<
     ))
 }
 
-fn read_discard(
-    chars: &mut std::iter::Enumerate<std::str::Chars<'_>>,
-) -> Result<Option<Edn>, Error> {
+fn read_discard(chars: &mut iter::Enumerate<core::str::Chars<'_>>) -> Result<Option<Edn>, Error> {
     let _discard_underscore = chars.next();
     let i = chars
         .clone()
@@ -185,10 +187,7 @@ fn read_discard(
     }
 }
 
-fn read_number(
-    n: char,
-    chars: &mut std::iter::Enumerate<std::str::Chars<'_>>,
-) -> Result<Edn, Error> {
+fn read_number(n: char, chars: &mut iter::Enumerate<core::str::Chars<'_>>) -> Result<Edn, Error> {
     let i = chars
         .clone()
         .next()
@@ -277,7 +276,7 @@ fn read_number(
     }
 }
 
-fn read_char(chars: &mut std::iter::Enumerate<std::str::Chars<'_>>) -> Result<Edn, Error> {
+fn read_char(chars: &mut iter::Enumerate<core::str::Chars<'_>>) -> Result<Edn, Error> {
     let i = chars
         .clone()
         .next()
@@ -292,7 +291,7 @@ fn read_char(chars: &mut std::iter::Enumerate<std::str::Chars<'_>>) -> Result<Ed
 
 fn read_bool_or_nil(
     c: char,
-    chars: &mut std::iter::Enumerate<std::str::Chars<'_>>,
+    chars: &mut iter::Enumerate<core::str::Chars<'_>>,
 ) -> Result<Edn, Error> {
     let i = chars
         .clone()
@@ -354,7 +353,7 @@ fn read_bool_or_nil(
     }
 }
 
-fn read_vec(chars: &mut std::iter::Enumerate<std::str::Chars<'_>>) -> Result<Edn, Error> {
+fn read_vec(chars: &mut iter::Enumerate<core::str::Chars<'_>>) -> Result<Edn, Error> {
     let i = chars
         .clone()
         .next()
@@ -378,7 +377,7 @@ fn read_vec(chars: &mut std::iter::Enumerate<std::str::Chars<'_>>) -> Result<Edn
     }
 }
 
-fn read_list(chars: &mut std::iter::Enumerate<std::str::Chars<'_>>) -> Result<Edn, Error> {
+fn read_list(chars: &mut iter::Enumerate<core::str::Chars<'_>>) -> Result<Edn, Error> {
     let i = chars
         .clone()
         .next()
@@ -403,7 +402,7 @@ fn read_list(chars: &mut std::iter::Enumerate<std::str::Chars<'_>>) -> Result<Ed
 }
 
 #[cfg(feature = "sets")]
-fn read_set(chars: &mut std::iter::Enumerate<std::str::Chars<'_>>) -> Result<Edn, Error> {
+fn read_set(chars: &mut iter::Enumerate<core::str::Chars<'_>>) -> Result<Edn, Error> {
     let _discard_brackets = chars.next();
     let i = chars
         .clone()
@@ -429,13 +428,13 @@ fn read_set(chars: &mut std::iter::Enumerate<std::str::Chars<'_>>) -> Result<Edn
 }
 
 #[cfg(not(feature = "sets"))]
-fn read_set(_chars: &mut std::iter::Enumerate<std::str::Chars<'_>>) -> Result<Edn, Error> {
+fn read_set(_chars: &mut iter::Enumerate<core::str::Chars<'_>>) -> Result<Edn, Error> {
     Err(Error::ParseEdn(
         "Could not parse set due to feature not being enabled".to_string(),
     ))
 }
 
-fn read_map(chars: &mut std::iter::Enumerate<std::str::Chars<'_>>) -> Result<Edn, Error> {
+fn read_map(chars: &mut iter::Enumerate<core::str::Chars<'_>>) -> Result<Edn, Error> {
     let i = chars
         .clone()
         .next()
@@ -470,7 +469,7 @@ fn read_map(chars: &mut std::iter::Enumerate<std::str::Chars<'_>>) -> Result<Edn
 }
 
 fn read_if_not_container_end(
-    chars: &mut std::iter::Enumerate<std::str::Chars<'_>>,
+    chars: &mut iter::Enumerate<core::str::Chars<'_>>,
 ) -> Result<Option<Edn>, Error> {
     Ok(match chars.clone().next() {
         Some(c) if c.1 == ']' || c.1 == ')' || c.1 == '}' => None,

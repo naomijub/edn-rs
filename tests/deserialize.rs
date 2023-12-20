@@ -1,6 +1,9 @@
 #[cfg(test)]
 mod test {
-    use std::str::FromStr;
+    extern crate alloc;
+
+    use alloc::collections::BTreeMap;
+    use core::str::FromStr;
 
     use edn::Error;
     use edn_rs::{edn, from_edn, from_str, hmap, map, Edn, List, Map, Vector};
@@ -364,11 +367,12 @@ mod test {
             ":a".to_string() => vec![":val".to_string()],
             ":b".to_string() => vec![":value".to_string()]
         };
-        let map: std::collections::BTreeMap<String, Vec<String>> = from_edn(&ns_map).unwrap();
+        let map: BTreeMap<String, Vec<String>> = from_edn(&ns_map).unwrap();
         assert_eq!(map, expected);
     }
 
     #[test]
+    #[cfg(feature = "std")]
     fn deser_hashmap() {
         let ns_map = Edn::Map(Map::new(map! {
             ":a".to_string() => Edn::Bool(true),
