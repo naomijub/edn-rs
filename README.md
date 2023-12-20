@@ -17,11 +17,27 @@ Current example usage in:
 
 ## Usage
 
-`Cargo.toml`
+### Default
+Includes features `std` and `sets`.
+
 ```toml
 [dependencies]
 edn-rs = "0.17.4"
 ```
+
+### no_std
+To use `edn-rs` without any additional dependencies, disable default features.
+`edn-rs` still relies on `alloc`. In no_std environments, you must supply your own `#[global_allocator]`
+
+```toml
+[dependencies]
+edn-rs = { version = "0.17.4", default-features = false }
+```
+
+### Optional features
+* `std`: Implements (de)serialization for Hashmap and HashSet; Also some floating point functionality.
+* `sets`: Implements (de)serialization for EDN sets. Depends on `ordered-float`.
+* `json`: Implements json->edn and edn->json conversions. Depends on `regex`.
 
 ## Simple time-only benchmarks of `edn-rs` against Clojure Edn
 * Link to benchmarks implementation [here](https://github.com/naomijub/edn-duration-benchmark/blob/master/README.md)

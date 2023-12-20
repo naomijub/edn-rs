@@ -273,7 +273,8 @@ macro_rules! edn_unexpected {
 macro_rules! map(
     { $($key:expr => $value:expr),+ } => {
         {
-            let mut m = std::collections::BTreeMap::new();
+            extern crate alloc;
+            let mut m = alloc::collections::BTreeMap::new();
             $(
                 m.insert($key, $value);
             )+
@@ -288,7 +289,8 @@ macro_rules! map(
 macro_rules! set {
     ($($x:expr),+ $(,)?) => (
         {
-            let mut s = std::collections::BTreeSet::new();
+            extern crate alloc;
+            let mut s = alloc::collections::BTreeSet::new();
             $(
                 s.insert($x);
             )*
@@ -300,6 +302,7 @@ macro_rules! set {
 /// Creates a `HashMap` from a seq of `$key => $value, `
 /// `hmap!{a => "b", c => "d"}`
 #[macro_export]
+#[cfg(feature = "std")]
 macro_rules! hmap(
     { $($key:expr => $value:expr),+ } => {
         {
@@ -315,6 +318,7 @@ macro_rules! hmap(
 /// Creates a `HashSet` from a seq of `$x, `
 /// `set!{1, 2, 3, 4}`
 #[macro_export]
+#[cfg(feature = "std")]
 macro_rules! hset {
     ($($x:expr),+ $(,)?) => (
         {

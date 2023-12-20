@@ -1,6 +1,9 @@
+use alloc::borrow::ToOwned;
+use alloc::string::{String, ToString};
+use core::convert::TryFrom;
+use core::{fmt, ops};
+
 use crate::edn::{Edn, Map};
-use std::convert::TryFrom;
-use std::{fmt, ops};
 
 /// This is a Copy of [`Serde_json::index`](https://docs.serde.rs/src/serde_json/value/index.rs.html)
 pub trait Index: private::Sealed {
@@ -63,7 +66,7 @@ impl Index for str {
     }
     fn index_or_insert<'v>(&self, v: &'v mut Edn) -> &'v mut Edn {
         if *v == Edn::Nil {
-            *v = Edn::Map(Map::new(std::collections::BTreeMap::new()));
+            *v = Edn::Map(Map::new(alloc::collections::BTreeMap::new()));
         }
         match *v {
             Edn::Map(ref mut map) => map.0.entry(self.to_owned()).or_insert(Edn::Nil),
@@ -120,6 +123,8 @@ where
 
 // Prevent users from implementing the Index trait.
 mod private {
+    use alloc::string::String;
+
     use crate::Edn;
 
     pub trait Sealed {}

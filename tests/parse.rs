@@ -1,6 +1,8 @@
 #[cfg(test)]
 mod tests {
-    use std::collections::BTreeMap;
+    extern crate alloc;
+
+    use alloc::collections::BTreeMap;
 
     use edn_rs::{edn, map, Edn, List, Map, Vector};
 
