@@ -2,46 +2,154 @@ name: Rust
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "*" ]
   pull_request:
     branches: [ "*" ]
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-    name: build
+  test_linux:
+    name: Test Linux
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target:
+          - "x86_64-unknown-linux-gnu"
+          - "i686-unknown-linux-gnu"
+    env:
+      RUSTFLAGS: "-D warnings"
+      RUSTDOCFLAGS: "-D warnings"
     steps:
-      - uses: actions/checkout@v3
-      - name: build
-        run: cargo build --verbose
+      - name: Update sources
+        run: sudo apt update
+      - name: Install libc6-dev-i386
+        run: sudo apt install libc6-dev-i386
+        if: ${{ contains(matrix.target, 'i686') }}
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+          toolchain: stable minus 2 releases
+      - name: Test gnu
+        run: |
+          cargo test --all-features --no-fail-fast --target ${{ matrix.target }}
+          cargo test --features std --no-default-features --no-fail-fast --target ${{ matrix.target }}
+          cargo test --examples --no-fail-fast --target ${{ matrix.target }}
+          cargo test --example json_to_edn --features "json" --target ${{ matrix.target }}
+          cargo test --example edn_to_json --features "json" --target ${{ matrix.target }}
+          cargo run --example async --target ${{ matrix.target }}
+          cargo run --example struct_from_str --features std --no-default-features --target ${{ matrix.target }}
 
-  cargo_test:
-    name: cargo test
+  build_linux:
+    name: Build Linux
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target:
+          - "x86_64-unknown-linux-gnu"
+          - "i686-unknown-linux-gnu"
+          - "arm-unknown-linux-gnueabihf"
+          - "armv7-unknown-linux-gnueabihf"
+          - "aarch64-unknown-linux-gnu"
+    env:
+      RUSTFLAGS: "-D warnings"
+      RUSTDOCFLAGS: "-D warnings"
     steps:
-      - uses: actions/checkout@v3
-      - name: test_lib_features
-        run: cargo test --all-features --no-fail-fast
-      - name: test_lib_no_default_features
-        run: cargo test --features std --no-default-features --no-fail-fast
-      - name: example_fast
-        run: cargo test --examples --no-fail-fast
-      - name: example_json_to_edn
-        run: cargo test --example json_to_edn --features "json"
-      - name: example_edn_to_json
-        run: cargo test --example edn_to_json --features "json"
-      - name: example_async
-        run: cargo run --example async
-      - name: example_no_sets
-        run: cargo run --example struct_from_str --features std --no-default-features
+      - name: Update sources
+        run: sudo apt update
+      - name: Install libc6-dev-i386
+        run: sudo apt install libc6-dev-i386
+        if: ${{ contains(matrix.target, 'i686') }}
+      - name: Install libc6-dev-armhf-cross
+        run: sudo apt install libc6-dev-armhf-cross gcc-arm-linux-gnueabihf
+        if: ${{ contains(matrix.target, 'arm') }}
+      - name: Install libc6-dev-arm64-cross
+        run: sudo apt install libc6-dev-arm64-cross gcc-aarch64-linux-gnu
+        if: ${{ contains(matrix.target, 'aarch64') }}
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+          toolchain: stable minus 2 releases
+      - name: Build gnu target
+        run: |
+          cargo build --all-features --target ${{ matrix.target }}
+          cargo build --features std --no-default-features
+          cargo build --no-default-features
+
+  build_windows:
+    name: Build Windows
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        target: ["x86_64-pc-windows-msvc", "i686-pc-windows-msvc"]
+    env:
+      RUSTFLAGS: "-D warnings"
+      RUSTDOCFLAGS: "-D warnings"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+          toolchain: stable minus 2 releases
+      - name: Build Windows
+        run: |
+          cargo build --all-features --target ${{ matrix.target }}
+          cargo build --features std --no-default-features
+          cargo build --no-default-features
+
+  test_windows:
+    name: Test Windows
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        target: ["x86_64-pc-windows-msvc", "i686-pc-windows-msvc"]
+    env:
+      RUSTFLAGS: "-D warnings"
+      RUSTDOCFLAGS: "-D warnings"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+          toolchain: stable minus 2 releases
+      - name: Test Windows
+        run: |
+          cargo test --all-features --no-fail-fast --target ${{ matrix.target }}
+          cargo test --features std --no-default-features --no-fail-fast --target ${{ matrix.target }}
+          cargo test --examples --no-fail-fast --target ${{ matrix.target }}
+          cargo test --example json_to_edn --features "json" --target ${{ matrix.target }}
+          cargo test --example edn_to_json --features "json" --target ${{ matrix.target }}
+          cargo run --example async --target ${{ matrix.target }}
+          cargo run --example struct_from_str --features std --no-default-features --target ${{ matrix.target }}
+
+  build_embedded:
+    name: Build Embedded
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target:
+          - "thumbv6m-none-eabi"
+    env:
+      RUSTFLAGS: "-D warnings"
+      RUSTDOCFLAGS: "-D warnings"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+          toolchain: stable minus 2 releases
+      - name: no_std_release_build_sets
+        run: cargo build --release --no-default-features --features sets --target ${{ matrix.target }}
+      - name: no_std_release_build
+        run: cargo build --release --no-default-features --target ${{ matrix.target }}
 
   fmt:
       runs-on: ubuntu-latest
       name: fmt
       steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
         - uses: dtolnay/rust-toolchain@stable
           with:
             components: rustfmt
@@ -51,10 +159,11 @@ jobs:
       name: clippy
       runs-on: ubuntu-latest
       steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
         - uses: dtolnay/rust-toolchain@stable
           with:
             components: clippy
+            toolchain: stable minus 2 releases
         - run: cargo clippy --all-features -- -W future-incompatible -W rust_2018_idioms -W clippy::all -W clippy::pedantic -W clippy::nursery --deny warnings
         - run: cargo clippy --features json --no-default-features -- -W future-incompatible -W rust_2018_idioms -W clippy::all -W clippy::pedantic -W clippy::nursery --deny warnings
         - run: cargo clippy --no-default-features -- -W future-incompatible -W rust_2018_idioms -W clippy::all -W clippy::pedantic -W clippy::nursery --deny warnings
