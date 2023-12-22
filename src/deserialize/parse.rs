@@ -10,7 +10,8 @@ use core::primitive::str;
 
 #[cfg(feature = "sets")]
 use crate::edn::Set;
-use crate::edn::{Edn, Error, List, Map, Vector};
+use crate::edn::{Edn, List, Map, Vector};
+use crate::EdnError as Error;
 
 const DELIMITERS: [char; 8] = [',', ']', '}', ')', ';', '(', '[', '{'];
 

@@ -37,10 +37,8 @@ fn person_mistyped() -> Result<(), EdnError> {
     let person: Result<Person, EdnError> = edn_rs::from_str(bad_edn_str);
 
     assert_eq!(
-        person,
-        Err(EdnError::Deserialize(
-            "couldn't convert `\"some text\"` into `uint`".to_string()
-        ))
+        format!("{}", person.err().unwrap()),
+        "couldn't convert `\"some text\"` into `uint`"
     );
 
     Ok(())
@@ -50,9 +48,10 @@ fn person_overflow() -> Result<(), EdnError> {
     let overflow_edn_str = "  {:name \"rose\" :age 9002  }  ";
     let person: Result<Person, EdnError> = edn_rs::from_str(overflow_edn_str);
 
+    let person = person.err().unwrap();
     assert_eq!(
-        format!("{person:?}"),
-        "Err(TryFromInt(TryFromIntError(())))"
+        format!("{person}"),
+        "out of range integral type conversion attempted"
     );
 
     Ok(())

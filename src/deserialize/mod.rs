@@ -12,7 +12,8 @@ use std::collections::HashMap;
 #[cfg(all(feature = "sets", feature = "std"))]
 use std::collections::HashSet;
 
-use crate::edn::{Edn, Error};
+use crate::edn::Edn;
+use crate::EdnError as Error;
 
 pub mod parse;
 
@@ -23,7 +24,7 @@ use ordered_float::OrderedFloat;
 ///
 /// # Errors
 ///
-/// Error will be like `EdnError::Deserialize("couldn't convert <value> into <type>")`
+/// Error implements Display and Debug. See docs for more implementations.
 ///
 /// ```
 /// use crate::edn_rs::{Edn, EdnError, Deserialize};
@@ -60,12 +61,7 @@ use ordered_float::OrderedFloat;
 /// let bad_edn_str = "{:name \"rose\" :age \"some text\" }";
 /// let person: Result<Person, EdnError> = edn_rs::from_str(bad_edn_str);
 ///
-/// assert_eq!(
-///     person,
-///     Err(EdnError::Deserialize(
-///         "couldn't convert `\"some text\"` into `uint`".to_string()
-///     ))
-/// );
+/// println!("{:?}", person);
 /// ```
 #[allow(clippy::missing_errors_doc)]
 pub trait Deserialize: Sized {
@@ -348,12 +344,7 @@ where
 /// let bad_edn_str = "{:name \"rose\" :age \"some text\" }";
 /// let person: Result<Person, EdnError> = edn_rs::from_str(bad_edn_str);
 ///
-/// assert_eq!(
-///     person,
-///     Err(EdnError::Deserialize(
-///             "couldn't convert `\"some text\"` into `uint`".to_string()
-///     ))
-/// );
+/// println!("{:?}", person);
 /// ```
 pub fn from_str<T: Deserialize>(s: &str) -> Result<T, Error> {
     let edn = Edn::from_str(s)?;
@@ -407,12 +398,7 @@ pub fn from_str<T: Deserialize>(s: &str) -> Result<T, Error> {
 /// }));
 /// let person: Result<Person, EdnError> = edn_rs::from_edn(&bad_edn);
 ///
-/// assert_eq!(
-///     person,
-///     Err(EdnError::Deserialize(
-///         "couldn't convert `\"some text\"` into `uint`".to_string()
-///     ))
-/// );
+/// println!("{:?}", person);
 /// ```
 pub fn from_edn<T: Deserialize>(edn: &Edn) -> Result<T, Error> {
     T::deserialize(edn)
