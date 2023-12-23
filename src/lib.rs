@@ -35,7 +35,7 @@ pub mod edn;
 ///         set: set!{3i64, 4i64, 5i64},
 ///         tuples: (3i32, true, 'd')
 ///     };
-///     println!("{}", edn_rs::to_string(edn));
+///     println!("{}", edn_rs::to_string(&edn));
 ///     // { :map {:this-is-a-key ["with", "many", "keys"]}, :set #{3, 4, 5}, :tuples (3, true, \d), }
 /// }
 ///```
@@ -129,11 +129,11 @@ pub use serialize::Serialize;
 ///         set: set!{3i64, 4i64, 5i64},
 ///         tuples: (3i32, true, 'd')
 ///     };
-///     println!("{}", edn_rs::to_string(edn));
+///     println!("{}", edn_rs::to_string(&edn));
 ///     // { :map {:this-is-a-key ["with", "many", "keys"]}, :set #{3, 4, 5}, :tuples (3, true, \d), }
 /// }
 ///```
 #[allow(clippy::needless_doctest_main)]
-pub fn to_string<T: Serialize>(t: T) -> String {
+pub fn to_string<T: Serialize>(t: &T) -> String {
     t.serialize()
 }

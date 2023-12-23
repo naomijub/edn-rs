@@ -46,11 +46,12 @@ mod edn {
     use criterion::Criterion;
     use edn_derive::Serialize;
 
-    use edn_rs::{map, set};
+    use edn_rs::{map, set, Serialize};
     use std::collections::{BTreeMap, BTreeSet};
 
     pub fn criterion_benchmark(c: &mut Criterion) {
-        c.bench_function("edn", |b| b.iter(|| edn_rs::to_string(val())));
+        let val = val();
+        c.bench_function("edn", |b| b.iter(|| val.serialize()));
     }
 
     fn val() -> ValEdn {
