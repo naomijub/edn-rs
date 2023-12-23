@@ -12,7 +12,7 @@ use alloc::vec::Vec;
 /// struct YourType;
 ///
 /// impl Serialize for YourType {
-///     fn serialize(self) -> String {
+///     fn serialize(&self) -> String {
 ///         format!("{:?}", self)
 ///     }
 /// }
@@ -20,7 +20,7 @@ use alloc::vec::Vec;
 ///
 /// Implemented for all generic types.
 pub trait Serialize {
-    fn serialize(self) -> String;
+    fn serialize(&self) -> String;
 }
 
 macro_rules! ser_primitives {
@@ -28,7 +28,7 @@ macro_rules! ser_primitives {
         $(
             impl Serialize for $name
             {
-                fn serialize(self) -> String {
+                fn serialize(&self) -> String {
                     format!("{:?}", self)
                 }
             }
@@ -40,9 +40,9 @@ impl<T> Serialize for Vec<T>
 where
     T: Serialize,
 {
-    fn serialize(self) -> String {
+    fn serialize(&self) -> String {
         let aux_vec = self
-            .into_iter()
+            .iter()
             .map(Serialize::serialize)
             .collect::<Vec<String>>();
         let mut s = String::new();
@@ -58,9 +58,9 @@ impl<T, H: std::hash::BuildHasher> Serialize for std::collections::HashSet<T, H>
 where
     T: Serialize,
 {
-    fn serialize(self) -> String {
+    fn serialize(&self) -> String {
         let aux_vec = self
-            .into_iter()
+            .iter()
             .map(Serialize::serialize)
             .collect::<Vec<String>>();
         let mut s = String::new();
@@ -76,9 +76,9 @@ impl<T> Serialize for BTreeSet<T>
 where
     T: Serialize,
 {
-    fn serialize(self) -> String {
+    fn serialize(&self) -> String {
         let aux_vec = self
-            .into_iter()
+            .iter()
             .map(Serialize::serialize)
             .collect::<Vec<String>>();
         let mut s = String::new();
@@ -94,9 +94,9 @@ impl<T> Serialize for LinkedList<T>
 where
     T: Serialize,
 {
-    fn serialize(self) -> String {
+    fn serialize(&self) -> String {
         let aux_vec = self
-            .into_iter()
+            .iter()
             .map(Serialize::serialize)
             .collect::<Vec<String>>();
         let mut s = String::new();
@@ -112,9 +112,9 @@ impl<T, H: std::hash::BuildHasher> Serialize for std::collections::HashMap<Strin
 where
     T: Serialize,
 {
-    fn serialize(self) -> String {
+    fn serialize(&self) -> String {
         let aux_vec = self
-            .into_iter()
+            .iter()
             .map(|(k, v)| format!(":{} {}", k.replace([' ', '_'], "-"), v.serialize()))
             .collect::<Vec<String>>();
         let mut s = String::new();
@@ -130,9 +130,9 @@ impl<T, H: ::std::hash::BuildHasher> Serialize for std::collections::HashMap<&st
 where
     T: Serialize,
 {
-    fn serialize(self) -> String {
+    fn serialize(&self) -> String {
         let aux_vec = self
-            .into_iter()
+            .iter()
             .map(|(k, v)| format!(":{} {}", k.replace([' ', '_'], "-"), v.serialize()))
             .collect::<Vec<String>>();
         let mut s = String::new();
@@ -147,9 +147,9 @@ impl<T> Serialize for BTreeMap<String, T>
 where
     T: Serialize,
 {
-    fn serialize(self) -> String {
+    fn serialize(&self) -> String {
         let aux_vec = self
-            .into_iter()
+            .iter()
             .map(|(k, v)| format!(":{} {}", k.replace([' ', '_'], "-"), v.serialize()))
             .collect::<Vec<String>>();
         let mut s = String::new();
@@ -164,16 +164,10 @@ impl<T> Serialize for BTreeMap<&str, T>
 where
     T: Serialize,
 {
-    fn serialize(self) -> String {
+    fn serialize(&self) -> String {
         let aux_vec = self
-            .into_iter()
-            .map(|(k, v)| {
-                format!(
-                    ":{} {}",
-                    k.to_string().replace([' ', '_'], "-"),
-                    v.serialize()
-                )
-            })
+            .iter()
+            .map(|(k, v)| format!(":{} {}", k.replace([' ', '_'], "-"), v.serialize()))
             .collect::<Vec<String>>();
         let mut s = String::new();
         s.push('{');
@@ -187,25 +181,25 @@ where
 ser_primitives![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool];
 
 impl Serialize for () {
-    fn serialize(self) -> String {
+    fn serialize(&self) -> String {
         "nil".to_string()
     }
 }
 
 impl Serialize for String {
-    fn serialize(self) -> String {
+    fn serialize(&self) -> String {
         format!("{self:?}")
     }
 }
 
 impl Serialize for &str {
-    fn serialize(self) -> String {
+    fn serialize(&self) -> String {
         format!("{self:?}")
     }
 }
 
 impl Serialize for char {
-    fn serialize(self) -> String {
+    fn serialize(&self) -> String {
         format!("\\{self}")
     }
 }
@@ -214,8 +208,8 @@ impl<T> Serialize for Option<T>
 where
     T: Serialize,
 {
-    fn serialize(self) -> String {
-        self.map_or_else(
+    fn serialize(&self) -> String {
+        self.as_ref().map_or_else(
             || String::from("nil"),
             crate::serialize::Serialize::serialize,
         )
@@ -224,19 +218,19 @@ where
 
 // Complex types
 impl<A: Serialize> Serialize for (A,) {
-    fn serialize(self) -> String {
+    fn serialize(&self) -> String {
         format!("({})", self.0.serialize())
     }
 }
 
 impl<A: Serialize, B: Serialize> Serialize for (A, B) {
-    fn serialize(self) -> String {
+    fn serialize(&self) -> String {
         format!("({}, {})", self.0.serialize(), self.1.serialize())
     }
 }
 
 impl<A: Serialize, B: Serialize, C: Serialize> Serialize for (A, B, C) {
-    fn serialize(self) -> String {
+    fn serialize(&self) -> String {
         format!(
             "({}, {}, {})",
             self.0.serialize(),
@@ -247,7 +241,7 @@ impl<A: Serialize, B: Serialize, C: Serialize> Serialize for (A, B, C) {
 }
 
 impl<A: Serialize, B: Serialize, C: Serialize, D: Serialize> Serialize for (A, B, C, D) {
-    fn serialize(self) -> String {
+    fn serialize(&self) -> String {
         format!(
             "({}, {}, {}, {})",
             self.0.serialize(),
@@ -261,7 +255,7 @@ impl<A: Serialize, B: Serialize, C: Serialize, D: Serialize> Serialize for (A, B
 impl<A: Serialize, B: Serialize, C: Serialize, D: Serialize, E: Serialize> Serialize
     for (A, B, C, D, E)
 {
-    fn serialize(self) -> String {
+    fn serialize(&self) -> String {
         format!(
             "({}, {}, {}, {}, {})",
             self.0.serialize(),
@@ -276,7 +270,7 @@ impl<A: Serialize, B: Serialize, C: Serialize, D: Serialize, E: Serialize> Seria
 impl<A: Serialize, B: Serialize, C: Serialize, D: Serialize, E: Serialize, F: Serialize> Serialize
     for (A, B, C, D, E, F)
 {
-    fn serialize(self) -> String {
+    fn serialize(&self) -> String {
         format!(
             "({}, {}, {}, {}, {}, {})",
             self.0.serialize(),

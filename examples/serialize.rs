@@ -29,7 +29,7 @@ fn serialize() -> String {
         nothing: (),
     };
 
-    edn_rs::to_string(edn)
+    edn_rs::to_string(&edn)
 }
 
 fn main() {

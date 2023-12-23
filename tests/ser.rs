@@ -24,7 +24,7 @@ mod tests {
             tuples: (3i32, true, 'd'),
         };
 
-        assert_eq!(edn_rs::to_string(edn), "{ :btreemap {:this-is-a-key [\"with\", \"many\", \"keys\"]}, :btreeset #{3, 4, 5}, :hashmap {:this-is-a-key [\"with\", \"many\", \"keys\"]}, :hashset #{3}, :tuples (3, true, \\d), }");
+        assert_eq!(edn_rs::to_string(&edn), "{ :btreemap {:this-is-a-key [\"with\", \"many\", \"keys\"]}, :btreeset #{3, 4, 5}, :hashmap {:this-is-a-key [\"with\", \"many\", \"keys\"]}, :hashset #{3}, :tuples (3, true, \\d), }");
     }
 
     #[test]
@@ -54,7 +54,7 @@ mod tests {
             },
         };
 
-        assert_eq!(edn_rs::to_string(edn), "{ :value 3.4, :bar { :value \"data\", :foo-vec [{ :value false, }, { :value true, }], }, }");
+        assert_eq!(edn_rs::to_string(&edn), "{ :value 3.4, :bar { :value \"data\", :foo-vec [{ :value false, }, { :value true, }], }, }");
     }
 }
 
