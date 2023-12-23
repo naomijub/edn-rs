@@ -1,5 +1,5 @@
 use edn_derive::Serialize;
-use edn_rs::{hmap, hset, map, set};
+use edn_rs::{hmap, hset, map, set, Serialize};
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 
 #[derive(Debug, Clone, Serialize)]
@@ -29,7 +29,7 @@ fn serialize() -> String {
         nothing: (),
     };
 
-    edn_rs::to_string(&edn)
+    edn.serialize()
 }
 
 fn main() {
