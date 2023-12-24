@@ -14,37 +14,28 @@ pub trait Index: private::Sealed {
     fn index_or_insert<'v>(&self, v: &'v mut Edn) -> &'v mut Edn;
 }
 
-impl Index for u64 {
+impl Index for usize {
     fn index_into<'v>(&self, v: &'v Edn) -> Option<&'v Edn> {
-        if let Ok(idx) = usize::try_from(*self) {
-            return match *v {
-                Edn::Vector(ref vec) => vec.0.get(idx),
-                Edn::List(ref vec) => vec.0.get(idx),
-                Edn::Map(ref map) => map.0.get(&self.to_string()),
-                _ => None,
-            };
-        }
-        None
+        return match *v {
+            Edn::Vector(ref vec) => vec.0.get(*self),
+            Edn::List(ref vec) => vec.0.get(*self),
+            Edn::Map(ref map) => map.0.get(&self.to_string()),
+            _ => None,
+        };
     }
     fn index_into_mut<'v>(&self, v: &'v mut Edn) -> Option<&'v mut Edn> {
-        if let Ok(idx) = usize::try_from(*self) {
-            return match *v {
-                Edn::Vector(ref mut vec) => vec.0.get_mut(idx),
-                Edn::List(ref mut vec) => vec.0.get_mut(idx),
-                Edn::Map(ref mut map) => map.0.get_mut(&self.to_string()),
-                _ => None,
-            };
-        }
-        None
+        return match *v {
+            Edn::Vector(ref mut vec) => vec.0.get_mut(*self),
+            Edn::List(ref mut vec) => vec.0.get_mut(*self),
+            Edn::Map(ref mut map) => map.0.get_mut(&self.to_string()),
+            _ => None,
+        };
     }
     fn index_or_insert<'v>(&self, v: &'v mut Edn) -> &'v mut Edn {
         match *v {
             Edn::Vector(ref mut vec) => {
                 let len = vec.0.len();
-                let idx = usize::try_from(*self).unwrap_or_else(|e| {
-                    panic!("index {self} cannot fit in usize with error {e}");
-                });
-                vec.0.get_mut(idx).unwrap_or_else(|| {
+                vec.0.get_mut(*self).unwrap_or_else(|| {
                     panic!("cannot access index {self} of EDN array of length {len}")
                 })
             }
@@ -96,7 +87,11 @@ impl Index for Edn {
 
         match (v, index) {
             (Self::Map(ref map), _) => map.0.get(&key),
-            (Self::List(_) | Self::Vector(_), Some(idx)) => idx.index_into(v),
+            (Self::List(_) | Self::Vector(_), Some(idx)) => {
+                // A panic is expected behavior when trying to index beyond usize
+                let idx = usize::try_from(idx).unwrap();
+                idx.index_into(v)
+            }
             _ => None,
         }
     }
@@ -130,7 +125,7 @@ mod private {
     use crate::Edn;
 
     pub trait Sealed {}
-    impl Sealed for u64 {}
+    impl Sealed for usize {}
     impl Sealed for str {}
     impl Sealed for String {}
     impl Sealed for Edn {}
