@@ -24,7 +24,7 @@ mod tests {
             Edn::Bool(false),
             Edn::Key(":f".to_string()),
             Edn::Nil,
-            Edn::Rational("3/4".to_string())
+            Edn::Rational((3, 4))
         }));
 
         assert_eq!(edn!(#{1 1.2 3 false :f nil 3/4}), expected);
@@ -41,13 +41,13 @@ mod tests {
                     Edn::Bool(false),
                     Edn::Key(":f".to_string()),
                     Edn::Nil,
-                    Edn::Rational("3/4".to_string())
+                    Edn::Rational((3, 4))
             ])),
             Edn::Vector(
                 Vector::new( vec![
                     Edn::Bool(true),
                     Edn::Key(":b".to_string()),
-                    Edn::Rational("12/5".to_string())
+                    Edn::Rational((12, 5))
             ]))
         }));
 

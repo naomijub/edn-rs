@@ -110,14 +110,14 @@ mod tests {
                 Edn::Bool(false),
                 Edn::Key(":f".to_string()),
                 Edn::Nil,
-                Edn::Rational("3/4".to_string()),
+                Edn::Rational((3, 4)),
                 Edn::Set(Set::new(set! {
-                    Edn::Rational("3/4".to_string())
+                    Edn::Rational((3, 4))
                 })),
             ])),
             Edn::Map(Map::new(map![
                     String::from("false") => Edn::Key(":f".to_string()),
-                    String::from("nil") => Edn::Rational("3/4".to_string()),
+                    String::from("nil") => Edn::Rational((3, 4)),
                     String::from(":my-crazy-map") => Edn::Map(Map::new(map![
                         String::from("false") => Edn::Map(
                             Map::new( map![
@@ -125,7 +125,7 @@ mod tests {
                             ])),
                         String::from("nil") => Edn::Vector(
                             Vector::new( vec![
-                                Edn::Rational("3/4".to_string()),
+                                Edn::Rational((3, 4)),
                                 Edn::Int(1i64)
                             ]))
                 ]))

@@ -15,7 +15,7 @@ mod tests {
             edn!("this is a string"),
             Edn::Str("this is a string".to_string())
         );
-        assert_eq!(edn!(3 / 4), Edn::Rational("3/4".to_string()));
+        assert_eq!(edn!(3 / 4), Edn::Rational((3, 4)));
         assert_eq!(edn!(true), Edn::Bool(true));
         assert_eq!(edn!(false), Edn::Bool(false));
         assert_eq!(edn!(nil), Edn::Nil);
@@ -39,7 +39,7 @@ mod tests {
             Edn::Bool(false),
             Edn::Key(":f".to_string()),
             Edn::Nil,
-            Edn::Rational("3/4".to_string()),
+            Edn::Rational((3, 4)),
         ]));
 
         assert_eq!(edn!([ sym 1.2 3 false :f nil 3/4]), expected);
@@ -54,7 +54,7 @@ mod tests {
             Edn::Bool(false),
             Edn::Key(":f".to_string()),
             Edn::Nil,
-            Edn::Rational("3/4".to_string()),
+            Edn::Rational((3, 4)),
         ]));
 
         assert_eq!(edn!((1 1.2 3 false :f nil 3/4)), expected);
@@ -64,7 +64,7 @@ mod tests {
     fn parse_simple_map() {
         let expected = Edn::Map(Map::new(map! {
             String::from("1.2") => Edn::Bool(false),
-            String::from(":b") => Edn::Rational(String::from("3/4"))
+            String::from(":b") => Edn::Rational((3, 4))
         }));
 
         assert_eq!(edn!({1.2 false, :b 3/4}), expected);
@@ -80,7 +80,7 @@ mod tests {
                 Edn::Bool(false),
                 Edn::Key(":f".to_string()),
                 Edn::Nil,
-                Edn::Rational("3/4".to_string()),
+                Edn::Rational((3, 4)),
             ])),
         ]));
 
@@ -97,7 +97,7 @@ mod tests {
                 Edn::Bool(false),
                 Edn::Key(":f".to_string()),
                 Edn::Nil,
-                Edn::Rational("3/4".to_string()),
+                Edn::Rational((3, 4)),
             ])),
         ]));
 
@@ -112,7 +112,7 @@ mod tests {
             Edn::Int(3),
             Edn::Map(Map::new(map![
                     String::from("false") => Edn::Key(":f".to_string()),
-                    String::from("nil") => Edn::Rational("3/4".to_string())
+                    String::from("nil") => Edn::Rational((3, 4))
             ])),
         ]));
 
@@ -132,7 +132,7 @@ mod tests {
                         ])),
                     String::from("nil") => Edn::Vector(
                         Vector::new( vec![
-                            Edn::Rational("3/4".to_string()),
+                            Edn::Rational((3, 4)),
                             Edn::Int(1i64)
                         ]))
             ])),

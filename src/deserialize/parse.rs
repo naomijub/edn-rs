@@ -187,6 +187,23 @@ fn read_discard(chars: &mut iter::Enumerate<core::str::Chars<'_>>) -> Result<Opt
     }
 }
 
+fn num_den_from_slice(slice: impl AsRef<str>) -> Option<(i64, u64)> {
+    let slice = slice.as_ref();
+    let index = slice.find('/');
+
+    if let Some(i) = index {
+        let (num, den) = slice.split_at(i); // This can't panic because the index is valid
+        let num = num.parse::<i64>();
+        let den = den[1..].parse::<u64>();
+
+        if let (Ok(n), Ok(d)) = (num, den) {
+            return Some((n, d));
+        }
+        return None;
+    }
+    None
+}
+
 fn read_number(n: char, chars: &mut iter::Enumerate<core::str::Chars<'_>>) -> Result<Edn, Error> {
     let i = chars
         .clone()
@@ -263,9 +280,7 @@ fn read_number(n: char, chars: &mut iter::Enumerate<core::str::Chars<'_>>) -> Re
             Ok(Edn::Int(i64::from_str_radix(&n, radix)?))
         }
         n if n.parse::<f64>().is_ok() => Ok(Edn::Double(n.parse::<f64>()?.into())),
-        n if n.contains('/') && n.split('/').all(|d| d.parse::<f64>().is_ok()) => {
-            Ok(Edn::Rational(n))
-        }
+        n if num_den_from_slice(&n).is_some() => Ok(Edn::Rational(num_den_from_slice(n).unwrap())),
         n if n.to_uppercase().chars().filter(|c| c == &'E').count() > 1 => {
             let mut n = n.chars();
             read_symbol(n.next().unwrap_or(' '), &mut n.enumerate())

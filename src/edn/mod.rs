@@ -38,7 +38,7 @@ pub enum Edn {
     Int(i64),
     UInt(u64),
     Double(Double),
-    Rational(String),
+    Rational((i64, u64)),
     Char(char),
     Bool(bool),
     Nil,
@@ -244,7 +244,7 @@ impl core::fmt::Display for Edn {
             Self::Int(i) => format!("{i}"),
             Self::UInt(u) => format!("{u}"),
             Self::Double(d) => format!("{d}"),
-            Self::Rational(r) => r.to_string(),
+            Self::Rational((n, d)) => format!("{n}/{d}"),
             Self::Bool(b) => format!("{b}"),
             Self::Char(c) => format!("\\{c}"),
             Self::Nil => String::from("nil"),
@@ -261,7 +261,7 @@ impl Edn {
     /// use edn_rs::edn::{Edn, Vector};
     ///
     /// let key = Edn::Key(String::from(":1234"));
-    /// let q = Edn::Rational(String::from("3/4"));
+    /// let q = Edn::Rational((3, 4));
     /// let i = Edn::Int(12i64);
     ///
     /// assert_eq!(Edn::Vector(Vector::empty()).to_float(), None);
@@ -277,7 +277,7 @@ impl Edn {
             Self::Int(i) => to_double(i).ok(),
             Self::UInt(u) => to_double(u).ok(),
             Self::Double(d) => Some(d.to_float()),
-            Self::Rational(r) => rational_to_double(r),
+            Self::Rational(r) => Some(rational_to_double(*r)),
             _ => None,
         }
     }
@@ -287,7 +287,7 @@ impl Edn {
     /// use edn_rs::edn::{Edn, Vector};
     ///
     /// let key = Edn::Key(String::from(":1234"));
-    /// let q = Edn::Rational(String::from("3/4"));
+    /// let q = Edn::Rational((3, 4));
     /// let f = Edn::Double(12.3f64.into());
     ///
     /// assert_eq!(Edn::Vector(Vector::empty()).to_float(), None);
@@ -303,12 +303,12 @@ impl Edn {
             Self::Int(i) => Some(*i),
             #[allow(clippy::cast_possible_wrap)]
             Self::UInt(u) if i64::try_from(*u).is_ok() => Some(*u as i64),
-            #[allow(clippy::cast_possible_truncation)]
             #[cfg(feature = "std")]
+            #[allow(clippy::cast_possible_truncation)]
             Self::Double(d) => Some((*d).to_float().round() as i64),
-            #[allow(clippy::cast_possible_truncation)]
             #[cfg(feature = "std")]
-            Self::Rational(r) => Some(rational_to_double(r).unwrap_or(0f64).round() as i64),
+            #[allow(clippy::cast_possible_truncation)]
+            Self::Rational(r) => Some(rational_to_double(*r).round() as i64),
             _ => None,
         }
     }
@@ -329,11 +329,11 @@ impl Edn {
                 Some((*d).to_float().round() as u64)
             }
             #[cfg(feature = "std")]
-            Self::Rational(r) if !r.contains('-') =>
+            Self::Rational(r) if r.0 > 0 =>
             {
                 #[allow(clippy::cast_sign_loss)]
                 #[allow(clippy::cast_possible_truncation)]
-                Some(rational_to_double(r)?.round() as u64)
+                Some(rational_to_double(*r).round() as u64)
             }
             _ => None,
         }
@@ -697,17 +697,9 @@ where
     format!("{i:?}").parse::<f64>()
 }
 
-pub(crate) fn rational_to_double(r: &str) -> Option<f64> {
-    if r.split('/').count() == 2 {
-        let vals = r
-            .split('/')
-            .map(ToString::to_string)
-            .map(|v| v.parse::<f64>())
-            .map(Result::ok)
-            .collect::<Option<Vec<f64>>>()?;
-        return Some(vals[0] / vals[1]);
-    }
-    None
+#[allow(clippy::cast_precision_loss)]
+pub(crate) fn rational_to_double((n, d): (i64, u64)) -> f64 {
+    (n as f64) / (d as f64)
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -773,15 +765,6 @@ mod test {
     use alloc::vec;
 
     use super::*;
-    #[test]
-    fn parses_rationals() {
-        assert_eq!(rational_to_double("3/4").unwrap(), 0.75f64);
-        assert_eq!(rational_to_double("25/5").unwrap(), 5f64);
-        assert_eq!(rational_to_double("15/4").unwrap(), 3.75f64);
-        assert_eq!(rational_to_double("3 4"), None);
-        assert_eq!(rational_to_double("3/4/5"), None);
-        assert_eq!(rational_to_double("text/moretext"), None);
-    }
 
     #[test]
     fn iterator() {
