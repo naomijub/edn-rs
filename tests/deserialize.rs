@@ -130,10 +130,7 @@ mod test {
             Edn::from_str("-43.5143").unwrap(),
             Edn::Double(edn::Double::from(-43.5143))
         );
-        assert_eq!(
-            Edn::from_str("43/5143").unwrap(),
-            Edn::Rational("43/5143".to_string())
-        );
+        assert_eq!(Edn::from_str("43/5143").unwrap(), Edn::Rational((43, 5143)));
         assert_eq!(
             Edn::from_str("999999999999999999999.0").unwrap(),
             Edn::Double(edn::Double::from(1e21f64))

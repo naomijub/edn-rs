@@ -12,7 +12,7 @@ fn tokenize() {
         Edn::Bool(false),
         Edn::Key(":f".to_string()),
         Edn::Nil,
-        Edn::Rational("3/4".to_string()),
+        Edn::Rational((3, 4)),
     ]));
 
     println!("{edn:?}");

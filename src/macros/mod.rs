@@ -21,7 +21,7 @@
 ///                     Edn::Bool(false),
 ///                     Edn::Key(":f".to_string()),
 ///                     Edn::Nil,
-///                     Edn::Rational("3/4".to_string())
+///                     Edn::Rational((3, 4))
 ///                 ]
 ///             )
 ///         );
@@ -38,7 +38,7 @@
 ///             Edn::Bool(false),
 ///             Edn::Key(":f".to_string()),
 ///             Edn::Nil,
-///             Edn::Rational("3/4".to_string())
+///             Edn::Rational((3, 4))
 ///             }
 ///         )
 ///     );
@@ -50,7 +50,7 @@
 ///             map!{
 ///                 String::from("1.2") => Edn::Bool(false),
 ///                 // Note `:b` becomes `b`
-///                 String::from(":b") => Edn::Rational(String::from("3/4"))
+///                 String::from(":b") => Edn::Rational((3, 4))
 ///             }
 ///         )
 ///     );
@@ -81,7 +81,7 @@
 ///                         ])),
 ///                     String::from("nil") => Edn::Vector(
 ///                         Vector::new( vec![
-///                             Edn::Rational("3/4".to_string()),
+///                             Edn::Rational((3, 4)),
 ///                             Edn::Int(1i64)
 ///                         ]))
 ///             ]))
@@ -200,8 +200,7 @@ macro_rules! edn_internal {
     };
 
     ($num:tt/$den:tt) => {{
-        let q = std::format!("{:?}/{:?}", $num, $den);
-        Edn::Rational(q)
+        Edn::Rational(($num, $den))
     }};
 
     (:$key:tt) => {{
