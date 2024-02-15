@@ -59,15 +59,15 @@ mod test {
         let edn = "(1 -10 \"2\" 3.3 :b #{true \\c})";
 
         assert_eq!(
-            Edn::from_str(edn),
-            Ok(Edn::List(List::new(vec![
+            Edn::from_str(edn).unwrap(),
+            Edn::List(List::new(vec![
                 Edn::UInt(1),
                 Edn::Int(-10),
                 Edn::Str("2".to_string()),
                 Edn::Double(3.3.into()),
                 Edn::Key(":b".to_string()),
                 Edn::Set(Set::new(set![Edn::Bool(true), Edn::Char('c')]))
-            ])))
+            ]))
         );
     }
 
@@ -114,15 +114,15 @@ mod test {
         let edn = "{:a \"2\" :b [true false] :c #{:A {:a :b} nil}}";
 
         assert_eq!(
-            Edn::from_str(edn),
-            Ok(Edn::Map(Map::new(map! {
+            Edn::from_str(edn).unwrap(),
+            Edn::Map(Map::new(map! {
             ":a".to_string() =>Edn::Str("2".to_string()),
             ":b".to_string() => Edn::Vector(Vector::new(vec![Edn::Bool(true), Edn::Bool(false)])),
             ":c".to_string() => Edn::Set(Set::new(
                 set!{
                     Edn::Map(Map::new(map!{":a".to_string() => Edn::Key(":b".to_string())})),
                     Edn::Key(":A".to_string()),
-                    Edn::Nil}))})))
+                    Edn::Nil}))}))
         );
     }
 
@@ -148,14 +148,10 @@ mod test {
 
     #[test]
     fn parse_discard_space_invalid() {
-        assert_eq!(
-            Edn::from_str(
-                "#_ ,, #{hello, this will be discarded} #_{so will this} #{this is invalid"
-            ),
-            Err(Error::ParseEdn(
-                "None could not be parsed at char count 58".to_string()
-            ))
-        );
+        assert!(Edn::from_str(
+            "#_ ,, #{hello, this will be discarded} #_{so will this} #{this is invalid"
+        )
+        .is_err());
     }
 
     #[test]

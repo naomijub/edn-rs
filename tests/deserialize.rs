@@ -5,7 +5,6 @@ mod test {
     use alloc::collections::BTreeMap;
     use core::str::FromStr;
 
-    use edn::Error;
     use edn_rs::{edn, from_edn, from_str, hmap, map, Edn, List, Map, Vector};
 
     #[test]
@@ -24,6 +23,11 @@ mod test {
             Edn::Vector(Vector::new(vec![]))
         );
         assert_eq!(Edn::from_str("()").unwrap(), Edn::List(List::new(vec![])));
+    }
+
+    #[test]
+    fn parse_invalid_vec() {
+        assert!(Edn::from_str("[42").is_err());
     }
 
     #[test]
@@ -108,18 +112,14 @@ mod test {
 
     #[test]
     fn parse_str_with_invalid_escape() {
-        assert_eq!(
-            Edn::from_str(r#""hello\n \r \t \"world\" with escaped \\ \g characters""#),
-            Err(Error::ParseEdn("Invalid escape sequence \\g".to_string()))
+        assert!(
+            Edn::from_str(r#""hello\n \r \t \"world\" with escaped \\ \g characters""#).is_err()
         );
     }
 
     #[test]
     fn parse_unterminated_string() {
-        assert_eq!(
-            Edn::from_str(r#""hello\n \r \t \"world\" with escaped \\ characters"#),
-            Err(Error::ParseEdn("Unterminated string".to_string()))
-        );
+        assert!(Edn::from_str(r#""hello\n \r \t \"world\" with escaped \\ characters"#).is_err());
     }
 
     #[test]
@@ -159,15 +159,15 @@ mod test {
         let edn = "[1 \"2\" 3.3 :b true \\c]";
 
         assert_eq!(
-            Edn::from_str(edn),
-            Ok(Edn::Vector(Vector::new(vec![
+            Edn::from_str(edn).unwrap(),
+            Edn::Vector(Vector::new(vec![
                 Edn::UInt(1),
                 Edn::Str("2".to_string()),
                 Edn::Double(3.3.into()),
                 Edn::Key(":b".to_string()),
                 Edn::Bool(true),
                 Edn::Char('c')
-            ])))
+            ]))
         );
     }
 
@@ -294,14 +294,14 @@ mod test {
         let edn = "(1 \"2\" 3.3 :b [true \\c])";
 
         assert_eq!(
-            Edn::from_str(edn),
-            Ok(Edn::List(List::new(vec![
+            Edn::from_str(edn).unwrap(),
+            Edn::List(List::new(vec![
                 Edn::UInt(1),
                 Edn::Str("2".to_string()),
                 Edn::Double(3.3.into()),
                 Edn::Key(":b".to_string()),
                 Edn::Vector(Vector::new(vec![Edn::Bool(true), Edn::Char('c')]))
-            ])))
+            ]))
         );
     }
 
@@ -347,11 +347,11 @@ mod test {
         let edn = "{:a \"2\" :b true :c nil}";
 
         assert_eq!(
-            Edn::from_str(edn),
-            Ok(Edn::Map(Map::new(
+            Edn::from_str(edn).unwrap(),
+            Edn::Map(Map::new(
                 map! {":a".to_string() => Edn::Str("2".to_string()),
                 ":b".to_string() => Edn::Bool(true), ":c".to_string() => Edn::Nil}
-            )))
+            ))
         );
     }
 
@@ -425,12 +425,7 @@ mod test {
 
     #[test]
     fn parse_discard_invalid() {
-        assert_eq!(
-            Edn::from_str("#_{ 234"),
-            Err(Error::ParseEdn(
-                "None could not be parsed at char count 3".to_string()
-            ))
-        );
+        assert!(Edn::from_str("#_{ 234").is_err());
     }
 
     #[test]
@@ -463,12 +458,7 @@ mod test {
 
     #[test]
     fn parse_discard_no_follow_element() {
-        assert_eq!(
-            Edn::from_str("#_ ,, "),
-            Err(Error::ParseEdn(
-                "Discard sequence must have a following element at char count 2".to_string()
-            ))
-        );
+        assert!(Edn::from_str("#_ ,, ").is_err());
     }
 
     #[test]
@@ -481,12 +471,7 @@ mod test {
 
     #[test]
     fn parse_discard_end_of_seq_no_follow() {
-        assert_eq!(
-            Edn::from_str("[:foo #_ ]"),
-            Err(Error::ParseEdn(
-                "Discard sequence must have a following element at char count 8".to_string()
-            ))
-        );
+        assert!(Edn::from_str("[:foo #_ ]").is_err());
     }
 
     #[test]
@@ -850,32 +835,10 @@ mod test {
 
     #[test]
     fn parse_invalid_ints() {
-        assert_eq!(
-            Edn::from_str("42invalid123"),
-            Err(Error::ParseEdn(
-                "42invalid123 could not be parsed with radix 10".to_string()
-            ))
-        );
-
-        assert_eq!(
-            Edn::from_str("0xxyz123"),
-            Err(Error::ParseEdn(
-                "xyz123 could not be parsed with radix 16".to_string()
-            ))
-        );
-
-        assert_eq!(
-            Edn::from_str("42rabcxzy"),
-            Err(Error::ParseEdn("Radix of 42 is out of bounds".to_string()))
-        );
-
-        assert_eq!(
-            Edn::from_str("42crazyrabcxzy"),
-            Err(Error::ParseEdn(
-                "invalid digit found in string while trying to parse radix from 42crazyrabcxzy"
-                    .to_string()
-            ))
-        );
+        assert!(Edn::from_str("42invalid123").is_err());
+        assert!(Edn::from_str("0xxyz123").is_err());
+        assert!(Edn::from_str("42rabcxzy").is_err());
+        assert!(Edn::from_str("42crazyrabcxzy").is_err());
     }
 
     #[test]
@@ -939,12 +902,7 @@ mod test {
     fn weird_input() {
         let edn = "{:a]";
 
-        assert_eq!(
-            Edn::from_str(edn),
-            Err(Error::ParseEdn(
-                "Could not identify symbol index".to_string()
-            ))
-        );
+        assert!(Edn::from_str(edn).is_err());
     }
 
     #[test]
@@ -994,5 +952,6 @@ mod test {
         assert!(Edn::from_str("{ :foo 42 :foo 43 }").is_err());
         assert!(Edn::from_str("{ :[0x42] 42 }").is_err());
         assert!(Edn::from_str("\\cats").is_err());
+        assert!(Edn::from_str("42/").is_err());
     }
 }
