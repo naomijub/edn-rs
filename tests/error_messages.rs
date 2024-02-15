@@ -80,4 +80,10 @@ world!"#
             "EdnError { code: NoFeatureSets, line: Some(3), column: Some(4), index: Some(13) }"
         );
     }
+
+    #[test]
+    fn invalid_conversions() {
+        let small = edn_rs::from_edn::<u8>(&Edn::UInt(9876123));
+        assert_eq!(format!("{small:?}"), "Err(EdnError { code: TryFromInt(TryFromIntError(())), line: None, column: None, index: None })");
+    }
 }
