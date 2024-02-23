@@ -1,19 +1,13 @@
 # edn-rs
 [![Build Status](https://travis-ci.org/edn-rs/edn-rs.svg?branch=master)](https://travis-ci.org/edn-rs/edn-rs) [![codecov](https://codecov.io/gh/edn-rs/edn-rs/branch/master/graph/badge.svg?token=4VMVTZTN8A)](https://codecov.io/gh/edn-rs/edn-rs)
 
-Crate to parse and emit EDN
-* **This lib does not make effort to conform the EDN received to EDN Spec.** The lib that generated this EDN should be responsible for this. For more information on Edn Spec please visit: https://github.com/edn-format/edn.
+A crate to parse and emit EDN [`(Extensible Data Notation)`](https://github.com/edn-format/edn)
 * MSRV (minimal supported rust version) is stable minus 2 versions. Once stable (1.0.0), the plan is to indefinitely maintain the MSRV.
 * Current library maintainer is Kevin Nakamura (@Grinkers)
 
-Our **MTTA** (Mean time to acknowledge) is around `one day`;
-<!---->
-and our **TTR** (Time To Resolve) can vary from a `few days to a couple of weeks` depending on the number of issues.
-
-Current example usage in:
-* [crate `transistor`](https://github.com/naomijub/transistor);
-* [`atm-crux`](https://github.com/naomijub/atm-crux);
-* [Rust/Clojure FFI. Deserialize Clojure Edn into Rust Struct](https://github.com/naomijub/JVM-rust-ffi/tree/master/clj-rs);
+Full integration examples:
+* [`edn-rs fuzzer` with full JVM interop](https://github.com/edn-rs/edn-rs_fuzzer);
+* [`pico-edn` no_std running on a Cortex-M0+ (rp2040)](https://github.com/edn-rs/pico-edn);
 
 ## Usage
 
@@ -27,7 +21,7 @@ edn-rs = "0.17.4"
 
 ### no_std
 To use `edn-rs` without any additional dependencies, disable default features.
-`edn-rs` still relies on `alloc`. In no_std environments, you must supply your own `#[global_allocator]`
+`edn-rs` still relies on `alloc`. In no_std environments, you must supply your own `#[global_allocator]`.
 
 ```toml
 [dependencies]
@@ -38,16 +32,6 @@ edn-rs = { version = "0.17.4", default-features = false }
 * `std`: Implements (de)serialization for Hashmap and HashSet; Also some floating point functionality.
 * `sets`: Implements (de)serialization for EDN sets. Depends on `ordered-float`.
 * `json`: Implements json->edn and edn->json conversions. Depends on `regex`.
-
-## Simple time-only benchmarks of `edn-rs` against Clojure Edn
-* Link to benchmarks implementation [here](https://github.com/naomijub/edn-duration-benchmark/blob/master/README.md)
-
-| Method\Lang 	| Rust --release 	| Rust --debug 	| Clojure 	|
-|-	|-	|-	|-	|
-| parse string 	| 77.57µs 	| 266.479µs 	| 4.712235 milis 	|
-| get-in/navigate (3 blocks)	| 4.224µs	| 22.861µs 	| 26.333 µs 	|
-| Deserialize to struct 	| 110.358µs 	| 357.054µs 	| 4.712235 milis 	|
-| parse with criterium | 11.348µs | - | 23.230µs|
 
 ## Quick reference
 
@@ -367,7 +351,7 @@ fn complex_ok() -> Result<(), EdnError> {
 
     let edn = Edn::from_str(edn_str)?;
     println!("{:?}", edn.to_string());
-//    "{:list: [{:age 66, :cool true, :name \"rose\", }, {:age 33, :cool false, :name \"josh\", }, {:age 296, :cool true, :name \"eva\", }, ], }"
+    // "{:list: [{:age 66, :cool true, :name \"rose\", }, {:age 33, :cool false, :name \"josh\", }, {:age 296, :cool true, :name \"eva\", }, ], }"
 
     Ok(())
 }
