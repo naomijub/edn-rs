@@ -1,12 +1,12 @@
 # edn-rs
 [![Build Status](https://travis-ci.org/edn-rs/edn-rs.svg?branch=master)](https://travis-ci.org/edn-rs/edn-rs) [![codecov](https://codecov.io/gh/edn-rs/edn-rs/branch/master/graph/badge.svg?token=4VMVTZTN8A)](https://codecov.io/gh/edn-rs/edn-rs)
 
-Crate to parse and emit EDN 
+Crate to parse and emit EDN
 * **This lib does not make effort to conform the EDN received to EDN Spec.** The lib that generated this EDN should be responsible for this. For more information on Edn Spec please visit: https://github.com/edn-format/edn.
 * MSRV (minimal supported rust version) is stable minus 2 versions. Once stable (1.0.0), the plan is to indefinitely maintain the MSRV.
 * Current library maintainer is Kevin Nakamura (@Grinkers)
 
-Our **MTTA** (Mean time to acknowledge) is around `one day`; 
+Our **MTTA** (Mean time to acknowledge) is around `one day`;
 <!---->
 and our **TTR** (Time To Resolve) can vary from a `few days to a couple of weeks` depending on the number of issues.
 
@@ -284,7 +284,7 @@ fn main() {
     assert_eq!(edn, json_to_edn(json));
 
     let complex_json = String::from(r#"{
-            "people": 
+            "people":
             [
                 {
                     "name": "eva",
@@ -307,27 +307,27 @@ fn main() {
 
  **Emits a JSON** from type `edn_rs::Edn`.
  * The associated emthod is `to_json(&self)` and it requires feature `json` to be activated. To enable this feature add to your `Cargo.toml`  dependencies the following line `edn-rs = { version = 0.17.4", features = ["json"] }`.
- 
+
 ```rust
 use std::str::FromStr;
 fn complex_json() {
-    let edn = "{ 
-        :people-list [ 
-            { :first-name \"eva\", :age 22 }, 
-            { :first-name \"Julia\", :age 32.0 } 
-        ], 
-        :country-or-origin \"Brazil\", 
-        :queerentener true, 
+    let edn = "{
+        :people-list [
+            { :first-name \"eva\", :age 22 },
+            { :first-name \"Julia\", :age 32.0 }
+        ],
+        :country-or-origin \"Brazil\",
+        :queerentener true,
         :brain nil }";
     let parsed_edn : edn_rs::Edn = edn_rs::Edn::from_str(edn).unwrap();
     let actual_json = parsed_edn.to_json();
     let expected = String::from(
-        "{\"brain\": null, 
-          \"countryOrOrigin\": \"Brazil\", 
+        "{\"brain\": null,
+          \"countryOrOrigin\": \"Brazil\",
           \"peopleList\": [
-              {\"age\": 22, \"firstName\": \"eva\"}, 
+              {\"age\": 22, \"firstName\": \"eva\"},
               {\"age\": 32.0, \"firstName\": \"Julia\"}
-            ], 
+            ],
           \"queerentener\": true}",
     );
     assert_eq!(
@@ -400,7 +400,7 @@ fn complex_ok() -> Result<(), EdnError> {
     - [x] Maps in general `"{:a 2 :b {:3 \"4\"}}"`, `"{:a 2 :b [:3 \"4\"]}"`
 - [x] Multiple simple data structures in one another (Map and Set in a vector)
 - [x] Multi deepen data structures (Map in a Set in a List in a  Vec in a Vec)
-- [x] Navigate through Edn Data 
+- [x] Navigate through Edn Data
     - [x] Navigate through Sets. DOne by `set_iter`
 - [x] Json to Edn
     - [x] Json String to EDN String
