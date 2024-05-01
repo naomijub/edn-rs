@@ -10,11 +10,11 @@ use crate::edn::{rational_to_double, Edn};
 #[allow(clippy::module_name_repetitions)]
 pub fn display_as_json(edn: &Edn) -> String {
     match edn {
-        Edn::Vector(v) => vec_to_json(&v.clone().to_vec()),
+        Edn::Vector(v) => vec_to_json(v.to_vec()),
         #[cfg(feature = "sets")]
-        Edn::Set(s) => set_to_json_vec(&s.clone().to_set()),
-        Edn::Map(map) => map_to_json(&map.clone().to_map()),
-        Edn::List(l) => vec_to_json(&l.clone().to_vec()),
+        Edn::Set(s) => set_to_json_vec(s.to_set()),
+        Edn::Map(map) => map_to_json(map.to_map()),
+        Edn::List(l) => vec_to_json(l.to_vec()),
         Edn::Key(key) => format!("{:?}", kebab_to_camel(key)),
         Edn::Symbol(s) | Edn::Str(s) => format!("{s:?}"),
         Edn::Int(n) => format!("{n}"),
