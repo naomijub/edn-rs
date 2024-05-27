@@ -11,13 +11,13 @@ license = "MIT"
 edition = "2021"
 
 [lints.rust]
-rust_2018_idioms = "warn"
+rust_2018_idioms = { level = "warn", priority = -1 }
 future-incompatible = "warn"
 unsafe_code = "deny"
 
 [lints.clippy]
-pedantic = "warn"
-nursery = "warn"
+nursery = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
 
 [features]
 default = ["sets", "std"]
