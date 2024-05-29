@@ -32,7 +32,6 @@ pub fn display_as_json(edn: &Edn) -> String {
         Edn::Char(c) => format!("'{c}'"),
         Edn::Bool(b) => format!("{b}"),
         Edn::Nil => String::from("null"),
-        Edn::Empty => String::new(),
         Edn::Tagged(tag, content) => format!("{{ \"{}\": {}}}", tag, display_as_json(content)),
     }
 }
@@ -122,7 +121,6 @@ mod test {
     #[test]
     fn nil_and_empty_edns() {
         assert_eq!(display_as_json(&Edn::Nil), String::from("null"));
-        assert_eq!(display_as_json(&Edn::Empty), String::new());
     }
 
     #[test]

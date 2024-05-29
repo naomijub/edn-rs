@@ -20,12 +20,13 @@ mod test {
 
     #[test]
     fn parse_empty() {
-        assert_eq!(Edn::from_str("").unwrap(), Edn::Empty);
+        assert_eq!(Edn::from_str("").unwrap(), Edn::Nil);
         assert_eq!(
             Edn::from_str("[]").unwrap(),
             Edn::Vector(Vector::new(vec![]))
         );
         assert_eq!(Edn::from_str("()").unwrap(), Edn::List(List::new(vec![])));
+        assert_eq!(Edn::from_str("{}").unwrap(), Edn::Map(Map::empty()));
     }
 
     #[test]
@@ -33,7 +34,7 @@ mod test {
         let edn = "
                           \r\n";
 
-        assert_eq!(Edn::from_str(edn).unwrap(), Edn::Empty);
+        assert_eq!(Edn::from_str(edn).unwrap(), Edn::Nil);
     }
 
     #[test]
@@ -45,7 +46,7 @@ mod test {
 
     #[test]
     fn parse_commas_are_whitespace() {
-        assert_eq!(Edn::from_str(",,,,, \r\n,,,").unwrap(), Edn::Empty);
+        assert_eq!(Edn::from_str(",,,,, \r\n,,,").unwrap(), Edn::Nil);
     }
 
     #[test]
@@ -440,14 +441,14 @@ mod test {
 
     #[test]
     fn parse_discard_empty() {
-        assert_eq!(Edn::from_str("#_ ,, foo").unwrap(), Edn::Empty);
+        assert_eq!(Edn::from_str("#_ ,, foo").unwrap(), Edn::Nil);
     }
 
     #[test]
     fn parse_discard_repeat_empty() {
         assert_eq!(
             Edn::from_str("#_ ,, #_{discard again} #_ {:and :again} :okay").unwrap(),
-            Edn::Empty
+            Edn::Nil
         );
     }
 
@@ -522,22 +523,19 @@ mod test {
 
     #[test]
     fn parse_comment_only() {
-        assert_eq!(
-            Edn::from_str(" ;;; this is a comment\n").unwrap(),
-            Edn::Empty
-        );
+        assert_eq!(Edn::from_str(" ;;; this is a comment\n").unwrap(), Edn::Nil);
     }
 
     #[test]
     fn parse_comment_only_no_newline() {
-        assert_eq!(Edn::from_str(" ;;; this is a comment").unwrap(), Edn::Empty);
+        assert_eq!(Edn::from_str(" ;;; this is a comment").unwrap(), Edn::Nil);
     }
 
     #[test]
     fn parse_comment_multiple() {
         assert_eq!(
             Edn::from_str(" ;;; comment 1\n ;;; comment 2\n ;;; comment 3\n\n").unwrap(),
-            Edn::Empty
+            Edn::Nil
         );
     }
 

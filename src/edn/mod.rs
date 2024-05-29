@@ -43,7 +43,6 @@ pub enum Edn {
     Char(char),
     Bool(bool),
     Nil,
-    Empty,
 }
 
 #[derive(Clone, Ord, Debug, Eq, PartialEq, PartialOrd, Hash)]
@@ -259,7 +258,6 @@ impl core::fmt::Display for Edn {
             Self::Bool(b) => format!("{b}"),
             Self::Char(c) => char_to_edn(*c),
             Self::Nil => String::from("nil"),
-            Self::Empty => String::new(),
             Self::Tagged(tag, edn) => format!("#{tag} {edn}"),
         };
         write!(f, "{text}")
@@ -666,7 +664,6 @@ impl Edn {
     /// `Edn::Inst(inst)` => a `DateTime` string like `\"2020-10-21T00:00:00.000-00:00\"`
     /// `Edn::Uuid(uuid)` => a UUID string like `\"7a6b6722-0221-4280-865e-ad41060d53b2\"`
     /// `Edn::Nil` => `null`
-    /// `Edn::Empty` => empty value, ` `
     /// ```
     /// use std::str::FromStr;
     ///

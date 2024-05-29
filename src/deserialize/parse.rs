@@ -167,11 +167,12 @@ pub fn parse(edn: &str) -> Result<Edn, Error> {
         line: 1,
     };
 
-    parse_internal(&mut walker)
+    let internal_parse = parse_internal(&mut walker)?;
+    internal_parse.map_or_else(|| Ok(Edn::Nil), Ok)
 }
 
 #[inline]
-fn parse_internal(walker: &mut Walker<'_>) -> Result<Edn, Error> {
+fn parse_internal(walker: &mut Walker<'_>) -> Result<Option<Edn>, Error> {
     walker.nibble_whitespace();
     while let Some(next) = walker.peek_next() {
         let column_start = walker.column;
@@ -195,13 +196,18 @@ fn parse_internal(walker: &mut Walker<'_>) -> Result<Edn, Error> {
                 walker.nibble_newline();
                 None
             }
-            '[' => return parse_vector(walker),
-            '(' => return parse_list(walker),
-            '{' => return parse_map(walker),
+            '[' => return Ok(Some(parse_vector(walker)?)),
+            '(' => return Ok(Some(parse_list(walker)?)),
+            '{' => return Ok(Some(parse_map(walker)?)),
             '#' => parse_tag_set_discard(walker)?.map(Ok),
             // non-string literal case
             _ => match edn_literal(walker.slurp_literal()) {
-                Ok(edn) => Some(Ok(edn)),
+                Ok(edn) => match edn {
+                    Some(e) => Some(Ok(e)),
+                    None => {
+                        return Ok(None);
+                    }
+                },
                 Err(code) => {
                     return Err(Error {
                         code,
@@ -212,10 +218,10 @@ fn parse_internal(walker: &mut Walker<'_>) -> Result<Edn, Error> {
                 }
             },
         } {
-            return ret;
+            return Ok(Some(ret?));
         }
     }
-    Ok(Edn::Empty)
+    Ok(None)
 }
 
 #[inline]
@@ -233,7 +239,7 @@ fn parse_tag_set_discard(walker: &mut Walker<'_>) -> Result<Option<Edn>, Error> 
 fn parse_discard(walker: &mut Walker<'_>) -> Result<Option<Edn>, Error> {
     let _ = walker.nibble_next(); // Consume the leading '_' char
     Ok(match parse_internal(walker)? {
-        Edn::Empty => {
+        None => {
             return Err(Error {
                 code: Code::UnexpectedEOF,
                 line: Some(walker.line),
@@ -242,7 +248,7 @@ fn parse_discard(walker: &mut Walker<'_>) -> Result<Option<Edn>, Error> {
             })
         }
         _ => match walker.peek_next() {
-            Some(_) => Some(parse_internal(walker)?),
+            Some(_) => parse_internal(walker)?,
             None => None,
         },
     })
@@ -262,14 +268,16 @@ fn parse_set(walker: &mut Walker<'_>) -> Result<Edn, Error> {
             }
             Some(_) => {
                 let next = parse_internal(walker)?;
-                if next != Edn::Empty && !set.insert(next) {
-                    return Err(Error {
-                        code: Code::SetDuplicateKey,
-                        line: Some(walker.line),
-                        column: Some(walker.column),
-                        ptr: Some(walker.ptr),
-                    });
-                };
+                if let Some(n) = next {
+                    if !set.insert(n) {
+                        return Err(Error {
+                            code: Code::SetDuplicateKey,
+                            line: Some(walker.line),
+                            column: Some(walker.column),
+                            ptr: Some(walker.ptr),
+                        });
+                    };
+                }
             }
             _ => {
                 return Err(Error {
@@ -296,11 +304,17 @@ const fn parse_set(walker: &Walker<'_>) -> Result<Edn, Error> {
 
 #[inline]
 fn parse_tag(walker: &mut Walker<'_>) -> Result<Edn, Error> {
-    let tag = walker.slurp_tag();
-    Ok(Edn::Tagged(
-        tag.to_string(),
-        Box::new(parse_internal(walker)?),
-    ))
+    let tag = walker.slurp_tag().to_string();
+    if let Some(n) = parse_internal(walker)? {
+        Ok(Edn::Tagged(tag, Box::new(n)))
+    } else {
+        Err(Error {
+            code: Code::UnexpectedEOF,
+            line: Some(walker.line),
+            column: Some(walker.column),
+            ptr: Some(walker.ptr),
+        })
+    }
 }
 
 #[inline]
@@ -326,9 +340,10 @@ fn parse_map(walker: &mut Walker<'_>) -> Result<Edn, Error> {
                 let key = parse_internal(walker)?;
                 let val = parse_internal(walker)?;
 
-                if key != Edn::Empty && val != Edn::Empty {
+                // When this is not true, errors are caught on the next loop
+                if let (Some(k), Some(v)) = (key, val) {
                     // Existing keys are considered an error
-                    if map.insert(key.to_string(), val).is_some() {
+                    if map.insert(k.to_string(), v).is_some() {
                         return Err(Error {
                             code: Code::HashMapDuplicateKey,
                             line: Some(walker.line),
@@ -362,8 +377,7 @@ fn parse_vector(walker: &mut Walker<'_>) -> Result<Edn, Error> {
                 return Ok(Edn::Vector(Vector::new(vec)));
             }
             Some(_) => {
-                let next = parse_internal(walker)?;
-                if next != Edn::Empty {
+                if let Some(next) = parse_internal(walker)? {
                     vec.push(next);
                 }
             }
@@ -391,8 +405,7 @@ fn parse_list(walker: &mut Walker<'_>) -> Result<Edn, Error> {
                 return Ok(Edn::List(List::new(vec)));
             }
             Some(_) => {
-                let next = parse_internal(walker)?;
-                if next != Edn::Empty {
+                if let Some(next) = parse_internal(walker)? {
                     vec.push(next);
                 }
             }
@@ -409,7 +422,7 @@ fn parse_list(walker: &mut Walker<'_>) -> Result<Edn, Error> {
 }
 
 #[inline]
-fn edn_literal(literal: &str) -> Result<Edn, Code> {
+fn edn_literal(literal: &str) -> Result<Option<Edn>, Code> {
     fn numeric(s: &str) -> bool {
         let (first, second) = {
             let mut s = s.chars();
@@ -433,18 +446,18 @@ fn edn_literal(literal: &str) -> Result<Edn, Code> {
     }
 
     Ok(match literal {
-        "nil" => Edn::Nil,
-        "true" => Edn::Bool(true),
-        "false" => Edn::Bool(false),
-        "" => Edn::Empty,
+        "nil" => Some(Edn::Nil),
+        "true" => Some(Edn::Bool(true)),
+        "false" => Some(Edn::Bool(false)),
+        "" => None,
         k if k.starts_with(':') => {
             if k.len() <= 1 {
                 return Err(Code::InvalidKeyword);
             }
-            Edn::Key(k.to_owned())
+            Some(Edn::Key(k.to_owned()))
         }
-        n if numeric(n) => return parse_number(n),
-        _ => Edn::Symbol(literal.to_owned()),
+        n if numeric(n) => return Ok(Some(parse_number(n)?)),
+        _ => Some(Edn::Symbol(literal.to_owned())),
     })
 }
 
