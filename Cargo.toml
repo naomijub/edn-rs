@@ -12,14 +12,14 @@ edition = "2021"
 resolver = "2"
 
 [lints.rust]
-rust_2018_idioms = "warn"
+rust_2018_idioms = { level = "warn", priority = -1 }
 future-incompatible = "warn"
 unsafe_code = "deny"
 
 [lints.clippy]
-pedantic = "warn"
-nursery = "warn"
-inline_always = "allow"
+nursery = { level = "deny", priority = -1 }
+pedantic = { level = "deny", priority = -1 }
+
 
 [features]
 default = ["sets", "std"]
