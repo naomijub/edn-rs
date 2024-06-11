@@ -1,5 +1,3 @@
-#![recursion_limit = "512"]
-
 #[cfg(test)]
 mod tests {
     use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
