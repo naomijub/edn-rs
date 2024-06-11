@@ -102,8 +102,8 @@ impl Vector {
     }
 
     #[must_use]
-    pub const fn to_vec(&self) -> &Vec<Edn> {
-        &self.0
+    pub fn to_vec(self) -> Vec<Edn> {
+        self.0
     }
 }
 
@@ -122,8 +122,8 @@ impl List {
     }
 
     #[must_use]
-    pub const fn to_vec(&self) -> &Vec<Edn> {
-        &self.0
+    pub fn to_vec(self) -> Vec<Edn> {
+        self.0
     }
 }
 
@@ -144,8 +144,8 @@ impl Set {
     }
 
     #[must_use]
-    pub const fn to_set(&self) -> &BTreeSet<Edn> {
-        &self.0
+    pub fn to_set(self) -> BTreeSet<Edn> {
+        self.0
     }
 }
 
@@ -164,8 +164,8 @@ impl Map {
     }
 
     #[must_use]
-    pub const fn to_map(&self) -> &BTreeMap<String, Edn> {
-        &self.0
+    pub fn to_map(self) -> BTreeMap<String, Edn> {
+        self.0
     }
 }
 
