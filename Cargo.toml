@@ -1,8 +1,8 @@
 [package]
 name = "edn-rs"
-version = "0.17.4"
+version = "0.18.0"
 authors = ["Julia Naomi <jnboeira@outlook.com>",  "Eva Pace <eba.pachi@gmail.com>", "Kevin Nakamura <grinkers@grinkers.net>"]
-description = "Crate to parse and emit EDN"
+description = "[DEPRECATED]: Crate to parse and emit EDN"
 readme = "README.md"
 documentation = "https://docs.rs/edn-rs/"
 repository = "https://github.com/edn-rs/edn-rs"
