@@ -1,3 +1,7 @@
+# DEPRECATION WARNING
+Development is currently halted for this project. No new features/issues are under development, but also no breaking changes.
+You may find [`Grinkers/clojure-reader`](https://github.com/Grinkers/clojure-reader) as a suitable replacement.
+
 # edn-rs
 [![Build Status](https://travis-ci.org/edn-rs/edn-rs.svg?branch=master)](https://travis-ci.org/edn-rs/edn-rs) [![codecov](https://codecov.io/gh/edn-rs/edn-rs/branch/master/graph/badge.svg?token=4VMVTZTN8A)](https://codecov.io/gh/edn-rs/edn-rs)
 
