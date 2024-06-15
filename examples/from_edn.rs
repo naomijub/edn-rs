@@ -42,7 +42,12 @@ fn person_mistyped() -> Result<(), EdnError> {
     }));
     let person: Result<Person, EdnError> = edn_rs::from_edn(&bad_edn);
 
-    assert!(person.is_err());
+    assert_eq!(
+        person,
+        Err(EdnError::Deserialize(
+            "couldn't convert `\"some text\"` into `uint`".to_string()
+        ))
+    );
 
     Ok(())
 }

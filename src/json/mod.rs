@@ -10,11 +10,11 @@ use crate::edn::{rational_to_double, Edn};
 #[allow(clippy::module_name_repetitions)]
 pub fn display_as_json(edn: &Edn) -> String {
     match edn {
-        Edn::Vector(v) => vec_to_json(v.to_vec()),
+        Edn::Vector(v) => vec_to_json(&v.clone().to_vec()),
         #[cfg(feature = "sets")]
-        Edn::Set(s) => set_to_json_vec(s.to_set()),
-        Edn::Map(map) => map_to_json(map.to_map()),
-        Edn::List(l) => vec_to_json(l.to_vec()),
+        Edn::Set(s) => set_to_json_vec(&s.clone().to_set()),
+        Edn::Map(map) => map_to_json(&map.clone().to_map()),
+        Edn::List(l) => vec_to_json(&l.clone().to_vec()),
         Edn::Key(key) => format!("{:?}", kebab_to_camel(key)),
         Edn::Symbol(s) | Edn::Str(s) => format!("{s:?}"),
         Edn::Int(n) => format!("{n}"),
@@ -28,7 +28,7 @@ pub fn display_as_json(edn: &Edn) -> String {
             }
             s
         }
-        Edn::Rational(r) => format!("{}", rational_to_double(*r)),
+        Edn::Rational(r) => format!("{}", rational_to_double(r).unwrap()),
         Edn::Char(c) => format!("'{c}'"),
         Edn::Bool(b) => format!("{b}"),
         Edn::Nil => String::from("null"),
@@ -142,11 +142,11 @@ mod test {
     #[test]
     fn rational_numbers() {
         assert_eq!(
-            display_as_json(&Edn::Rational((3, 4))),
+            display_as_json(&Edn::Rational("3/4".to_string())),
             String::from("0.75")
         );
         assert_eq!(
-            display_as_json(&Edn::Rational((-3, 9))),
+            display_as_json(&Edn::Rational("-3/9".to_string())),
             String::from("-0.3333333333333333")
         );
     }
@@ -189,7 +189,7 @@ mod test {
             Edn::Key(":b".to_string()),
             Edn::Str("test".to_string()),
             Edn::Char('4'),
-            Edn::Rational((-3, 4)),
+            Edn::Rational("-3/4".to_string()),
             Edn::Double(4.5f64.into()),
             Edn::UInt(4),
         ]));
@@ -206,7 +206,7 @@ mod test {
             Edn::Key(":b".to_string()),
             Edn::Str("test".to_string()),
             Edn::Char('4'),
-            Edn::Rational((-3, 4)),
+            Edn::Rational("-3/4".to_string()),
             Edn::Double(4.5f64.into()),
             Edn::UInt(4),
         ]));
@@ -223,7 +223,7 @@ mod test {
             Edn::Key(":my-bestie".to_string()),
             Edn::Str("test".to_string()),
             Edn::Char('4'),
-            Edn::Rational((-3, 4)),
+            Edn::Rational("-3/4".to_string()),
             Edn::Double(4.5f64.into()),
             Edn::UInt(4),
         ]));
@@ -238,7 +238,7 @@ mod test {
     fn simple_map() {
         let map = Edn::Map(Map::new(map! {
             String::from("1.2") => Edn::Bool(false),
-            String::from(":belo-monte") => Edn::Rational((3, 4)),
+            String::from(":belo-monte") => Edn::Rational(String::from("3/4")),
             String::from("true") => Edn::Char('d')
         }));
 
@@ -258,14 +258,14 @@ mod test {
                 Edn::Bool(false),
                 Edn::Key(":f".to_string()),
                 Edn::Nil,
-                Edn::Rational((3, 4)),
+                Edn::Rational("3/4".to_string()),
                 Edn::Set(Set::new(set! {
-                    Edn::Rational((3, 4))
+                    Edn::Rational("3/4".to_string())
                 })),
             ])),
             Edn::Map(Map::new(map![
                     String::from("false") => Edn::Key(":f".to_string()),
-                    String::from("nil") => Edn::Rational((3, 4)),
+                    String::from("nil") => Edn::Rational("3/4".to_string()),
                     String::from(":my-crazy-map") => Edn::Map(Map::new(map![
                         String::from("false") => Edn::Map(
                             Map::new( map![
@@ -273,7 +273,7 @@ mod test {
                             ])),
                         String::from("nil") => Edn::Vector(
                             Vector::new( vec![
-                                Edn::Rational((3, 4)),
+                                Edn::Rational("3/4".to_string()),
                                 Edn::Int(1i64)
                             ]))
                 ]))
@@ -293,7 +293,7 @@ mod test {
                 Edn::Key(":b".to_string()),
                 Edn::Str("test".to_string()),
                 Edn::Char('4'),
-                Edn::Rational((-3, 4)),
+                Edn::Rational("-3/4".to_string()),
                 Edn::Double(4.5f64.into()),
                 Edn::UInt(4),
             ]))),

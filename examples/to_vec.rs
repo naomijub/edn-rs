@@ -5,7 +5,7 @@ fn to_vec() {
     let v = Edn::List(List::new(vec![
         Edn::Key(":my-key".to_string()),
         Edn::Int(6),
-        Edn::Rational((7, 4)),
+        Edn::Rational("7/4".to_string()),
     ]));
 
     println!("{:?}", v.to_vec().unwrap());

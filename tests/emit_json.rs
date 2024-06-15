@@ -87,13 +87,14 @@ mod tests {
     #[test]
     fn regression_str_to_uint_test() {
         use edn_derive::Deserialize;
+        use edn_rs::EdnError;
         #[derive(Deserialize, Debug, PartialEq)]
         struct A {
             amount: u64,
         }
 
-        let a: A = edn_rs::from_str("{ :amount \"123\" }").unwrap();
-        assert_eq!(a, A { amount: 123 });
+        let a: Result<A, EdnError> = edn_rs::from_str("{ :amount \"123\" }");
+        assert_eq!(a, Ok(A { amount: 123 }));
     }
 
     #[test]
@@ -109,14 +110,14 @@ mod tests {
                 Edn::Bool(false),
                 Edn::Key(":f".to_string()),
                 Edn::Nil,
-                Edn::Rational((3, 4)),
+                Edn::Rational("3/4".to_string()),
                 Edn::Set(Set::new(set! {
-                    Edn::Rational((3, 4))
+                    Edn::Rational("3/4".to_string())
                 })),
             ])),
             Edn::Map(Map::new(map![
                     String::from("false") => Edn::Key(":f".to_string()),
-                    String::from("nil") => Edn::Rational((3, 4)),
+                    String::from("nil") => Edn::Rational("3/4".to_string()),
                     String::from(":my-crazy-map") => Edn::Map(Map::new(map![
                         String::from("false") => Edn::Map(
                             Map::new( map![
@@ -124,7 +125,7 @@ mod tests {
                             ])),
                         String::from("nil") => Edn::Vector(
                             Vector::new( vec![
-                                Edn::Rational((3, 4)),
+                                Edn::Rational("3/4".to_string()),
                                 Edn::Int(1i64)
                             ]))
                 ]))

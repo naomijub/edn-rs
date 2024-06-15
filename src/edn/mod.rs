@@ -7,7 +7,7 @@ use alloc::vec::Vec;
 use alloc::{fmt, format};
 #[cfg(feature = "sets")]
 use core::cmp::{Ord, PartialOrd};
-use core::convert::TryFrom;
+use core::convert::{Infallible, TryFrom};
 use core::num;
 
 use crate::deserialize::parse::{self};
@@ -16,7 +16,6 @@ use utils::index::Index;
 #[cfg(feature = "sets")]
 use ordered_float::OrderedFloat;
 
-pub mod error;
 #[doc(hidden)]
 pub mod utils;
 
@@ -39,7 +38,7 @@ pub enum Edn {
     Int(i64),
     UInt(u64),
     Double(Double),
-    Rational((i64, u64)),
+    Rational(String),
     Char(char),
     Bool(bool),
     Nil,
@@ -90,7 +89,7 @@ impl From<f64> for Double {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "sets", derive(Eq, PartialOrd, Ord))]
-pub struct Vector(pub(crate) Vec<Edn>);
+pub struct Vector(Vec<Edn>);
 impl Vector {
     #[must_use]
     pub const fn new(v: Vec<Edn>) -> Self {
@@ -103,14 +102,14 @@ impl Vector {
     }
 
     #[must_use]
-    pub const fn to_vec(&self) -> &Vec<Edn> {
-        &self.0
+    pub fn to_vec(self) -> Vec<Edn> {
+        self.0
     }
 }
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "sets", derive(Eq, PartialOrd, Ord))]
-pub struct List(pub(crate) Vec<Edn>);
+pub struct List(Vec<Edn>);
 impl List {
     #[must_use]
     pub fn new(v: Vec<Edn>) -> Self {
@@ -123,14 +122,14 @@ impl List {
     }
 
     #[must_use]
-    pub const fn to_vec(&self) -> &Vec<Edn> {
-        &self.0
+    pub fn to_vec(self) -> Vec<Edn> {
+        self.0
     }
 }
 
 #[cfg(feature = "sets")]
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
-pub struct Set(pub(crate) BTreeSet<Edn>);
+pub struct Set(BTreeSet<Edn>);
 
 #[cfg(feature = "sets")]
 impl Set {
@@ -145,14 +144,14 @@ impl Set {
     }
 
     #[must_use]
-    pub const fn to_set(&self) -> &BTreeSet<Edn> {
-        &self.0
+    pub fn to_set(self) -> BTreeSet<Edn> {
+        self.0
     }
 }
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "sets", derive(Eq, PartialOrd, Ord))]
-pub struct Map(pub(crate) BTreeMap<String, Edn>);
+pub struct Map(BTreeMap<String, Edn>);
 impl Map {
     #[must_use]
     pub fn new(m: BTreeMap<String, Edn>) -> Self {
@@ -165,8 +164,8 @@ impl Map {
     }
 
     #[must_use]
-    pub const fn to_map(&self) -> &BTreeMap<String, Edn> {
-        &self.0
+    pub fn to_map(self) -> BTreeMap<String, Edn> {
+        self.0
     }
 }
 
@@ -255,7 +254,7 @@ impl core::fmt::Display for Edn {
             Self::Int(i) => format!("{i}"),
             Self::UInt(u) => format!("{u}"),
             Self::Double(d) => format!("{d}"),
-            Self::Rational((n, d)) => format!("{n}/{d}"),
+            Self::Rational(r) => r.to_string(),
             Self::Bool(b) => format!("{b}"),
             Self::Char(c) => char_to_edn(*c),
             Self::Nil => String::from("nil"),
@@ -272,7 +271,7 @@ impl Edn {
     /// use edn_rs::edn::{Edn, Vector};
     ///
     /// let key = Edn::Key(String::from(":1234"));
-    /// let q = Edn::Rational((3, 4));
+    /// let q = Edn::Rational(String::from("3/4"));
     /// let i = Edn::Int(12i64);
     ///
     /// assert_eq!(Edn::Vector(Vector::empty()).to_float(), None);
@@ -288,7 +287,7 @@ impl Edn {
             Self::Int(i) => to_double(i).ok(),
             Self::UInt(u) => to_double(u).ok(),
             Self::Double(d) => Some(d.to_float()),
-            Self::Rational(r) => Some(rational_to_double(*r)),
+            Self::Rational(r) => rational_to_double(r),
             _ => None,
         }
     }
@@ -298,7 +297,7 @@ impl Edn {
     /// use edn_rs::edn::{Edn, Vector};
     ///
     /// let key = Edn::Key(String::from(":1234"));
-    /// let q = Edn::Rational((3, 4));
+    /// let q = Edn::Rational(String::from("3/4"));
     /// let f = Edn::Double(12.3f64.into());
     ///
     /// assert_eq!(Edn::Vector(Vector::empty()).to_float(), None);
@@ -314,12 +313,12 @@ impl Edn {
             Self::Int(i) => Some(*i),
             #[allow(clippy::cast_possible_wrap)]
             Self::UInt(u) if i64::try_from(*u).is_ok() => Some(*u as i64),
-            #[cfg(feature = "std")]
             #[allow(clippy::cast_possible_truncation)]
+            #[cfg(feature = "std")]
             Self::Double(d) => Some((*d).to_float().round() as i64),
-            #[cfg(feature = "std")]
             #[allow(clippy::cast_possible_truncation)]
-            Self::Rational(r) => Some(rational_to_double(*r).round() as i64),
+            #[cfg(feature = "std")]
+            Self::Rational(r) => Some(rational_to_double(r).unwrap_or(0f64).round() as i64),
             _ => None,
         }
     }
@@ -340,11 +339,11 @@ impl Edn {
                 Some((*d).to_float().round() as u64)
             }
             #[cfg(feature = "std")]
-            Self::Rational(r) if r.0 > 0 =>
+            Self::Rational(r) if !r.contains('-') =>
             {
                 #[allow(clippy::cast_sign_loss)]
                 #[allow(clippy::cast_possible_truncation)]
-                Some(rational_to_double(*r).round() as u64)
+                Some(rational_to_double(r)?.round() as u64)
             }
             _ => None,
         }
@@ -693,7 +692,7 @@ impl Edn {
 }
 
 impl core::str::FromStr for Edn {
-    type Err = error::Error;
+    type Err = Error;
 
     /// Parses a `&str` that contains an Edn into `Result<Edn, EdnError>`
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -708,9 +707,74 @@ where
     format!("{i:?}").parse::<f64>()
 }
 
-#[allow(clippy::cast_precision_loss)]
-pub(crate) fn rational_to_double((n, d): (i64, u64)) -> f64 {
-    (n as f64) / (d as f64)
+pub(crate) fn rational_to_double(r: &str) -> Option<f64> {
+    if r.split('/').count() == 2 {
+        let vals = r
+            .split('/')
+            .map(ToString::to_string)
+            .map(|v| v.parse::<f64>())
+            .map(Result::ok)
+            .collect::<Option<Vec<f64>>>()?;
+        return Some(vals[0] / vals[1]);
+    }
+    None
+}
+
+#[derive(Debug, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum Error {
+    ParseEdn(String),
+    Deserialize(String),
+    Iter(String),
+    TryFromInt(num::TryFromIntError),
+    #[doc(hidden)]
+    Infallable(), // Makes the compiler happy for converting u64 to u64 and i64 to i64
+}
+
+impl From<String> for Error {
+    fn from(s: String) -> Self {
+        Self::ParseEdn(s)
+    }
+}
+
+impl From<num::ParseIntError> for Error {
+    fn from(s: num::ParseIntError) -> Self {
+        Self::ParseEdn(s.to_string())
+    }
+}
+
+impl From<num::ParseFloatError> for Error {
+    fn from(s: num::ParseFloatError) -> Self {
+        Self::ParseEdn(s.to_string())
+    }
+}
+
+impl From<core::str::ParseBoolError> for Error {
+    fn from(s: core::str::ParseBoolError) -> Self {
+        Self::ParseEdn(s.to_string())
+    }
+}
+
+impl From<num::TryFromIntError> for Error {
+    fn from(e: num::TryFromIntError) -> Self {
+        Self::TryFromInt(e)
+    }
+}
+
+impl From<Infallible> for Error {
+    fn from(_: Infallible) -> Self {
+        Self::Infallable()
+    }
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::ParseEdn(s) | Self::Deserialize(s) | Self::Iter(s) => write!(f, "{}", &s),
+            Self::TryFromInt(e) => write!(f, "{e}"),
+            Self::Infallable() => panic!("Infallable conversion"),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -719,6 +783,15 @@ mod test {
     use alloc::vec;
 
     use super::*;
+    #[test]
+    fn parses_rationals() {
+        assert_eq!(rational_to_double("3/4").unwrap(), 0.75f64);
+        assert_eq!(rational_to_double("25/5").unwrap(), 5f64);
+        assert_eq!(rational_to_double("15/4").unwrap(), 3.75f64);
+        assert_eq!(rational_to_double("3 4"), None);
+        assert_eq!(rational_to_double("3/4/5"), None);
+        assert_eq!(rational_to_double("text/moretext"), None);
+    }
 
     #[test]
     fn iterator() {
