@@ -3,7 +3,7 @@ Development is currently halted for this project. No new features are under deve
 You may find [`Grinkers/clojure-reader`](https://github.com/Grinkers/clojure-reader) as a suitable alternative, it has been built by one of our maintainers @Grinkers.
 
 # edn-rs
-[![Build Status](https://travis-ci.org/edn-rs/edn-rs.svg?branch=master)](https://travis-ci.org/edn-rs/edn-rs) [![codecov](https://codecov.io/gh/edn-rs/edn-rs/branch/master/graph/badge.svg?token=4VMVTZTN8A)](https://codecov.io/gh/edn-rs/edn-rs)
+[![codecov](https://codecov.io/gh/naomijub/edn-rs/branch/master/graph/badge.svg?token=4VMVTZTN8A)](https://codecov.io/gh/naomijub/edn-rs)
 
 A crate to parse and emit EDN [`(Extensible Data Notation)`](https://github.com/edn-format/edn)
 * MSRV (minimal supported rust version) is stable minus 2 versions. Once stable (1.0.0), the plan is to indefinitely maintain the MSRV.
