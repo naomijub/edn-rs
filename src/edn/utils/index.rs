@@ -16,20 +16,20 @@ pub trait Index: private::Sealed {
 
 impl Index for usize {
     fn index_into<'v>(&self, v: &'v Edn) -> Option<&'v Edn> {
-        return match *v {
+        match *v {
             Edn::Vector(ref vec) => vec.0.get(*self),
             Edn::List(ref vec) => vec.0.get(*self),
             Edn::Map(ref map) => map.0.get(&self.to_string()),
             _ => None,
-        };
+        }
     }
     fn index_into_mut<'v>(&self, v: &'v mut Edn) -> Option<&'v mut Edn> {
-        return match *v {
+        match *v {
             Edn::Vector(ref mut vec) => vec.0.get_mut(*self),
             Edn::List(ref mut vec) => vec.0.get_mut(*self),
             Edn::Map(ref mut map) => map.0.get_mut(&self.to_string()),
             _ => None,
-        };
+        }
     }
     fn index_or_insert<'v>(&self, v: &'v mut Edn) -> &'v mut Edn {
         match *v {
@@ -103,7 +103,7 @@ impl Index for Edn {
     }
 }
 
-impl<'a, T> Index for &'a T
+impl<T> Index for &T
 where
     T: ?Sized + Index,
 {
@@ -129,11 +129,11 @@ mod private {
     impl Sealed for str {}
     impl Sealed for String {}
     impl Sealed for Edn {}
-    impl<'a, T> Sealed for &'a T where T: ?Sized + Sealed {}
+    impl<T> Sealed for &T where T: ?Sized + Sealed {}
 }
 struct Type<'a>(&'a Edn);
 
-impl<'a> fmt::Display for Type<'a> {
+impl fmt::Display for Type<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self.0 {
             Edn::Empty => formatter.write_str("empty"),

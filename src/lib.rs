@@ -14,6 +14,7 @@ use alloc::string::String;
 pub mod edn;
 
 /// Serialization module for most possible types.
+///
 /// Tuples are limited between `(A, B)` and `(A, B, C, D, E, F)`, any other tuple needs to be implemented by the `trait Serialize`.
 /// This module requires `#[macro_use]` for `structs`.
 ///
@@ -99,7 +100,7 @@ pub fn json_to_edn<'a>(json: impl AsRef<str>) -> Cow<'a, str> {
     json.replace("null", "nil").into()
 }
 
-pub use deserialize::{from_edn, from_str, Deserialize};
+// pub use deserialize::{from_edn, from_str, Deserialize};
 pub use edn::Error as EdnError;
 #[cfg(feature = "sets")]
 pub use edn::Set;

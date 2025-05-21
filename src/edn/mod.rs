@@ -5,6 +5,7 @@ use alloc::collections::BTreeSet;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use alloc::{fmt, format};
+use core::char::ParseCharError;
 #[cfg(feature = "sets")]
 use core::cmp::{Ord, PartialOrd};
 use core::convert::{Infallible, TryFrom};
@@ -89,7 +90,7 @@ impl From<f64> for Double {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "sets", derive(Eq, PartialOrd, Ord))]
-pub struct Vector(Vec<Edn>);
+pub struct Vector(pub(crate) Vec<Edn>);
 impl Vector {
     #[must_use]
     pub const fn new(v: Vec<Edn>) -> Self {
@@ -112,7 +113,7 @@ impl Vector {
 pub struct List(Vec<Edn>);
 impl List {
     #[must_use]
-    pub fn new(v: Vec<Edn>) -> Self {
+    pub const fn new(v: Vec<Edn>) -> Self {
         Self(v)
     }
 
@@ -154,7 +155,7 @@ impl Set {
 pub struct Map(BTreeMap<String, Edn>);
 impl Map {
     #[must_use]
-    pub fn new(m: BTreeMap<String, Edn>) -> Self {
+    pub const fn new(m: BTreeMap<String, Edn>) -> Self {
         Self(m)
     }
 
@@ -723,17 +724,36 @@ pub(crate) fn rational_to_double(r: &str) -> Option<f64> {
 #[derive(Debug, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum Error {
+    InvalidEdn,
     ParseEdn(String),
     Deserialize(String),
     Iter(String),
     TryFromInt(num::TryFromIntError),
+    IncompleteEdnMap,
     #[doc(hidden)]
     Infallable(), // Makes the compiler happy for converting u64 to u64 and i64 to i64
+}
+
+impl From<Vec<edn_parser::Diagnostic<()>>> for Error {
+    fn from(s: Vec<edn_parser::Diagnostic<()>>) -> Self {
+        Self::Deserialize(
+            s.iter()
+                .map(|d| format!("{d:?}"))
+                .collect::<Vec<_>>()
+                .join(",\n"),
+        )
+    }
 }
 
 impl From<String> for Error {
     fn from(s: String) -> Self {
         Self::ParseEdn(s)
+    }
+}
+
+impl From<ParseCharError> for Error {
+    fn from(s: ParseCharError) -> Self {
+        Self::ParseEdn(s.to_string())
     }
 }
 
@@ -770,9 +790,14 @@ impl From<Infallible> for Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::ParseEdn(s) | Self::Deserialize(s) | Self::Iter(s) => write!(f, "{}", &s),
+            Self::InvalidEdn => write!(f, "Invalid EDN input"),
+            Self::IncompleteEdnMap => write!(f, "Incomplete EDN map"),
+            Self::ParseEdn(s) | Self::Iter(s) => write!(f, "{}", &s),
             Self::TryFromInt(e) => write!(f, "{e}"),
             Self::Infallable() => panic!("Infallable conversion"),
+            Self::Deserialize(diagnostics) => serde_json::to_string_pretty(diagnostics)
+                .unwrap_or_default()
+                .fmt(f),
         }
     }
 }
@@ -784,6 +809,7 @@ mod test {
 
     use super::*;
     #[test]
+    #[allow(clippy::float_cmp)]
     fn parses_rationals() {
         assert_eq!(rational_to_double("3/4").unwrap(), 0.75f64);
         assert_eq!(rational_to_double("25/5").unwrap(), 5f64);
@@ -796,12 +822,7 @@ mod test {
     #[test]
     fn iterator() {
         let v = Edn::Vector(Vector::new(vec![Edn::Int(5), Edn::Int(6), Edn::Int(7)]));
-        let sum: i64 = v
-            .iter_some()
-            .unwrap()
-            .filter(|e| e.to_int().is_some())
-            .map(|e| e.to_int().unwrap())
-            .sum();
+        let sum: i64 = v.iter_some().unwrap().filter_map(super::Edn::to_int).sum();
 
         assert_eq!(18i64, sum);
     }

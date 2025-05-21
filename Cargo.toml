@@ -1,6 +1,6 @@
 [package]
 name = "edn-rs"
-version = "0.18.0"
+version = "0.19.0"
 authors = ["Julia Naomi <jnboeira@outlook.com>",  "Eva Pace <eba.pachi@gmail.com>", "Kevin Nakamura <grinkers@grinkers.net>"]
 description = "[DEPRECATED]: Crate to parse and emit EDN"
 readme = "README.md"
@@ -26,6 +26,8 @@ sets = ["ordered-float"]
 std = []
 
 [dependencies]
+edn-parser = { git = "https://github.com/naomijub/edn-parser" }
+serde_json = "1.0"
 regex = { version = "1", optional = true }
 ordered-float = { version = "4.1", default-features = false, optional = true }
 
@@ -33,7 +35,6 @@ ordered-float = { version = "4.1", default-features = false, optional = true }
 tokio = { version = "1.33", features = ["full"] }
 criterion = "0.5"
 serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
 edn-derive = { git = "https://github.com/edn-rs/edn-derive.git" } # TODO pin to release
 
 [dev-dependencies.cargo-husky]

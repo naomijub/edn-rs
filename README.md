@@ -1,6 +1,6 @@
-# DEPRECATION WARNING
+# HALT WARNING
 Development is currently halted for this project. No new features are under development, but also no breaking changes. If you have a critical issue, we might take a look.
-You may find [`Grinkers/clojure-reader`](https://github.com/Grinkers/clojure-reader) as a suitable alternative, it has been built by one of our maintainers @Grinkers.
+You may find suitable alternatives [`naomijub/edn-parser'](https://github.com/naomijub/edn-parser) if you want to manipulate the `edn` parsed data-structure or [`Grinkers/clojure-reader`](https://github.com/Grinkers/clojure-reader), it has been built by one of our maintainers @Grinkers.
 
 # edn-rs
 [![codecov](https://codecov.io/gh/naomijub/edn-rs/branch/master/graph/badge.svg?token=4VMVTZTN8A)](https://codecov.io/gh/naomijub/edn-rs)
@@ -20,7 +20,7 @@ Includes features `std` and `sets`.
 
 ```toml
 [dependencies]
-edn-rs = "0.17.4"
+edn-rs = "0.19.0"
 ```
 
 ### no_std
@@ -29,7 +29,7 @@ To use `edn-rs` without any additional dependencies, disable default features.
 
 ```toml
 [dependencies]
-edn-rs = { version = "0.17.4", default-features = false }
+edn-rs = { version = "0.19.0", default-features = false }
 ```
 
 ### Optional features
@@ -259,7 +259,7 @@ fn main() -> Result<(), EdnError> {
 ```
 
 **Emits EDN** format from a Json:
-* This function requires feature `json` to be activated. To enable this feature add to your `Cargo.toml`  dependencies the following line `edn-rs = { version = 0.17.4", features = ["json"] }`.
+* This function requires feature `json` to be activated. To enable this feature add to your `Cargo.toml`  dependencies the following line `edn-rs = { version = 0.19.0", features = ["json"] }`.
 
  ```rust
 use edn_rs::json_to_edn;
@@ -294,7 +294,7 @@ fn main() {
  ```
 
  **Emits a JSON** from type `edn_rs::Edn`.
- * The associated emthod is `to_json(&self)` and it requires feature `json` to be activated. To enable this feature add to your `Cargo.toml`  dependencies the following line `edn-rs = { version = 0.17.4", features = ["json"] }`.
+ * The associated emthod is `to_json(&self)` and it requires feature `json` to be activated. To enable this feature add to your `Cargo.toml`  dependencies the following line `edn-rs = { version = 0.19.0", features = ["json"] }`.
 
 ```rust
 use std::str::FromStr;
@@ -368,7 +368,7 @@ fn complex_ok() -> Result<(), EdnError> {
     - [x] implement `futures::Future` trait to `Edn`
     - [x] `to_string()` for `Edn`.
     - [x] `to_debug()` for `Edn`.
-- [x] Parse EDN data [`from_str`](https://docs.rs/edn-rs/0.17.4/edn_rs/deserialize/fn.from_str.html):
+- [x] Parse EDN data [`from_str`](https://docs.rs/edn-rs/0.19.0/edn_rs/deserialize/fn.from_str.html):
     - [x] nil `""`
     - [x] String `"\"string\""`
     - [x] Numbers `"324352"`, `"3442.234"`, `"3/4"`
@@ -380,7 +380,7 @@ fn complex_ok() -> Result<(), EdnError> {
     - [x] Map `"{:a 1 :b 2 }"`
     - [x] Tag `#inst \"yyyy-mm-ddTHH:MM:ss\"`, `#uuid \"<some-uuid>\"` as string data (no custom reader support)
     - [x] Nested structures `"{:a \"2\" :b [true false] :c #{:A {:a :b} nil}}"`
-- [ ] Simple data structures in one another [`edn!`](https://docs.rs/edn-rs/0.17.4/edn_rs/macro.edn.html):
+- [ ] Simple data structures in one another [`edn!`](https://docs.rs/edn-rs/0.19.0/edn_rs/macro.edn.html):
     - [x] Vec in Vec `"[1 2 [:3 \"4\"]]"`
     - [ ] Set in _Vec_ `"[1 2 #{:3 \"4\"}]"`
     - [x] List in List `"(1 2 (:3 \"4\"))"`
@@ -405,7 +405,7 @@ Just add to your `Cargo.toml` the following:
 ```toml
 [dependencies]
 edn-derive = "<version>"
-edn-rs = "0.17.4"
+edn-rs = "0.19.0"
 ```
 
 ### Examples
