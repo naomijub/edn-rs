@@ -28,18 +28,6 @@ mod test {
     }
 
     #[test]
-    #[cfg(not(feature = "sets"))]
-    // Special case of running into a set without the feature enabled
-    fn parse_set_without_set_feature() {
-        assert_eq!(
-            Edn::from_str("#{true, \\c, 3,four, }"),
-            Err(Error::ParseEdn(
-                "Could not parse set due to feature not being enabled".to_string()
-            ))
-        )
-    }
-
-    #[test]
     fn parse_commas_are_whitespace() {
         assert_eq!(Edn::from_str(",,,,, \r\n,,,").unwrap(), Edn::Empty);
     }

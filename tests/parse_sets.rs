@@ -1,4 +1,3 @@
-#[cfg(feature = "sets")]
 #[cfg(test)]
 mod tests {
     extern crate alloc;

@@ -127,8 +127,8 @@ mod test {
         assert_eq!(display_as_json(&Edn::UInt(34u64)), String::from("34"));
         assert_eq!(display_as_json(&Edn::Int(-25i64)), String::from("-25"));
         assert_eq!(
-            display_as_json(&Edn::Double(3.14f64.into())),
-            String::from("3.14")
+            display_as_json(&Edn::Double(3.15f64.into())),
+            String::from("3.15")
         );
         assert_eq!(
             display_as_json(&Edn::Double(32f64.into())),
