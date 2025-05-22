@@ -5,8 +5,8 @@ use alloc::format;
 use alloc::string::ToString;
 use alloc::vec::Vec;
 use core::primitive::str;
-use std::println;
 use edn_parser::{edn_parse, Cst, Node, NodeRef, Rule, Token};
+// use std::println;
 
 use crate::edn::Set;
 use crate::edn::{Edn, Error, List, Map, Vector};
@@ -119,9 +119,10 @@ fn parse_rule(cst: &Cst<'_>, node_ref: NodeRef, source: &str) -> Result<Edn, Err
             ..,
         ) => Ok(Edn::Empty),
         // Skip whitespace tokens
-        Node::Token(Token::Whitespace | Token::Comma | Token::Newline | Token::Comment | Token::Discard, ..) => {
-            Ok(Edn::Empty)
-        }
+        Node::Token(
+            Token::Whitespace | Token::Comma | Token::Newline | Token::Comment | Token::Discard,
+            ..,
+        ) => Ok(Edn::Empty),
         x => unimplemented!("{x:?}"),
     }
 }
@@ -134,7 +135,7 @@ fn parse_token(cst: &Cst<'_>, node_ref: NodeRef, source: &str) -> Result<Edn, Er
         Node::Token(Token::True, ..) => Ok(Edn::Bool(true)),
         Node::Token(Token::Chars, ..) => {
             let span = cst.span(node_ref);
-            let text = match &source[span.start+1..span.end] {
+            let text = match &source[span.start + 1..span.end] {
                 "newline" => "\n",
                 "return" => "\r",
                 "space" => " ",
@@ -223,7 +224,7 @@ mod tests {
     #[test]
     fn parse_discard() {
         assert_eq!(
-            parse("[nil #_nil nil]").unwrap(), 
+            parse("[nil #_nil nil]").unwrap(),
             Edn::Vector(Vector::new(vec![Edn::Nil, Edn::Nil]))
         );
     }
@@ -239,7 +240,7 @@ mod tests {
         assert_eq!(parse("\"string\"").unwrap(), Edn::Str("string".to_string()));
     }
 
-     #[test]
+    #[test]
     fn parse_rational() {
         assert_eq!(parse("42/3").unwrap(), Edn::Rational("42/3".to_string()));
     }
@@ -376,7 +377,11 @@ mod tests {
             parse("#ns/edn [1, 2, 3]").unwrap(),
             Edn::Tagged(
                 "ns/edn".to_string(),
-                Box::new(Edn::Vector(Vector::new(vec![Edn::UInt(1), Edn::UInt(2), Edn::UInt(3)])))
+                Box::new(Edn::Vector(Vector::new(vec![
+                    Edn::UInt(1),
+                    Edn::UInt(2),
+                    Edn::UInt(3)
+                ])))
             )
         );
     }
