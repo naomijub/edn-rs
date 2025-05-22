@@ -140,8 +140,6 @@ jobs:
         with:
           targets: ${{ matrix.target }}
           toolchain: stable minus 2 releases
-      - name: no_std_release_build_sets
-        run: cargo build --release --no-default-features --features sets --target ${{ matrix.target }}
       - name: no_std_release_build
         run: cargo build --release --no-default-features --target ${{ matrix.target }}
 

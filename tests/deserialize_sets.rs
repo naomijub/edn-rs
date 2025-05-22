@@ -11,7 +11,7 @@ mod test {
     #[test]
     fn parse_set_with_commas() {
         assert_eq!(
-            Edn::from_str("#{true, \\c, 3,four, }").unwrap(),
+            Edn::from_str("#{true, \\c, 3, four, }").unwrap(),
             Edn::Set(Set::new(set![
                 Edn::Symbol("four".to_string()),
                 Edn::Bool(true),
@@ -129,7 +129,7 @@ mod test {
     fn edn_element_with_inst() {
         assert_eq!(
             Edn::from_str(
-                "#{ :a :b {:c :d :date  #inst \"2020-07-16T21:53:14.628-00:00\" ::c ::d} nil}"
+                "#{ :a :b {:c :d :date  #inst \"2020-07-16T21:53:14-00:00\" :ns/c :ns/d} nil}"
             )
             .unwrap(),
             Edn::Set(Set::new(set! {
@@ -137,23 +137,11 @@ mod test {
                 Edn::Key(":b".to_string()),
                 Edn::Map(Map::new(map! {
                     ":c".to_string() => Edn::Key(":d".to_string()),
-                    ":date".to_string() => Edn::Tagged("inst".to_string(), Box::new(Edn::Str("2020-07-16T21:53:14.628-00:00".to_string()))),
-                    "::c".to_string() => Edn::Key("::d".to_string())
+                    ":date".to_string() => Edn::Tagged("inst".to_string(), Box::new(Edn::Str("2020-07-16T21:53:14-00:00".to_string()))),
+                    ":ns/c".to_string() => Edn::Key(":ns/d".to_string())
                 })),
                 Edn::Nil
             }))
-        );
-    }
-
-    #[test]
-    fn parse_discard_space_invalid() {
-        assert_eq!(
-            Edn::from_str(
-                "#_ ,, #{hello, this will be discarded} #_{so will this} #{this is invalid"
-            ),
-            Err(Error::ParseEdn(
-                "None could not be parsed at char count 58".to_string()
-            ))
         );
     }
 

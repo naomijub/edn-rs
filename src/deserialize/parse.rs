@@ -5,6 +5,7 @@ use alloc::format;
 use alloc::string::ToString;
 use alloc::vec::Vec;
 use core::primitive::str;
+use std::println;
 use edn_parser::{edn_parse, Cst, Node, NodeRef, Rule, Token};
 
 use crate::edn::Set;
@@ -15,7 +16,7 @@ pub fn parse(edn: &str) -> Result<Edn, Error> {
     let Node::Rule(Rule::Edn, _) = parsed.get(NodeRef::ROOT) else {
         return Err(Error::InvalidEdn);
     };
-
+    // println!("CST: {parsed:#?}");
     let Some(first_node_ref) = parsed.children(NodeRef::ROOT).find(|node_ref| {
         !matches!(
             parsed.get(*node_ref),
@@ -32,9 +33,6 @@ fn parse_rule(cst: &Cst<'_>, node_ref: NodeRef, source: &str) -> Result<Edn, Err
     match cst.get(node_ref) {
         Node::Rule(Rule::Literal, ..) => {
             parse_token(cst, cst.children(node_ref).next().unwrap(), source)
-        }
-        Node::Rule(Rule::Char, ..) => {
-            parse_token(cst, cst.children(node_ref).nth(1).unwrap(), source)
         }
         Node::Rule(Rule::Uuid | Rule::Inst, ..) => {
             parse_token(cst, cst.children(node_ref).nth(2).unwrap(), source)
@@ -121,7 +119,7 @@ fn parse_rule(cst: &Cst<'_>, node_ref: NodeRef, source: &str) -> Result<Edn, Err
             ..,
         ) => Ok(Edn::Empty),
         // Skip whitespace tokens
-        Node::Token(Token::Whitespace | Token::Comma | Token::Newline | Token::Comment, ..) => {
+        Node::Token(Token::Whitespace | Token::Comma | Token::Newline | Token::Comment | Token::Discard, ..) => {
             Ok(Edn::Empty)
         }
         x => unimplemented!("{x:?}"),
@@ -136,7 +134,7 @@ fn parse_token(cst: &Cst<'_>, node_ref: NodeRef, source: &str) -> Result<Edn, Er
         Node::Token(Token::True, ..) => Ok(Edn::Bool(true)),
         Node::Token(Token::Chars, ..) => {
             let span = cst.span(node_ref);
-            let text = match &source[span] {
+            let text = match &source[span.start+1..span.end] {
                 "newline" => "\n",
                 "return" => "\r",
                 "space" => " ",
@@ -172,6 +170,11 @@ fn parse_token(cst: &Cst<'_>, node_ref: NodeRef, source: &str) -> Result<Edn, Er
             let text = source[span.start + 1..span.end - 1].to_string();
             Ok(Edn::Tagged("uuid".to_string(), Box::new(Edn::Str(text))))
         }
+        Node::Token(Token::Rational, ..) => {
+            let span = cst.span(node_ref);
+            let text = source[span.start..span.end].to_string();
+            Ok(Edn::Rational(text))
+        }
         Node::Token(token, ..) => unimplemented!("{token:?}"),
     }
 }
@@ -181,9 +184,9 @@ fn parse_keyword(cst: &Cst<'_>, node_ref: NodeRef, source: &str) -> Result<Edn, 
         Node::Rule(..) => Err(Error::Infallable()),
         Node::Token(Token::Name, ..) => {
             let span = cst.span(node_ref);
-            let text = source[span].to_string();
-
-            Ok(Edn::Key(text))
+            let text = &source[span];
+            let keyword = ":".to_string() + text;
+            Ok(Edn::Key(keyword))
         }
         Node::Token(token, ..) => Err(Error::ParseEdn(format!(
             "Unexpected token `{token:?}` is not a keyword"
@@ -218,6 +221,14 @@ mod tests {
     }
 
     #[test]
+    fn parse_discard() {
+        assert_eq!(
+            parse("[nil #_nil nil]").unwrap(), 
+            Edn::Vector(Vector::new(vec![Edn::Nil, Edn::Nil]))
+        );
+    }
+
+    #[test]
     fn parse_booleans() {
         assert_eq!(parse("true").unwrap(), Edn::Bool(true));
         assert_eq!(parse("false").unwrap(), Edn::Bool(false));
@@ -226,6 +237,11 @@ mod tests {
     #[test]
     fn parse_string() {
         assert_eq!(parse("\"string\"").unwrap(), Edn::Str("string".to_string()));
+    }
+
+     #[test]
+    fn parse_rational() {
+        assert_eq!(parse("42/3").unwrap(), Edn::Rational("42/3".to_string()));
     }
 
     #[test]
@@ -265,11 +281,14 @@ mod tests {
 
     #[test]
     fn parse_keyword() {
-        assert_eq!(parse(":keyword").unwrap(), Edn::Key("keyword".to_string()));
+        assert_eq!(parse(":keyword").unwrap(), Edn::Key(":keyword".to_string()));
+        assert_eq!(parse(":k").unwrap(), Edn::Key(":k".to_string()));
         assert_eq!(
             parse(":key-word_with_underscore").unwrap(),
-            Edn::Key("key-word_with_underscore".to_string())
+            Edn::Key(":key-word_with_underscore".to_string())
         );
+        assert_eq!(parse(":.").unwrap(), Edn::Key(":.".to_string()));
+        assert_eq!(parse(":ns/k").unwrap(), Edn::Key(":ns/k".to_string()));
     }
 
     #[test]
@@ -291,7 +310,7 @@ mod tests {
         ; this is a comment"
             )
             .unwrap(),
-            Edn::Key("keyword".to_string())
+            Edn::Key(":keyword".to_string())
         );
     }
 
@@ -301,7 +320,7 @@ mod tests {
             parse("(nil :value \n true, 1)").unwrap(),
             Edn::List(List::new(vec![
                 Edn::Nil,
-                Edn::Key("value".to_string()),
+                Edn::Key(":value".to_string()),
                 Edn::Bool(true),
                 Edn::UInt(1),
             ]))
@@ -314,7 +333,7 @@ mod tests {
             parse("[nil :value \n (true, 1)]").unwrap(),
             Edn::Vector(Vector::new(vec![
                 Edn::Nil,
-                Edn::Key("value".to_string()),
+                Edn::Key(":value".to_string()),
                 Edn::List(List::new(vec![Edn::Bool(true), Edn::UInt(1),])),
             ]))
         );
@@ -327,7 +346,7 @@ mod tests {
             Edn::Set(Set::new(
                 vec![
                     Edn::Nil,
-                    Edn::Key("value".to_string()),
+                    Edn::Key(":value".to_string()),
                     Edn::Vector(Vector::new(vec![Edn::Bool(true), Edn::UInt(1),])),
                 ]
                 .into_iter()
@@ -342,12 +361,23 @@ mod tests {
             parse("{nil :value :key 1}").unwrap(),
             Edn::Map(Map::new(
                 [
-                    ("nil".to_string(), Edn::Key("value".to_string())),
-                    ("key".to_string(), Edn::UInt(1)),
+                    ("nil".to_string(), Edn::Key(":value".to_string())),
+                    (":key".to_string(), Edn::UInt(1)),
                 ]
                 .into_iter()
                 .collect()
             ))
+        );
+    }
+
+    #[test]
+    fn parse_tagged_collections() {
+        assert_eq!(
+            parse("#ns/edn [1, 2, 3]").unwrap(),
+            Edn::Tagged(
+                "ns/edn".to_string(),
+                Box::new(Edn::Vector(Vector::new(vec![Edn::UInt(1), Edn::UInt(2), Edn::UInt(3)])))
+            )
         );
     }
 }
