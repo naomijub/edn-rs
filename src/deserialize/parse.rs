@@ -1,15 +1,12 @@
 use alloc::boxed::Box;
 use alloc::collections::BTreeMap;
-#[cfg(feature = "sets")]
 use alloc::collections::BTreeSet;
 use alloc::format;
 use alloc::string::ToString;
 use alloc::vec::Vec;
 use core::primitive::str;
 use edn_parser::{edn_parse, Cst, Node, NodeRef, Rule, Token};
-use std::println;
 
-#[cfg(feature = "sets")]
 use crate::edn::Set;
 use crate::edn::{Edn, Error, List, Map, Vector};
 
@@ -19,7 +16,6 @@ pub fn parse(edn: &str) -> Result<Edn, Error> {
         return Err(Error::InvalidEdn);
     };
 
-    println!("{parsed}",);
     let Some(first_node_ref) = parsed.children(NodeRef::ROOT).find(|node_ref| {
         !matches!(
             parsed.get(*node_ref),
@@ -35,22 +31,22 @@ pub fn parse(edn: &str) -> Result<Edn, Error> {
 fn parse_rule(cst: &Cst<'_>, node_ref: NodeRef, source: &str) -> Result<Edn, Error> {
     match cst.get(node_ref) {
         Node::Rule(Rule::Literal, ..) => {
-            return parse_token(cst, cst.children(node_ref).next().unwrap(), source)
+            parse_token(cst, cst.children(node_ref).next().unwrap(), source)
         }
         Node::Rule(Rule::Char, ..) => {
-            return parse_token(cst, cst.children(node_ref).nth(1).unwrap(), source)
+            parse_token(cst, cst.children(node_ref).nth(1).unwrap(), source)
         }
         Node::Rule(Rule::Uuid | Rule::Inst, ..) => {
-            return parse_token(cst, cst.children(node_ref).nth(2).unwrap(), source)
+            parse_token(cst, cst.children(node_ref).nth(2).unwrap(), source)
         }
         Node::Rule(Rule::Composed, ..) => {
-            return parse_rule(cst, cst.children(node_ref).next().unwrap(), source)
+            parse_rule(cst, cst.children(node_ref).next().unwrap(), source)
         }
         Node::Rule(Rule::Keyword, ..) => {
-            return parse_keyword(cst, cst.children(node_ref).nth(1).unwrap(), source)
+            parse_keyword(cst, cst.children(node_ref).nth(1).unwrap(), source)
         }
         Node::Rule(Rule::Symbol, ..) => {
-            return parse_symbol(cst, cst.children(node_ref).next().unwrap(), source)
+            parse_symbol(cst, cst.children(node_ref).next().unwrap(), source)
         }
         Node::Rule(Rule::List, ..) => {
             let mut list = Vec::new();
@@ -61,7 +57,7 @@ fn parse_rule(cst: &Cst<'_>, node_ref: NodeRef, source: &str) -> Result<Edn, Err
                 }
             }
 
-            return Ok(Edn::List(List::new(list)));
+            Ok(Edn::List(List::new(list)))
         }
         Node::Rule(Rule::Vector, ..) => {
             let mut vector = Vec::new();
@@ -72,7 +68,7 @@ fn parse_rule(cst: &Cst<'_>, node_ref: NodeRef, source: &str) -> Result<Edn, Err
                 }
             }
 
-            return Ok(Edn::Vector(Vector::new(vector)));
+            Ok(Edn::Vector(Vector::new(vector)))
         }
         Node::Rule(Rule::Set, ..) => {
             let mut set = BTreeSet::new();
@@ -83,7 +79,7 @@ fn parse_rule(cst: &Cst<'_>, node_ref: NodeRef, source: &str) -> Result<Edn, Err
                 }
             }
 
-            return Ok(Edn::Set(Set::new(set)));
+            Ok(Edn::Set(Set::new(set)))
         }
         Node::Rule(Rule::Member, ..) => {
             let mut vector = Vec::new();
@@ -94,7 +90,7 @@ fn parse_rule(cst: &Cst<'_>, node_ref: NodeRef, source: &str) -> Result<Edn, Err
                 }
             }
 
-            return Ok(Edn::Vector(Vector::new(vector)));
+            Ok(Edn::Vector(Vector::new(vector)))
         }
         Node::Rule(Rule::Map, ..) => {
             let mut map = BTreeMap::new();
@@ -110,7 +106,7 @@ fn parse_rule(cst: &Cst<'_>, node_ref: NodeRef, source: &str) -> Result<Edn, Err
                 }
             }
 
-            return Ok(Edn::Map(Map::new(map)));
+            Ok(Edn::Map(Map::new(map)))
         }
         // Skip collections tokens
         #[allow(clippy::match_same_arms)]
@@ -123,15 +119,13 @@ fn parse_rule(cst: &Cst<'_>, node_ref: NodeRef, source: &str) -> Result<Edn, Err
             | Token::RBrace
             | Token::RBrak,
             ..,
-        ) => return Ok(Edn::Empty),
+        ) => Ok(Edn::Empty),
         // Skip whitespace tokens
         Node::Token(Token::Whitespace | Token::Comma | Token::Newline | Token::Comment, ..) => {
-            return Ok(Edn::Empty)
+            Ok(Edn::Empty)
         }
         x => unimplemented!("{x:?}"),
     }
-
-    Err(Error::Infallable())
 }
 
 fn parse_token(cst: &Cst<'_>, node_ref: NodeRef, source: &str) -> Result<Edn, Error> {

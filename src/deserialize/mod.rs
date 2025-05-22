@@ -1,5 +1,4 @@
 use alloc::collections::BTreeMap;
-#[cfg(feature = "sets")]
 use alloc::collections::BTreeSet;
 use alloc::format;
 use alloc::string::{String, ToString};
@@ -9,14 +8,13 @@ use core::convert::{Into, TryFrom};
 use core::str::FromStr;
 #[cfg(feature = "std")]
 use std::collections::HashMap;
-#[cfg(all(feature = "sets", feature = "std"))]
+#[cfg(feature = "std")]
 use std::collections::HashSet;
 
 use crate::edn::{Edn, Error};
 
 pub mod parse;
 
-#[cfg(feature = "sets")]
 use ordered_float::OrderedFloat;
 
 /// public trait to be used to `Deserialize` structs.
@@ -69,6 +67,7 @@ use ordered_float::OrderedFloat;
 /// ```
 #[allow(clippy::missing_errors_doc)]
 pub trait Deserialize: Sized {
+    /// Deserializes an EDN type into a `T` type that implements `Deserialize`.
     fn deserialize(edn: &Edn) -> Result<Self, Error>;
 }
 
@@ -85,7 +84,6 @@ impl Deserialize for () {
     }
 }
 
-#[cfg(feature = "sets")]
 impl Deserialize for OrderedFloat<f64> {
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
         edn.to_float()
@@ -98,7 +96,6 @@ impl Deserialize for f64 {
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
         edn.to_float()
             .ok_or_else(|| build_deserialize_error(edn, "edn_rs::Double"))
-            .map(Into::into)
     }
 }
 
@@ -181,7 +178,6 @@ where
                 .ok_or_else(|| Error::Iter(format!("Could not create iter from {edn:?}")))?
                 .map(|e| Deserialize::deserialize(e))
                 .collect::<Result<Self, Error>>()?),
-            #[cfg(feature = "sets")]
             Edn::Set(_) => Ok(edn
                 .iter_some()
                 .ok_or_else(|| Error::Iter(format!("Could not create iter from {edn:?}")))?
@@ -246,7 +242,7 @@ where
     }
 }
 
-#[cfg(all(feature = "sets", feature = "std"))]
+#[cfg(feature = "std")]
 impl<T, H> Deserialize for HashSet<T, H>
 where
     T: std::cmp::Eq + std::hash::Hash + Deserialize,
@@ -271,7 +267,6 @@ where
     }
 }
 
-#[cfg(feature = "sets")]
 impl<T> Deserialize for BTreeSet<T>
 where
     T: core::cmp::Eq + core::hash::Hash + core::cmp::Ord + Deserialize,

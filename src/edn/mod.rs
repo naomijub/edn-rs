@@ -1,12 +1,10 @@
 use alloc::boxed::Box;
 use alloc::collections::BTreeMap;
-#[cfg(feature = "sets")]
 use alloc::collections::BTreeSet;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use alloc::{fmt, format};
 use core::char::ParseCharError;
-#[cfg(feature = "sets")]
 use core::cmp::{Ord, PartialOrd};
 use core::convert::{Infallible, TryFrom};
 use core::num;
@@ -14,7 +12,6 @@ use core::num;
 use crate::deserialize::parse::{self};
 use utils::index::Index;
 
-#[cfg(feature = "sets")]
 use ordered_float::OrderedFloat;
 
 #[doc(hidden)]
@@ -23,36 +20,46 @@ pub mod utils;
 /// `EdnType` is an Enum with possible values for an EDN type
 /// Symbol and Char are not yet implemented
 /// String implementation of Edn can be obtained with `.to_string()`
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "sets", derive(Eq, PartialOrd, Ord))]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 #[non_exhaustive]
 pub enum Edn {
+    /// Tagged elements like `#inst` and `#uuid`
     Tagged(String, Box<Edn>),
+    /// Vector type `[1 2 3]`
     Vector(Vector),
-    #[cfg(feature = "sets")]
+    /// Set type `#{1 2 3}`
     Set(Set),
+    /// Map type `{:key :value}`
     Map(Map),
+    /// List type `(1 2 3)`
     List(List),
+    /// Keyword type `:keyword`
     Key(String),
+    /// Symbol type `defn`
     Symbol(String),
+    /// String type `"a simple string"`
     Str(String),
+    /// Integer type `12`, supports i64
     Int(i64),
+    /// Integer type `12`, supports u64
     UInt(u64),
+    /// Double type `12.3`, supports f64
     Double(Double),
+    /// Rational type `3/4`, unresolved rational type
     Rational(String),
+    /// Character type `\\a`
     Char(char),
+    /// Boolean type `true/false`
     Bool(bool),
+    /// Nil type `nil`
     Nil,
+    /// Empty type
     Empty,
 }
 
 #[derive(Clone, Ord, Debug, Eq, PartialEq, PartialOrd, Hash)]
-#[cfg(feature = "sets")]
+/// Auxiliary type for Double
 pub struct Double(pub(crate) OrderedFloat<f64>);
-
-#[derive(Clone, Debug, PartialEq)]
-#[cfg(not(feature = "sets"))]
-pub struct Double(f64);
 
 impl fmt::Display for Double {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -60,111 +67,106 @@ impl fmt::Display for Double {
     }
 }
 
-#[cfg(feature = "sets")]
 impl Double {
     fn to_float(&self) -> f64 {
         self.0.into_inner()
     }
 }
 
-#[cfg(not(feature = "sets"))]
-impl Double {
-    const fn to_float(&self) -> f64 {
-        self.0
-    }
-}
-
-#[cfg(feature = "sets")]
 impl From<f64> for Double {
     fn from(f: f64) -> Self {
         Self(OrderedFloat(f))
     }
 }
 
-#[cfg(not(feature = "sets"))]
-impl From<f64> for Double {
-    fn from(f: f64) -> Self {
-        Self(f)
-    }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "sets", derive(Eq, PartialOrd, Ord))]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+/// Auxiliary type for Vector
 pub struct Vector(pub(crate) Vec<Edn>);
 impl Vector {
     #[must_use]
+    /// Creates a new vector
     pub const fn new(v: Vec<Edn>) -> Self {
         Self(v)
     }
 
     #[must_use]
+    /// Creates an empty vector
     pub const fn empty() -> Self {
         Self(Vec::new())
     }
 
     #[must_use]
+    /// Returns a `alloc::vec::Vec`
     pub fn to_vec(self) -> Vec<Edn> {
         self.0
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "sets", derive(Eq, PartialOrd, Ord))]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+/// Auxiliary type for List
 pub struct List(Vec<Edn>);
 impl List {
     #[must_use]
+    /// Creates a new list
     pub const fn new(v: Vec<Edn>) -> Self {
         Self(v)
     }
 
     #[must_use]
+    /// Creates an empty list
     pub const fn empty() -> Self {
         Self(Vec::new())
     }
 
     #[must_use]
+    /// Returns a `alloc::vec::Vec`
     pub fn to_vec(self) -> Vec<Edn> {
         self.0
     }
 }
 
-#[cfg(feature = "sets")]
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
+/// Auxiliary type for Set
 pub struct Set(BTreeSet<Edn>);
 
-#[cfg(feature = "sets")]
 impl Set {
     #[must_use]
+    /// Creates a new set
     pub const fn new(v: BTreeSet<Edn>) -> Self {
         Self(v)
     }
 
     #[must_use]
+    /// Creates an empty set
     pub const fn empty() -> Self {
         Self(BTreeSet::new())
     }
 
     #[must_use]
+    /// Returns a `alloc::collections::BTreeSet`
     pub fn to_set(self) -> BTreeSet<Edn> {
         self.0
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "sets", derive(Eq, PartialOrd, Ord))]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+/// Auxiliary type for Map
 pub struct Map(BTreeMap<String, Edn>);
 impl Map {
     #[must_use]
+    /// Creates a new map
     pub const fn new(m: BTreeMap<String, Edn>) -> Self {
         Self(m)
     }
 
     #[must_use]
+    /// Creates an empty map
     pub const fn empty() -> Self {
         Self(BTreeMap::new())
     }
 
     #[must_use]
+    /// Returns a `alloc::collections::BTreeMap`
     pub fn to_map(self) -> BTreeMap<String, Edn> {
         self.0
     }
@@ -200,7 +202,6 @@ impl core::fmt::Display for List {
     }
 }
 
-#[cfg(feature = "sets")]
 impl core::fmt::Display for Set {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "#{{")?;
@@ -245,7 +246,6 @@ impl core::fmt::Display for Edn {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let text = match self {
             Self::Vector(v) => format!("{v}"),
-            #[cfg(feature = "sets")]
             Self::Set(s) => format!("{s}"),
             Self::Map(m) => format!("{m}"),
             Self::List(l) => format!("{l}"),
@@ -410,7 +410,6 @@ impl Edn {
                     })
                     .collect::<Vec<String>>(),
             ),
-            #[cfg(feature = "sets")]
             Self::Set(_) => Some(
                 self.iter_some()?
                     .map(|e| match e {
@@ -438,7 +437,6 @@ impl Edn {
                     .map(Self::to_int)
                     .collect::<Option<Vec<i64>>>()?,
             ),
-            #[cfg(feature = "sets")]
             Self::Set(_) if !self.iter_some()?.any(|e| e.to_int().is_none()) => Some(
                 self.iter_some()?
                     .map(Self::to_int)
@@ -463,7 +461,6 @@ impl Edn {
                     .map(Self::to_uint)
                     .collect::<Option<Vec<u64>>>()?,
             ),
-            #[cfg(feature = "sets")]
             Self::Set(_) if !self.iter_some()?.any(|e| e.to_uint().is_none()) => Some(
                 self.iter_some()?
                     .map(Self::to_uint)
@@ -488,7 +485,6 @@ impl Edn {
                     .map(Self::to_float)
                     .collect::<Option<Vec<f64>>>()?,
             ),
-            #[cfg(feature = "sets")]
             Self::Set(_) if !self.iter_some()?.any(|e| e.to_float().is_none()) => Some(
                 self.iter_some()?
                     .map(Self::to_float)
@@ -513,7 +509,6 @@ impl Edn {
                     .map(Self::to_bool)
                     .collect::<Option<Vec<bool>>>()?,
             ),
-            #[cfg(feature = "sets")]
             Self::Set(_) if !self.iter_some()?.any(|e| e.to_bool().is_none()) => Some(
                 self.iter_some()?
                     .map(Self::to_bool)
@@ -630,7 +625,6 @@ impl Edn {
 
     /// `set_iter` returns am `Option<btree_set::Iter<Edn>>` with `Some` for type `Edn::Set`
     /// Other types return `None`
-    #[cfg(feature = "sets")]
     #[must_use]
     pub fn set_iter(&self) -> Option<alloc::collections::btree_set::Iter<'_, Self>> {
         match self {
@@ -723,6 +717,7 @@ pub(crate) fn rational_to_double(r: &str) -> Option<f64> {
 
 #[derive(Debug, PartialEq, Eq)]
 #[non_exhaustive]
+#[allow(missing_docs)] // TODO: Replace with thiserror
 pub enum Error {
     InvalidEdn,
     ParseEdn(String),

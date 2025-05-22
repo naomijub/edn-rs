@@ -11,9 +11,7 @@ mod test {
     #[test]
     fn unit() {
         let nil = "nil";
-        let unit: () = from_str(nil).unwrap();
-
-        assert_eq!(unit, ());
+        let _unit: () = from_str(nil).unwrap();
     }
 
     #[test]

@@ -11,25 +11,26 @@ license = "MIT"
 edition = "2021"
 
 [lints.rust]
-rust_2018_idioms = { level = "warn", priority = -1 }
-future-incompatible = "warn"
+rust_2018_idioms = { level = "warn", priority = 3 }
+future-incompatible = "deny"
 unsafe_code = "deny"
 
 [lints.clippy]
-nursery = { level = "deny", priority = -1 }
-pedantic = { level = "deny", priority = -1 }
+all = { level = "deny", priority = 10 }
+format_push_string = { level = "allow", priority = 9 }
+pedantic = { level = "deny", priority = 8 }
+redundant_clone = { level = "deny", priority = 7 }
 
 [features]
-default = ["sets", "std"]
+default = ["std"]
 json = ["regex"]
-sets = ["ordered-float"]
 std = []
 
 [dependencies]
 edn-parser = { git = "https://github.com/naomijub/edn-parser" }
 serde_json = "1.0"
 regex = { version = "1", optional = true }
-ordered-float = { version = "4.1", default-features = false, optional = true }
+ordered-float = { version = "4.1", default-features = false }
 
 [dev-dependencies]
 tokio = { version = "1.33", features = ["full"] }

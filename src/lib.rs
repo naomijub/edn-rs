@@ -1,7 +1,13 @@
 #![no_std]
 #![recursion_limit = "512"]
 
+//! Crate to convert Rust types into EDN Strings, and vice versa.
+//!
+//! Recommendation: the type must implement the Serialize trait.
+//! Use `#[derive(Serialize)]` from `edn-derive` crate.
+
 #[macro_use]
+/// Auxiliary macros
 mod macros;
 
 extern crate alloc;
@@ -100,9 +106,8 @@ pub fn json_to_edn<'a>(json: impl AsRef<str>) -> Cow<'a, str> {
     json.replace("null", "nil").into()
 }
 
-// pub use deserialize::{from_edn, from_str, Deserialize};
+pub use deserialize::{from_edn, from_str, Deserialize};
 pub use edn::Error as EdnError;
-#[cfg(feature = "sets")]
 pub use edn::Set;
 pub use edn::{Edn, List, Map, Vector};
 pub use serialize::Serialize;

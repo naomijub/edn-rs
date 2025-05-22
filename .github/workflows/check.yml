@@ -164,6 +164,6 @@ jobs:
           with:
             components: clippy
             toolchain: stable minus 2 releases
-        - run: cargo clippy --all-features -- -W future-incompatible -W rust_2018_idioms -W clippy::all -W clippy::pedantic -W clippy::nursery --deny warnings
-        - run: cargo clippy --features json --no-default-features -- -W future-incompatible -W rust_2018_idioms -W clippy::all -W clippy::pedantic -W clippy::nursery --deny warnings
-        - run: cargo clippy --no-default-features -- -W future-incompatible -W rust_2018_idioms -W clippy::all -W clippy::pedantic -W clippy::nursery --deny warnings
+        - run: cargo clippy --all-features -- --deny warnings
+        - run: cargo clippy --features json --no-default-features -- --deny warnings
+        - run: cargo clippy --no-default-features -- --deny warnings

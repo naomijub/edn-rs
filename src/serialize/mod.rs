@@ -20,6 +20,7 @@ use alloc::vec::Vec;
 ///
 /// Implemented for all generic types.
 pub trait Serialize {
+    /// Serializes the type `T` into a String
     fn serialize(&self) -> String;
 }
 

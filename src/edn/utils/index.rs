@@ -142,7 +142,6 @@ impl fmt::Display for Type<'_> {
             Edn::Int(_) | Edn::UInt(_) => formatter.write_str("integer"),
             Edn::Str(_) => formatter.write_str("string"),
             Edn::Vector(_) => formatter.write_str("vector"),
-            #[cfg(feature = "sets")]
             Edn::Set(_) => formatter.write_str("set"),
             Edn::List(_) => formatter.write_str("list"),
             Edn::Map(_) => formatter.write_str("map"),
