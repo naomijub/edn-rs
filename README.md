@@ -20,7 +20,7 @@ Includes features `std` and `sets`.
 
 ```toml
 [dependencies]
-edn-rs = "0.17.4"
+edn-rs = "0.19"
 ```
 
 ### no_std
@@ -29,7 +29,7 @@ To use `edn-rs` without any additional dependencies, disable default features.
 
 ```toml
 [dependencies]
-edn-rs = { version = "0.17.4", default-features = false }
+edn-rs = { version = "0.19", default-features = false }
 ```
 
 ### Optional features
@@ -405,7 +405,7 @@ Just add to your `Cargo.toml` the following:
 ```toml
 [dependencies]
 edn-derive = "<version>"
-edn-rs = "0.17.4"
+edn-rs = "0.19"
 ```
 
 ### Examples
