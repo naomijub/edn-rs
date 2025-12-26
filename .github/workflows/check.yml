@@ -26,7 +26,7 @@ jobs:
       - name: Install libc6-dev-i386
         run: sudo apt install libc6-dev-i386
         if: ${{ contains(matrix.target, 'i686') }}
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
@@ -66,7 +66,7 @@ jobs:
       - name: Install libc6-dev-arm64-cross
         run: sudo apt install libc6-dev-arm64-cross gcc-aarch64-linux-gnu
         if: ${{ contains(matrix.target, 'aarch64') }}
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
@@ -86,7 +86,7 @@ jobs:
       RUSTFLAGS: "-D warnings"
       RUSTDOCFLAGS: "-D warnings"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
@@ -106,7 +106,7 @@ jobs:
       RUSTFLAGS: "-D warnings"
       RUSTDOCFLAGS: "-D warnings"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
@@ -131,7 +131,7 @@ jobs:
       RUSTFLAGS: "-D warnings"
       RUSTDOCFLAGS: "-D warnings"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
@@ -144,7 +144,7 @@ jobs:
       runs-on: ubuntu-latest
       name: fmt
       steps:
-        - uses: actions/checkout@v4
+        - uses: actions/checkout@v6
         - uses: dtolnay/rust-toolchain@stable
           with:
             components: rustfmt
@@ -154,7 +154,7 @@ jobs:
       name: clippy
       runs-on: ubuntu-latest
       steps:
-        - uses: actions/checkout@v4
+        - uses: actions/checkout@v6
         - uses: dtolnay/rust-toolchain@stable
           with:
             components: clippy
