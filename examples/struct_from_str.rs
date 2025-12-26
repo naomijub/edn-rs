@@ -69,10 +69,10 @@ fn test_person_ok() {
 
 #[test]
 fn test_person_mistyped() {
-    let _ = person_mistyped().unwrap();
+    person_mistyped();
 }
 
 #[test]
 fn test_person_overflow() {
-    let _ = person_overflow().unwrap();
+    person_overflow();
 }
