@@ -128,45 +128,45 @@ macro_rules! edn_internal {
     // The seq implementation.
     //////////////////////////////////////////////////////////////////////////
 
-    (@seq @vec [$($elems:expr,)*]) => {
+    (@seq @vec [$($elems:expr_2021,)*]) => {
         std::vec![$($elems,)*]
     };
 
-    (@seq @list [$($elems:expr,)*]) => {
+    (@seq @list [$($elems:expr_2021,)*]) => {
         std::vec![$($elems,)*]
     };
 
-    (@seq @set [$($elems:expr,)*]) => {
+    (@seq @set [$($elems:expr_2021,)*]) => {
         set!{$($elems,)*}
     };
 
     // this matches an even number of things between square brackets
-    (@seq @map [$($key:expr, $val:expr,)*]) => {
+    (@seq @map [$($key:expr_2021, $val:expr_2021,)*]) => {
         map!{$(std::format!("{}", $key) => $val),*}
     };
 
     // eat commas with no effect
-    (@seq @$kind:ident [$($elems:expr,)*] , $($rest:tt)*) => {
+    (@seq @$kind:ident [$($elems:expr_2021,)*] , $($rest:tt)*) => {
         edn_internal!(@seq @$kind [ $($elems,)* ] $($rest)*)
     };
 
     // keyword follows
-    (@seq @$kind:ident [$($elems:expr,)*] :$head:tt $($rest:tt)*) => {
+    (@seq @$kind:ident [$($elems:expr_2021,)*] :$head:tt $($rest:tt)*) => {
         edn_internal!(@seq @$kind [ $($elems,)* edn!(:$head) , ] $($rest)*)
     };
 
     // keyword follows
-    (@seq @$kind:ident [$($elems:expr,)*] $num:tt/$den:tt $($rest:tt)*) => {
+    (@seq @$kind:ident [$($elems:expr_2021,)*] $num:tt/$den:tt $($rest:tt)*) => {
         edn_internal!(@seq @$kind [ $($elems,)* edn!($num/$den) , ] $($rest)*)
     };
 
     // anything else
-    (@seq @$kind:ident [$($elems:expr,)*] $head:tt $($rest:tt)*) => {
+    (@seq @$kind:ident [$($elems:expr_2021,)*] $head:tt $($rest:tt)*) => {
         edn_internal!(@seq @$kind [ $($elems,)* edn!($head) , ] $($rest)*)
     };
 
     // inner
-    (@seq @$kind:ident [$($elems:expr,)* $open:ident $($inner_val:tt)* $close:ident] $($rest:tt)*) => {{
+    (@seq @$kind:ident [$($elems:expr_2021,)* $open:ident $($inner_val:tt)* $close:ident] $($rest:tt)*) => {{
         match (&format!("{:?}",$open), &format!("{:?}",$close)) {
             ("#{","}") => edn_internal!(@seq @$kind [ $($elems,)* edn_internal!(@seq @set [$($inner_val)*]) , ] $($rest)*),
             ("(",")") => edn_internal!(@seq @$kind [ $($elems,)* edn_internal!(@seq @list [$($inner_val)*]) , ] $($rest)*),
@@ -247,7 +247,7 @@ macro_rules! edn_internal {
         Edn::Symbol(symbol)
     }};
 
-    ($e:expr) => {
+    ($e:expr_2021) => {
         match $crate::edn::utils::Attribute::process(&$e) {
             el if el.parse::<i32>().is_ok() => Edn::Int(el.parse::<i64>().unwrap()),
             el if el.parse::<i64>().is_ok() => Edn::Int(el.parse::<i64>().unwrap()),
@@ -271,7 +271,7 @@ macro_rules! edn_unexpected {
 /// `map!{a => "b", c => "d"}`
 #[macro_export]
 macro_rules! map(
-    { $($key:expr => $value:expr),+ } => {
+    { $($key:expr_2021 => $value:expr_2021),+ } => {
         {
             extern crate alloc;
             let mut m = alloc::collections::BTreeMap::new();
@@ -287,7 +287,7 @@ macro_rules! map(
 /// `set!{1, 2, 3, 4}`
 #[macro_export]
 macro_rules! set {
-    ($($x:expr),+ $(,)?) => (
+    ($($x:expr_2021),+ $(,)?) => (
         {
             extern crate alloc;
             let mut s = alloc::collections::BTreeSet::new();
@@ -304,7 +304,7 @@ macro_rules! set {
 #[macro_export]
 #[cfg(feature = "std")]
 macro_rules! hmap(
-    { $($key:expr => $value:expr),+ } => {
+    { $($key:expr_2021 => $value:expr_2021),+ } => {
         {
             let mut m = std::collections::HashMap::new();
             $(
@@ -320,7 +320,7 @@ macro_rules! hmap(
 #[macro_export]
 #[cfg(feature = "std")]
 macro_rules! hset {
-    ($($x:expr),+ $(,)?) => (
+    ($($x:expr_2021),+ $(,)?) => (
         {
             let mut s = std::collections::HashSet::new();
             $(

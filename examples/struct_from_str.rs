@@ -32,7 +32,7 @@ fn person_ok() -> Result<(), EdnError> {
     Ok(())
 }
 
-fn person_mistyped() -> Result<(), EdnError> {
+fn person_mistyped() {
     let bad_edn_str = "{:name \"rose\" :age \"some text\" }";
     let person: Result<Person, EdnError> = edn_rs::from_str(bad_edn_str);
 
@@ -42,11 +42,9 @@ fn person_mistyped() -> Result<(), EdnError> {
             "couldn't convert `\"some text\"` into `uint`".to_string()
         ))
     );
-
-    Ok(())
 }
 
-fn person_overflow() -> Result<(), EdnError> {
+fn person_overflow() {
     let overflow_edn_str = "  {:name \"rose\" :age 9002  }  ";
     let person: Result<Person, EdnError> = edn_rs::from_str(overflow_edn_str);
 
@@ -54,14 +52,12 @@ fn person_overflow() -> Result<(), EdnError> {
         format!("{person:?}"),
         "Err(TryFromInt(TryFromIntError(())))"
     );
-
-    Ok(())
 }
 
 fn main() -> Result<(), EdnError> {
     person_ok()?;
-    person_mistyped()?;
-    person_overflow()?;
+    person_mistyped();
+    person_overflow();
 
     Ok(())
 }
@@ -73,10 +69,10 @@ fn test_person_ok() {
 
 #[test]
 fn test_person_mistyped() {
-    let _ = person_mistyped().unwrap();
+    person_mistyped();
 }
 
 #[test]
 fn test_person_overflow() {
-    let _ = person_overflow().unwrap();
+    person_overflow();
 }

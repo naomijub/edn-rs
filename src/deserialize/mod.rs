@@ -5,6 +5,7 @@ use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use core::any;
+#[allow(unused_imports, reason = "not used in all targets")]
 use core::convert::{Into, TryFrom};
 use core::str::FromStr;
 #[cfg(feature = "std")]
@@ -98,7 +99,6 @@ impl Deserialize for f64 {
     fn deserialize(edn: &Edn) -> Result<Self, Error> {
         edn.to_float()
             .ok_or_else(|| build_deserialize_error(edn, "edn_rs::Double"))
-            .map(Into::into)
     }
 }
 
@@ -205,7 +205,7 @@ where
                 .ok_or_else(|| Error::Iter(format!("Could not create iter from {edn:?}")))?
                 .map(|(key, e)| {
                     Ok((
-                        key.to_string(),
+                        key.clone(),
                         Deserialize::deserialize(e).map_err(|_| {
                             Error::Deserialize(format!(
                                 "Cannot safely deserialize {:?} to {}",
@@ -231,7 +231,7 @@ where
                 .ok_or_else(|| Error::Iter(format!("Could not create iter from {edn:?}")))?
                 .map(|(key, e)| {
                     Ok((
-                        key.to_string(),
+                        key.clone(),
                         Deserialize::deserialize(e).map_err(|_| {
                             Error::Deserialize(format!(
                                 "Cannot safely deserialize {:?} to {}",

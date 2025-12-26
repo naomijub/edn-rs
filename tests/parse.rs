@@ -4,7 +4,7 @@ mod tests {
 
     use alloc::collections::BTreeMap;
 
-    use edn_rs::{edn, map, Edn, List, Map, Vector};
+    use edn_rs::{Edn, List, Map, Vector, edn, map};
 
     #[test]
     fn parse_primitive_types() {

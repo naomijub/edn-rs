@@ -132,7 +132,9 @@ mod tests {
             ])),
         ]));
 
-        assert_eq!(edn.to_json(),
-            "[1, 1.2, 3, [false, \"f\", null, 0.75, [0.75]], {\"myCrazyMap\": {\"false\": {\"f\": \"b\"}, \"nil\": [0.75, 1]}, \"false\": \"f\", \"nil\": 0.75}]");
+        assert_eq!(
+            edn.to_json(),
+            "[1, 1.2, 3, [false, \"f\", null, 0.75, [0.75]], {\"myCrazyMap\": {\"false\": {\"f\": \"b\"}, \"nil\": [0.75, 1]}, \"false\": \"f\", \"nil\": 0.75}]"
+        );
     }
 }

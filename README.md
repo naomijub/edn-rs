@@ -6,8 +6,8 @@ You may find [`Grinkers/clojure-reader`](https://github.com/Grinkers/clojure-rea
 [![codecov](https://codecov.io/gh/naomijub/edn-rs/branch/master/graph/badge.svg?token=4VMVTZTN8A)](https://codecov.io/gh/naomijub/edn-rs)
 
 A crate to parse and emit EDN [`(Extensible Data Notation)`](https://github.com/edn-format/edn)
-* MSRV (minimal supported rust version) is stable minus 2 versions. Once stable (1.0.0), the plan is to indefinitely maintain the MSRV.
-* Current library maintainer is Kevin Nakamura (@Grinkers)
+* MSRV (minimal supported rust version) latest.
+* Current library maintainer is reovate bot
 
 Full integration examples:
 * [`edn-rs fuzzer` with full JVM interop](https://github.com/edn-rs/edn-rs_fuzzer);

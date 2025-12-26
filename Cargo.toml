@@ -1,6 +1,6 @@
 [package]
 name = "edn-rs"
-version = "0.18.0"
+version = "0.19.0"
 authors = ["Julia Naomi <jnboeira@outlook.com>",  "Eva Pace <eba.pachi@gmail.com>", "Kevin Nakamura <grinkers@grinkers.net>"]
 description = "[DEPRECATED]: Crate to parse and emit EDN"
 readme = "README.md"
@@ -8,16 +8,18 @@ documentation = "https://docs.rs/edn-rs/"
 repository = "https://github.com/edn-rs/edn-rs"
 keywords = ["EDN", "no_std"]
 license = "MIT"
-edition = "2021"
+edition = "2024"
+rust-version = "1.92"
 
 [lints.rust]
 rust_2018_idioms = { level = "warn", priority = -1 }
-future-incompatible = "warn"
+future-incompatible = "deny"
 unsafe_code = "deny"
 
 [lints.clippy]
-nursery = { level = "deny", priority = -1 }
-pedantic = { level = "deny", priority = -1 }
+all = { level = "deny", priority = 0 }
+nursery = { level = "deny", priority = 0 }
+pedantic = { level = "deny", priority = 0 }
 
 [features]
 default = ["sets", "std"]

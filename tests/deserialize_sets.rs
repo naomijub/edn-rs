@@ -7,7 +7,7 @@ mod test {
     use core::str::FromStr;
 
     use edn::{Error, List, Vector};
-    use edn_rs::{edn, from_edn, from_str, hset, map, set, Edn, Map, Set};
+    use edn_rs::{Edn, Map, Set, edn, from_edn, from_str, hset, map, set};
 
     #[test]
     fn parse_set_with_commas() {

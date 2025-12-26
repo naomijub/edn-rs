@@ -1,3 +1,4 @@
+#![allow(clippy::format_push_string)]
 use edn_derive::Serialize;
 use edn_rs::{hmap, hset, map, set};
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};

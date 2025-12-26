@@ -5,7 +5,7 @@ mod tests {
 
     use alloc::collections::{BTreeMap, BTreeSet};
 
-    use edn_rs::{edn, set, Edn, List, Map, Set, Vector};
+    use edn_rs::{Edn, List, Map, Set, Vector, edn, set};
 
     #[test]
     fn parse_empty_structures() {

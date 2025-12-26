@@ -1,6 +1,5 @@
 #![recursion_limit = "512"]
 
-extern crate alloc;
 #[cfg(feature = "std")]
 extern crate std;
 

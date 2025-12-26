@@ -1,4 +1,4 @@
-use edn_rs::{map, Deserialize, Edn, EdnError, Map};
+use edn_rs::{Deserialize, Edn, EdnError, Map, map};
 
 #[derive(Debug, PartialEq)]
 struct Person {
@@ -35,7 +35,7 @@ fn person_ok() -> Result<(), EdnError> {
     Ok(())
 }
 
-fn person_mistyped() -> Result<(), EdnError> {
+fn person_mistyped() {
     let bad_edn = Edn::Map(Map::new(map! {
         ":name".to_string() => Edn::Str("rose".to_string()),
         ":age".to_string() => Edn::Str("some text".to_string())
@@ -48,13 +48,11 @@ fn person_mistyped() -> Result<(), EdnError> {
             "couldn't convert `\"some text\"` into `uint`".to_string()
         ))
     );
-
-    Ok(())
 }
 
 fn main() -> Result<(), EdnError> {
     person_ok()?;
-    person_mistyped()?;
+    person_mistyped();
 
     Ok(())
 }

@@ -178,7 +178,9 @@ where
 }
 
 // Primitive Types
-ser_primitives![i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool];
+ser_primitives![
+    i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool
+];
 
 impl Serialize for () {
     fn serialize(&self) -> String {
@@ -327,6 +329,7 @@ mod test {
     }
 
     #[test]
+    #[allow(clippy::similar_names)]
     fn vectors() {
         let v_i8 = vec![3i8, 12i8, 24i8, 72i8];
         let v_u16 = vec![3u16, 12u16, 24u16, 72u16];
@@ -485,6 +488,7 @@ mod test {
     }
 
     #[test]
+    #[allow(clippy::similar_names)]
     fn lists() {
         use alloc::collections::LinkedList;
 
