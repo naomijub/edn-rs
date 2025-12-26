@@ -33,7 +33,7 @@ ordered-float = { version = "5.0", default-features = false, optional = true }
 
 [dev-dependencies]
 tokio = { version = "1.33", features = ["full"] }
-criterion = "0.5"
+criterion = "0.8"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 edn-derive = { git = "https://github.com/edn-rs/edn-derive.git" } # TODO pin to release
