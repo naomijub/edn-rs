@@ -8,7 +8,7 @@ documentation = "https://docs.rs/edn-rs/"
 repository = "https://github.com/edn-rs/edn-rs"
 keywords = ["EDN", "no_std"]
 license = "MIT"
-edition = "2021"
+edition = "2024"
 
 [lints.rust]
 rust_2018_idioms = { level = "warn", priority = -1 }

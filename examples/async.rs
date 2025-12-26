@@ -1,6 +1,6 @@
 use std::str::{self, FromStr};
 
-use edn_rs::{edn, Edn, Vector};
+use edn_rs::{Edn, Vector, edn};
 use tokio::fs::File;
 use tokio::io::AsyncReadExt;
 

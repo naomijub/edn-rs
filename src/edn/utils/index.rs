@@ -86,7 +86,7 @@ impl Index for Edn {
         let index = self.to_uint();
 
         match (v, index) {
-            (Self::Map(ref map), _) => map.0.get(&key),
+            (Self::Map(map), _) => map.0.get(&key),
             (Self::List(_) | Self::Vector(_), Some(idx)) => {
                 // A panic is expected behavior when trying to index beyond usize
                 let idx = usize::try_from(idx).unwrap();

@@ -109,7 +109,7 @@ fn read_str(chars: &mut iter::Enumerate<core::str::Chars<'_>>) -> Result<Edn, Er
                     _ => {
                         return Err(Err(Error::ParseEdn(format!(
                             "Invalid escape sequence \\{c}"
-                        ))))
+                        ))));
                     }
                 }
 
@@ -393,7 +393,7 @@ fn read_vec(chars: &mut iter::Enumerate<core::str::Chars<'_>>) -> Result<Edn, Er
             err => {
                 return Err(Error::ParseEdn(format!(
                     "{err:?} could not be parsed at char count {i}"
-                )))
+                )));
             }
         }
     }
@@ -417,7 +417,7 @@ fn read_list(chars: &mut iter::Enumerate<core::str::Chars<'_>>) -> Result<Edn, E
             err => {
                 return Err(Error::ParseEdn(format!(
                     "{err:?} could not be parsed at char count {i}"
-                )))
+                )));
             }
         }
     }
@@ -443,7 +443,7 @@ fn read_set(chars: &mut iter::Enumerate<core::str::Chars<'_>>) -> Result<Edn, Er
             err => {
                 return Err(Error::ParseEdn(format!(
                     "{err:?} could not be parsed at char count {i}"
-                )))
+                )));
             }
         }
     }
@@ -478,7 +478,7 @@ fn read_map(chars: &mut iter::Enumerate<core::str::Chars<'_>>) -> Result<Edn, Er
             err => {
                 return Err(Error::ParseEdn(format!(
                     "{err:?} could not be parsed at char count {i}"
-                )))
+                )));
             }
         }
 

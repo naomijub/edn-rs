@@ -5,7 +5,7 @@ use alloc::format;
 use alloc::string::String;
 use alloc::vec::Vec;
 
-use crate::edn::{rational_to_double, Edn};
+use crate::edn::{Edn, rational_to_double};
 
 #[allow(clippy::module_name_repetitions)]
 pub fn display_as_json(edn: &Edn) -> String {
@@ -280,8 +280,10 @@ mod test {
             ])),
         ]));
 
-        assert_eq!(display_as_json(&edn),
-            "[1, 1.2, 3, [false, \"f\", null, 0.75, [0.75]], {\"myCrazyMap\": {\"false\": {\"f\": \"b\"}, \"nil\": [0.75, 1]}, \"false\": \"f\", \"nil\": 0.75}]");
+        assert_eq!(
+            display_as_json(&edn),
+            "[1, 1.2, 3, [false, \"f\", null, 0.75, [0.75]], {\"myCrazyMap\": {\"false\": {\"f\": \"b\"}, \"nil\": [0.75, 1]}, \"false\": \"f\", \"nil\": 0.75}]"
+        );
     }
 
     #[test]

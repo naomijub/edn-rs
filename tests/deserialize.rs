@@ -6,7 +6,7 @@ mod test {
     use core::str::FromStr;
 
     use edn::Error;
-    use edn_rs::{edn, from_edn, from_str, hmap, map, Edn, List, Map, Vector};
+    use edn_rs::{Edn, List, Map, Vector, edn, from_edn, from_str, hmap, map};
 
     #[test]
     fn unit() {

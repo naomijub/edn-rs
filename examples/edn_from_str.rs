@@ -16,7 +16,7 @@ fn main() -> Result<(), EdnError> {
 
 #[test]
 fn test_edn_from_str() {
-    use edn_rs::{map, set, Map, Set, Vector};
+    use edn_rs::{Map, Set, Vector, map, set};
     let edn = edn_from_str().unwrap();
     assert_eq!(
         edn,

@@ -47,7 +47,7 @@ mod edn {
     use criterion::Criterion;
     use edn_derive::Serialize;
 
-    use edn_rs::{map, set, Serialize};
+    use edn_rs::{Serialize, map, set};
     use std::collections::{BTreeMap, BTreeSet};
 
     pub fn criterion_benchmark(c: &mut Criterion) {

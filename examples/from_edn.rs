@@ -1,4 +1,4 @@
-use edn_rs::{map, Deserialize, Edn, EdnError, Map};
+use edn_rs::{Deserialize, Edn, EdnError, Map, map};
 
 #[derive(Debug, PartialEq)]
 struct Person {
