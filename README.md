@@ -1,6 +1,6 @@
-# DEPRECATION WARNING
+# MAINTENANCE WARNING
 Development is currently halted for this project. No new features are under development, but also no breaking changes. If you have a critical issue, we might take a look.
-You may find [`Grinkers/clojure-reader`](https://github.com/Grinkers/clojure-reader) as a suitable alternative, it has been built by one of our maintainers @Grinkers.
+You may find [`Grinkers/clojure-reader`](https://github.com/Grinkers/clojure-reader) as a suitable alternative as its actively maintained, it has been built by one of our maintainers @Grinkers.
 
 # edn-rs
 [![codecov](https://codecov.io/gh/naomijub/edn-rs/branch/master/graph/badge.svg?token=4VMVTZTN8A)](https://codecov.io/gh/naomijub/edn-rs)
