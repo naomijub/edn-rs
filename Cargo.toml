@@ -29,7 +29,7 @@ std = []
 
 [dependencies]
 regex = { version = "1", optional = true }
-ordered-float = { version = "4.1", default-features = false, optional = true }
+ordered-float = { version = "5.0", default-features = false, optional = true }
 
 [dev-dependencies]
 tokio = { version = "1.33", features = ["full"] }
