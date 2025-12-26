@@ -5,6 +5,7 @@ use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use core::any;
+#[allow(unused_imports, reason = "not used in all targets")]
 use core::convert::{Into, TryFrom};
 use core::str::FromStr;
 #[cfg(feature = "std")]
