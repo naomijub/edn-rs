@@ -1,4 +1,5 @@
 #[cfg(test)]
+#[allow(clippy::format_push_string)]
 mod tests {
     use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 
@@ -69,6 +70,7 @@ fn pub_struct() {
     assert_eq!(edn.tuples, (3i32, true, 'd'));
 }
 
+#[allow(clippy::format_push_string)]
 mod helper {
     use edn_derive::Serialize;
 

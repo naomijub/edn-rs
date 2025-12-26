@@ -26,7 +26,7 @@ pub mod utils;
 #[cfg_attr(feature = "sets", derive(Eq, PartialOrd, Ord))]
 #[non_exhaustive]
 pub enum Edn {
-    Tagged(String, Box<Edn>),
+    Tagged(String, Box<Self>),
     Vector(Vector),
     #[cfg(feature = "sets")]
     Set(Set),
@@ -112,7 +112,7 @@ impl Vector {
 pub struct List(Vec<Edn>);
 impl List {
     #[must_use]
-    pub fn new(v: Vec<Edn>) -> Self {
+    pub const fn new(v: Vec<Edn>) -> Self {
         Self(v)
     }
 
@@ -154,7 +154,7 @@ impl Set {
 pub struct Map(BTreeMap<String, Edn>);
 impl Map {
     #[must_use]
-    pub fn new(m: BTreeMap<String, Edn>) -> Self {
+    pub const fn new(m: BTreeMap<String, Edn>) -> Self {
         Self(m)
     }
 
@@ -248,13 +248,13 @@ impl core::fmt::Display for Edn {
             Self::Set(s) => format!("{s}"),
             Self::Map(m) => format!("{m}"),
             Self::List(l) => format!("{l}"),
-            Self::Symbol(sy) => sy.to_string(),
-            Self::Key(k) => k.to_string(),
+            Self::Symbol(sy) => sy.clone(),
+            Self::Key(k) => k.clone(),
             Self::Str(s) => format!("{s:?}"),
             Self::Int(i) => format!("{i}"),
             Self::UInt(u) => format!("{u}"),
             Self::Double(d) => format!("{d}"),
-            Self::Rational(r) => r.to_string(),
+            Self::Rational(r) => r.clone(),
             Self::Bool(b) => format!("{b}"),
             Self::Char(c) => char_to_edn(*c),
             Self::Nil => String::from("nil"),
@@ -784,6 +784,7 @@ mod test {
 
     use super::*;
     #[test]
+    #[expect(clippy::float_cmp)]
     fn parses_rationals() {
         assert_eq!(rational_to_double("3/4").unwrap(), 0.75f64);
         assert_eq!(rational_to_double("25/5").unwrap(), 5f64);
@@ -796,12 +797,7 @@ mod test {
     #[test]
     fn iterator() {
         let v = Edn::Vector(Vector::new(vec![Edn::Int(5), Edn::Int(6), Edn::Int(7)]));
-        let sum: i64 = v
-            .iter_some()
-            .unwrap()
-            .filter(|e| e.to_int().is_some())
-            .map(|e| e.to_int().unwrap())
-            .sum();
+        let sum: i64 = v.iter_some().unwrap().filter_map(super::Edn::to_int).sum();
 
         assert_eq!(18i64, sum);
     }

@@ -43,6 +43,7 @@ mod serde {
 }
 
 mod edn {
+    #![allow(clippy::format_push_string)]
     use criterion::Criterion;
     use edn_derive::Serialize;
 

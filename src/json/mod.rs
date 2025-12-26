@@ -2,7 +2,7 @@ use alloc::collections::BTreeMap;
 #[cfg(feature = "sets")]
 use alloc::collections::BTreeSet;
 use alloc::format;
-use alloc::string::{String, ToString};
+use alloc::string::String;
 use alloc::vec::Vec;
 
 use crate::edn::{rational_to_double, Edn};
@@ -96,7 +96,7 @@ fn map_to_json(map: &BTreeMap<String, Edn>) -> String {
             let key = if k.starts_with(':') {
                 kebab_to_camel(k)
             } else {
-                k.to_string()
+                k.clone()
             };
             let edn = display_as_json(e);
 
@@ -113,11 +113,11 @@ fn map_to_json(map: &BTreeMap<String, Edn>) -> String {
 #[cfg(test)]
 mod test {
     use alloc::boxed::Box;
+    use alloc::string::ToString;
     use alloc::vec;
 
     use super::*;
     use crate::edn::{Edn, List, Map, Set, Vector};
-    use crate::{map, set};
 
     #[test]
     fn nil_and_empty_edns() {
@@ -130,8 +130,8 @@ mod test {
         assert_eq!(display_as_json(&Edn::UInt(34u64)), String::from("34"));
         assert_eq!(display_as_json(&Edn::Int(-25i64)), String::from("-25"));
         assert_eq!(
-            display_as_json(&Edn::Double(3.14f64.into())),
-            String::from("3.14")
+            display_as_json(&Edn::Double(3.16f64.into())),
+            String::from("3.16")
         );
         assert_eq!(
             display_as_json(&Edn::Double(32f64.into())),

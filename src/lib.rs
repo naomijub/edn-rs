@@ -14,6 +14,7 @@ use alloc::string::String;
 pub mod edn;
 
 /// Serialization module for most possible types.
+///
 /// Tuples are limited between `(A, B)` and `(A, B, C, D, E, F)`, any other tuple needs to be implemented by the `trait Serialize`.
 /// This module requires `#[macro_use]` for `structs`.
 ///
@@ -48,6 +49,7 @@ pub(crate) mod json;
 #[cfg(feature = "json")]
 use alloc::borrow::Cow;
 #[cfg(feature = "json")]
+#[allow(unused_imports)]
 use alloc::string::ToString;
 
 mod deserialize;
@@ -85,7 +87,7 @@ pub fn json_to_edn<'a>(json: impl AsRef<str>) -> Cow<'a, str> {
     let json = re.replace_all(json.as_ref(), |caps: &Captures<'_>| {
         let mut rcap = caps[0].replace(['\"', ':'], "").replace(['_', ' '], "-");
         rcap.insert(0, ':');
-        rcap.to_string()
+        rcap.clone()
     });
 
     // Convert chars
@@ -93,7 +95,7 @@ pub fn json_to_edn<'a>(json: impl AsRef<str>) -> Cow<'a, str> {
     let json = c_re.replace_all(&json[..], |caps: &Captures<'_>| {
         let mut rcap = caps[0].replace('\'', "");
         rcap.insert(0, '\\');
-        rcap.to_string()
+        rcap.clone()
     });
 
     json.replace("null", "nil").into()

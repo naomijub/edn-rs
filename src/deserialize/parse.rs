@@ -111,7 +111,7 @@ fn read_str(chars: &mut iter::Enumerate<core::str::Chars<'_>>) -> Result<Edn, Er
                             "Invalid escape sequence \\{c}"
                         ))))
                     }
-                };
+                }
 
                 Ok((false, s))
             } else if c == '\"' {

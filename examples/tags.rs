@@ -3,11 +3,11 @@ use std::str::FromStr;
 use edn_rs::Edn;
 
 fn uuid_printer(uuid: &Edn) {
-    println!("Received UUID: {}", uuid);
+    println!("Received UUID: {uuid}");
 }
 
 fn inst_printer(inst: &Edn) {
-    println!("Received Inst: {}", inst);
+    println!("Received Inst: {inst}");
 }
 
 fn print_tagged_or_panic(tagged_data: &Edn) {
@@ -19,7 +19,7 @@ fn print_tagged_or_panic(tagged_data: &Edn) {
         }
     } else {
         panic!();
-    };
+    }
 }
 
 fn tagged_data() {

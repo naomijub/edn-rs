@@ -13,12 +13,9 @@ impl Serialize for Foo<'_> {
 
 fn serialize() -> String {
     let say = "Hello, World!";
-    let foo = Foo {
-        value: 42,
-        say: say,
-    };
+    let foo_t = Foo { value: 42, say };
 
-    foo.serialize()
+    foo_t.serialize()
 }
 
 fn main() {

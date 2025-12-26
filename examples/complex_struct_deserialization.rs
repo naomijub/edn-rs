@@ -66,7 +66,7 @@ fn complex_ok() -> Result<(), EdnError> {
     Ok(())
 }
 
-fn complex_wrong() -> Result<(), EdnError> {
+fn complex_wrong() {
     let bad_edn_str = "{:list [{:name \"rose\" :age \"some text\" :cool true}, {:name \"josh\" :age 33 :cool false}, {:name \"eva\" :age 296 :cool true}]}";
     let complex: Result<Complex, EdnError> = edn_rs::from_str(bad_edn_str);
 
@@ -76,13 +76,11 @@ fn complex_wrong() -> Result<(), EdnError> {
             "couldn't convert `\"some text\"` into `uint`".to_string()
         ))
     );
-
-    Ok(())
 }
 
 fn main() -> Result<(), EdnError> {
     complex_ok()?;
-    complex_wrong()?;
+    complex_wrong();
     Ok(())
 }
 
