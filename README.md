@@ -1,6 +1,13 @@
-# MAINTENANCE WARNING
+## MAINTENANCE WARNING
 Development is currently halted for this project. No new features are under development, but also no breaking changes. If you have a critical issue, we might take a look.
 You may find [`Grinkers/clojure-reader`](https://github.com/Grinkers/clojure-reader) as a suitable alternative as its actively maintained, it has been built by one of our maintainers @Grinkers.
+
+> ### Benchmarks edn-rs vs clojure-reader
+>
+> A simple benchmark from [this link](https://github.com/Grinkers/clojure-reader/blob/2215989110492ee68cea07e49f23ac9b59c20a18/benchmarks/benches/bench.rs#L22-L28) shows that `Clojure-reader` seems substiantially faster than `edn-rs`:
+> - clojure-reader: 867.70 ns
+> - edn-rs: 2.0842 µs
+> Due to the fact that clojure-reader is based on `zero-copy` crate, this benchmark probably points out to the fact that `edn-rs` creates a lot more strings than `clojrue-reader`
 
 # edn-rs
 [![codecov](https://codecov.io/gh/naomijub/edn-rs/branch/master/graph/badge.svg?token=4VMVTZTN8A)](https://codecov.io/gh/naomijub/edn-rs)
